@@ -28,7 +28,7 @@ write the below functions into your `.bash_profile`, and restart bash.
 
 #### :abcd: `change_directory_to_sibling`
 
-```
+```sh
 function __change_directory_to_sibling() {
     traversing_type="$1"
     if [ "$1" == "" ]; then

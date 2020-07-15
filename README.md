@@ -44,7 +44,7 @@ After visiting the final directory, `sibling` prints nothing and exits with non-
 
 #### :abcd: `change_directory_to_sibling`
 
-```
+```sh
 function __change_directory_to_sibling() {
     traversing_type="$1"
     if [ "$1" == "" ]; then
