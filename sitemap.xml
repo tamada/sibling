@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/</loc>
+    <lastmod>2020-07-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/install/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/usage/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/about/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://tamada.github.io/sibling/tags/</loc>
+  </url>
+  
+</urlset>
