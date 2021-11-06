@@ -9,7 +9,7 @@ setup:
 	git submodule update --init
 
 test: setup
-	$(GO) test -covermode=count -coverprofile=coverage.out ./...
+	$(GO) test -covermode=count -coverprofile=coverage.out $$(go list ./...)
 
 # refer from https://pod.hatenablog.com/entry/2017/06/13/150342
 define _createDist
