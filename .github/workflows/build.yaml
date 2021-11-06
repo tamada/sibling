@@ -21,6 +21,7 @@ jobs:
               uses: actions/checkout@v2
 
             - name: build
+              working-directory: .
               run: make
 
             - name: Convert coverage to lcov
