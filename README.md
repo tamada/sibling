@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamada/sibling)](https://goreportcard.com/report/github.com/tamada/sibling)
 
 [![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.1.0)
 
 get next/previous sibling directory name.
 
