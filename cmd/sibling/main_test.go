@@ -1,6 +1,8 @@
 package main
 
-import "os"
+import (
+	"os"
+)
 
 func Example_Help() {
 	cmd := newCommand()
