@@ -1,5 +1,13 @@
 # sibling
 
+[![Coverage Status](https://coveralls.io/repos/github/tamada/sibling/badge.svg?branch=main)](https://coveralls.io/github/tamada/sibling?branch=main)
+
+[![codebeat badge](https://codebeat.co/badges/aef821a8-27ef-45ec-af37-9bf67a427837)](https://codebeat.co/projects/github-com-tamada-sibling-main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tamada/sibling)](https://goreportcard.com/report/github.com/tamada/sibling)
+
+[![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.1.0)
+
 get next/previous sibling directory name.
 
 ## :speaking_head: Description
@@ -99,7 +107,8 @@ function cdrand() {
 Install `sibling` via [Homebrew](https://brew.sh), simply run:
 
 ```sh
-brew install tamada/brew/sibling
+brew tap tamada/brew
+brew install sibling
 ```
 
 ### Go lang
@@ -110,7 +119,7 @@ Install by CLI, run:
 go get github.com/tamada/sibling
 ```
 
-### :hammer_and_wrench: Install from source
+### :muscle: Compiling yourself
 
 Get source codes by `git clone` or download from [GitHub](https://github.com/tamada/sibling),
 then run `make` to build `sibling`
@@ -125,10 +134,9 @@ $ make
 
 #### Development
 
-- Go lang 1.14.3
+- Go lang 1.17 and after
 - Dependencies (See `go.mod`)
-  - github.com/mattn/go-isatty
-  - github.com/spf13/pflag
+  - github.com/spf13/cobra v1.2.1
 
 ## :smile: About the project
 
