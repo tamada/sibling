@@ -1,5 +1,5 @@
 ---
-date: 2020-07-15
+date: 2021-11-06
 title: ":house: Home"
 ---
 
@@ -21,15 +21,15 @@ For this, I implemented `sibling`.
 
 ## Table of Contents
 
-* [:house: Home](#)
-    * [:speaking_head: Description](#-description)
-* [:runner: Usage](usage)
-    * [:cool: Utilities (bash)](usage/#-utilities-bash)
-* [:anchor: Installation](install)
-    * [:beer: Homebrew](install/#-homebrew)
-    * [Go lang](install/#go-lang)
-    * [:hammer_and_wrench: Install from source](install/#-install-from-source)
-    * [:briefcase: Requirements](install/#-requirements)
-* [:smile: About](about)
-    * [:scroll: License](about/#-license)
-    * [:man_office_worker: Developers :woman_office_worker:](about/#-developers-)
+- [:house: Home](#)
+  - [:speaking_head: Description](#-description)
+- [:runner: Usage](usage)
+  - [:cool: Utilities (bash)](usage/#-utilities-bash)
+- [:anchor: Installation](install)
+  - [:beer: Homebrew](install/#-homebrew)
+  - [Go lang](install/#go-lang)
+  - [:hammer_and_wrench: Install from source](install/#-install-from-source)
+  - [:briefcase: Requirements](install/#-requirements)
+- [:smile: About](about)
+  - [:scroll: License](about/#-license)
+  - [:man_office_worker: Developers :woman_office_worker:](about/#-developers-)
