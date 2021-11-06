@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
 )
 
 func Example_Help() {
@@ -96,12 +93,4 @@ func Example_progress() {
 	cmd.Execute()
 	// Output:
 	//  5/ 10
-}
-
-func init() {
-	wd, _ := os.Getwd()
-	_, filename, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(filename)
-	fmt.Printf("wd: %s, dir: %s\n", wd, dir)
-	os.Chdir(dir)
 }
