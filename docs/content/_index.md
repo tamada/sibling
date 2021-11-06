@@ -3,6 +3,7 @@ date: 2021-11-06
 title: ":house: Home"
 ---
 
+[![build](https://github.com/tamada/sibling/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/sibling/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/tamada/sibling/badge.svg?branch=main)](https://coveralls.io/github/tamada/sibling?branch=main)
 
 [![codebeat badge](https://codebeat.co/badges/aef821a8-27ef-45ec-af37-9bf67a427837)](https://codebeat.co/projects/github-com-tamada-sibling-main)
