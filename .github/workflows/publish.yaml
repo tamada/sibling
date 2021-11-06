@@ -19,10 +19,8 @@ jobs:
           - windows_386
           - linux_amd64
           - linux_386
-
     env:
       REPO: https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -94,3 +92,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/public
+
