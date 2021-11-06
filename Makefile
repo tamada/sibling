@@ -1,6 +1,6 @@
 GO=go
 NAME := sibling
-VERSION := 1.1.0
+VERSION := 1.0.0
 DIST := $(NAME)-$(VERSION)
 
 all: test build
@@ -9,7 +9,7 @@ setup:
 	git submodule update --init
 
 test: setup
-	$(GO) test -covermode=count -coverprofile=coverage.out $$(go list ./... | grep -v vendor)
+	$(GO) test -covermode=count -coverprofile=coverage.out ./...
 
 # refer from https://pod.hatenablog.com/entry/2017/06/13/150342
 define _createDist
