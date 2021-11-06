@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 func Example_Help() {
@@ -93,4 +95,13 @@ func Example_progress() {
 	cmd.Execute()
 	// Output:
 	//  5/ 10
+}
+
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := filepath.Dir(filename)
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
 }
