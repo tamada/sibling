@@ -1,8 +1,10 @@
 module github.com/tamada/sibling
 
-go 1.14
+go 1.17
+
+require github.com/spf13/cobra v1.2.1
 
 require (
-	github.com/mattn/go-isatty v0.0.12
-	github.com/spf13/pflag v1.0.5
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 )
