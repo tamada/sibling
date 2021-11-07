@@ -6,11 +6,7 @@
     <description>Recent content in :house: Home on Sibling</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 15 Jul 2020 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 06 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>:anchor: Installation</title>
       <link>https://tamada.github.io/sibling/install/</link>
@@ -18,9 +14,9 @@
       
       <guid>https://tamada.github.io/sibling/install/</guid>
       <description>🍺 Homebrew Install sibling via Homebrew, simply run:
-brew install tamada/brew/sibling Go lang Install by CLI, run:
-go get github.com/tamada/sibling 🛠️ Install from source Get source codes by git clone or download from GitHub, then run make to build sibling
-$ git clone https://github.com/tamada/sibling.git # or download from https://github.com/tamada/sibling $ cd sibling $ make 💼 Requirements Development  Go lang 1.14.3 Dependencies (See go.mod)  github.com/mattn/go-isatty github.com/spf13/pflag    </description>
+brew tap tamada/brew brew install sibling Go lang Install by CLI, run:
+go get github.com/tamada/sibling 💪 Compiling yourself Get source codes by git clone or download from GitHub, then run make to build sibling
+$ git clone https://github.com/tamada/sibling.git # or download from https://github.com/tamada/sibling $ cd sibling $ make 💼 Requirements Development  Go lang 1.16 Dependencies (See go.mod)  github.com/spf13/cobra v1.2.1    </description>
     </item>
     
     <item>

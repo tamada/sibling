@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="generator" content="Hugo 0.69.0" />
+  <meta name="generator" content="Hugo 0.85.0" />
   <link rel="stylesheet" href="/sibling/css/normalize.css">
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   
@@ -71,11 +71,12 @@
   <h1>⚓ Installation</h1>
   <h3 id="-homebrew">🍺 Homebrew</h3>
 <p>Install <code>sibling</code> via <a href="https://brew.sh">Homebrew</a>, simply run:</p>
-<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">brew install tamada/brew/sibling
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">brew tap tamada/brew
+brew install sibling
 </code></pre></div><h3 id="go-lang">Go lang</h3>
 <p>Install by CLI, run:</p>
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">go get github.com/tamada/sibling
-</code></pre></div><h3 id="-install-from-source">🛠️ Install from source</h3>
+</code></pre></div><h3 id="-compiling-yourself">💪 Compiling yourself</h3>
 <p>Get source codes by <code>git clone</code> or download from <a href="https://github.com/tamada/sibling">GitHub</a>,
 then run <code>make</code> to build <code>sibling</code></p>
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git clone https://github.com/tamada/sibling.git <span style="color:#408080;font-style:italic"># or download from https://github.com/tamada/sibling</span>
@@ -84,11 +85,10 @@ $ make
 </code></pre></div><h3 id="-requirements">💼 Requirements</h3>
 <h4 id="development">Development</h4>
 <ul>
-<li>Go lang 1.14.3</li>
+<li>Go lang 1.16</li>
 <li>Dependencies (See <code>go.mod</code>)
 <ul>
-<li>github.com/mattn/go-isatty</li>
-<li>github.com/spf13/pflag</li>
+<li>github.com/spf13/cobra v1.2.1</li>
 </ul>
 </li>
 </ul>
