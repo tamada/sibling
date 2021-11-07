@@ -79,14 +79,13 @@ jobs:
 
       - name: Upload release assets
         id: upload-release-assets
-        uses: actions/upload-release-assets@v1.0.1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_path: dist/sibling-${{ steps.vars.outputs.tag }}_${{ matrix.targets }}.tar.gz
-          asset_name: sibling-${{ steps.vars.outputs.tag }}_${{ matrix.targets }}.tar.gz
-          asset_content_type: application/tar+gzip
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          files: |
+            dist/sibling-${{ steps.vars.outputs.tag }}_${{ matrix.targets }}.tar.gz
+          name: v${{ steps.vars.outputs.tag }}
 
       - name: Deply GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
