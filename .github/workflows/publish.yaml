@@ -10,15 +10,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
-    strategy:
-      matrix:
-        targets:
-          - darwin_amd64
-          - darwin_arm64
-          - windows_amd64
-          - windows_386
-          - linux_amd64
-          - linux_386
     env:
       REPO: https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
     steps:
@@ -68,25 +59,24 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          tag_name: v${{ steps.vars.outputs.tag }}
-          release_name: Release v${{ steps.vars.outputs.tag }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: v${{ steps.vars.outputs.tag }}
+          title: Release v${{ steps.vars.outputs.tag }}
           draft: true
           prerelease: false
+          files: |
+            dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
 
       - name: Upload release assets
         id: upload-release-assets
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
-          
           name: v${{ steps.vars.outputs.tag }}
 
       - name: Deply GitHub Pages
