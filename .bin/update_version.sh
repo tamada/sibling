@@ -21,5 +21,6 @@ for i in README.md docs/content/_index.md; do
 done
 
 sed "s/VERSION := .*/VERSION := ${VERSION}/g" Makefile > a && mv a Makefile
+sed "s/const VERSION = \".*\"/const VERSION = \"${VERSION}\"/g" cmd/sibling/main.go > a && mv a cmd/sibling/main.go
 
 echo "Replace version to \"${VERSION}\""
