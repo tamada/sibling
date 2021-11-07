@@ -16,6 +16,7 @@ define _createDist
 	mkdir -p dist/$(1)_$(2)/$(DIST)
 	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/$(NAME)$(3) cmd/$(NAME)/main.go cmd/$(NAME)/printer.go cmd/$(NAME)/generator.go
 	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
+	cp -r docs/public dist/$(1)_$(2)/$(DIST)/docs
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
 endef
 

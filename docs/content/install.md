@@ -7,7 +7,8 @@ title: ":anchor: Installation"
 Install `sibling` via [Homebrew](https://brew.sh), simply run:
 
 ```sh
-brew install tamada/brew/sibling
+brew tap tamada/brew
+brew install sibling
 ```
 
 ### Go lang
@@ -18,7 +19,7 @@ Install by CLI, run:
 go get github.com/tamada/sibling
 ```
 
-### :hammer_and_wrench: Install from source
+### :muscle: Compiling yourself
 
 Get source codes by `git clone` or download from [GitHub](https://github.com/tamada/sibling),
 then run `make` to build `sibling`
@@ -33,7 +34,6 @@ $ make
 
 #### Development
 
-* Go lang 1.14.3
-* Dependencies (See `go.mod`)
-    * github.com/mattn/go-isatty
-    * github.com/spf13/pflag
+- Go lang 1.16
+- Dependencies (See `go.mod`)
+  - github.com/spf13/cobra v1.2.1

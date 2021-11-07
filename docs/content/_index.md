@@ -14,9 +14,9 @@ title: ":house: Home"
 
 ## :speaking_head: Description
 
-When the directory has too may sub directories, we are tiresome to traverse whole of them.
-Because, we lose where we are.
-Ideally, we move directory by specifying the next, not directory name.
+When a directory has too may sub directories, we are tiresome to traverse whole of sub directories.
+Because, sometimes we lose where we are.
+Ideally, we move directory by specifying ‘next’ or ‘previous,' not directory name.
 
 The command like following makes us tired :-1:.
 
