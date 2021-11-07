@@ -10,13 +10,13 @@ title: ":house: Home"
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamada/sibling)](https://goreportcard.com/report/github.com/tamada/sibling)
 
 [![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-${VERSION}-green.svg)](https://github.com/tamada/sibling/releases/tag/v${VERSION})
+[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.1.0)
 
 ## :speaking_head: Description
 
-When the directory has too may sub directories, we are tiresome to traverse whole of them.
-Because, we lose where we are.
-Ideally, we move directory by specifying the next, not directory name.
+When a directory has too may sub directories, we are tiresome to traverse whole of sub directories.
+Because, sometimes we lose where we are.
+Ideally, we move directory by specifying ‘next’ or ‘previous,' not directory name.
 
 The command like following makes us tired :-1:.
 

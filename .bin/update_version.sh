@@ -16,11 +16,10 @@ if [[ $result -eq 0 ]]; then
 fi
 
 for i in README.md docs/content/_index.md; do
-    sed -e 's!Version-[0-9.]*-green!Version-${VERSION}-green!g' -e 's!tag/v[0-9.]*!tag/v${VERSION}!g' $i > a
+    sed -e "s!Version-[0-9.]*-green!Version-${VERSION}-green!g" -e "s!tag/v[0-9.]*!tag/v${VERSION}!g" $i > a
     mv a $i
 done
 
-sed 's/VERSION := .*/VERSION := ${VERSION}/g' Makefile > a && mv a Makefile
-sed 's/const VERSION = .*/const VERSION = "${VERSION}"/g' config.go > a && mv a config.go
+sed "s/VERSION := .*/VERSION := ${VERSION}/g" Makefile > a && mv a Makefile
 
 echo "Replace version to \"${VERSION}\""
