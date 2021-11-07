@@ -69,16 +69,6 @@ jobs:
           files: |
             dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
 
-      - name: Upload release assets
-        id: upload-release-assets
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: |
-            dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
-          name: v${{ steps.vars.outputs.tag }}
-
       - name: Deply GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
