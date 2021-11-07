@@ -1,6 +1,6 @@
 GO=go
 NAME := sibling
-VERSION := 1.1.1
+VERSION := 1.1.2
 DIST := $(NAME)-$(VERSION)
 
 all: test build
