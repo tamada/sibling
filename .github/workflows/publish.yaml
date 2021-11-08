@@ -69,9 +69,3 @@ jobs:
           files: |
             dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
 
-      - name: Deply GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/public
-
