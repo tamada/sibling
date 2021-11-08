@@ -5,6 +5,10 @@
     <link>https://tamada.github.io/sibling/categories/</link>
     <description>Recent content in Categories on Sibling</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language><atom:link href="https://tamada.github.io/sibling/categories/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-us</language>
+    
+	<atom:link href="https://tamada.github.io/sibling/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
   </channel>
 </rss>
