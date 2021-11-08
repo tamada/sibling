@@ -15,10 +15,9 @@ if [[ $result -eq 0 ]]; then
     exit 1
 fi
 
-prev=$(grep ^VERSION Makefile | tr -d 'VERSION := ')
-
+PREV_VERSION=$(grep ^VERSION Makefile | tr -d 'VERSION := ')
 for i in README.md docs/content/_index.md; do
-    sed -e "s#Version-${prev}-green#Version-${VERSION//-/--}-green#g" -e "s#tag/v${prev}#tag/v${VERSION}#g" $i > a
+    sed -e "s#Version-${PREV_VERSION}-green#Version-${VERSION//-/--}-green#g" -e "s#tag/v${PREV_VERSION}#tag/v${VERSION}#g" $i > a
     mv a $i
 done
 
