@@ -9,8 +9,9 @@ fi
 
 result=0
 
+PREV_VERSION=$(grep ^VERSION Makefile | tr -d 'VERSION := ')
 grep "$VERSION" Makefile 2>&1 > /dev/null || result=$?
-if [[ $result -eq 0 ]]; then
+if [[ $result -eq 0 && $VERSION == $PREV_VERSION ]]; then
     echo "already updated to $VERSION"
     exit 1
 fi
