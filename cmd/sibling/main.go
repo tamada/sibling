@@ -119,7 +119,7 @@ func perform(c *cobra.Command, args []string) error {
 	}
 	params := opts.buildParams(c)
 	c.SilenceUsage = true
-	for _, arg := range args {
+	for _, arg := range constructArgs(args) {
 		if len(args) > 1 {
 			params.printer.PrintHeader(fmt.Sprintf("===== %s =====", arg))
 		}
@@ -133,7 +133,13 @@ func perform(c *cobra.Command, args []string) error {
 		}
 	}
 	return nil
+}
 
+func constructArgs(args []string) []string {
+	if len(args) == 0 {
+		return []string{"."}
+	}
+	return args
 }
 
 func main() {
