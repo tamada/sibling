@@ -10,7 +10,7 @@ import (
 	"github.com/tamada/sibling"
 )
 
-const VERSION = "1.1.1"
+const VERSION = "1.1.2"
 
 type options struct {
 	absolute bool
