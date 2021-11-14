@@ -13,10 +13,10 @@ var bashFunctions []byte
 
 func printGenerator(shellName string, c *cobra.Command) error {
 	switch strings.ToLower(shellName) {
-	case "bash":
+	case "sh", "bash", "zsh":
 		bashFunctionGenerator(c)
 	default:
-		return fmt.Errorf("sorry, %s is unsupported shell", shellName)
+		return fmt.Errorf("sorry, %s is unsupported shell. available shells: bash, and zsh", shellName)
 	}
 	return nil
 }
