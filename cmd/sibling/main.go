@@ -15,6 +15,7 @@ const VERSION = "1.1.3"
 type options struct {
 	absolute bool
 	progress bool
+	list     bool
 	kind     string
 	parent   bool
 }
@@ -28,9 +29,10 @@ func usage(c *cobra.Command) error {
 	c.Printf(`%sUsage: %s [FLAGs] [DIRs...]
 FLAGS
     -a, --absolute      print the directory name in the absolute path
+    -l, --list          list the sibling directories
     -p, --progress      print the progress traversing directories
-    -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
     -P, --parent        print parent directory, when no more sibling directories (available on no-console mode)
+    -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
 
     -h, --help          print this message
     -v, --version       print version
@@ -54,6 +56,7 @@ func newCommand() *cobra.Command {
 	flags.BoolVarP(&opts.absolute, "absolute", "a", false, "print the directory name in the absolute path")
 	flags.BoolVarP(&opts.progress, "progress", "p", false, "print the progress of the traversing directories")
 	flags.BoolVarP(&opts.parent, "parent", "P", false, "print parent directory, when no more sibling directories (available on no-console mode)")
+	flags.BoolVarP(&opts.list, "list", "l", false, "list the sibling directories")
 	flags.StringVarP(&opts.kind, "type", "t", "next", "specify the traversing type of siblings. (default: next, available: next, previous, and random)")
 	flags.StringVarP(&shellInitializer, "init", "", "", "generate shell functions")
 	cmd.SetOut(os.Stdout)
@@ -70,7 +73,11 @@ func (opts *options) nexter() sibling.Nexter {
 	return sibling.NewNexter(traversingType)
 }
 
-func (opts *options) parentPrinter(c *cobra.Command, formatter sibling.Formatter) printer {
+func (opts *options) Parent() bool {
+	return opts.parent
+}
+
+func (opts *options) parentPrinter(c *cobra.Command, formatter sibling.Formatter) resulter {
 	if opts.parent {
 		return &parentPrinter{out: c, formatter: formatter}
 	}
@@ -79,10 +86,12 @@ func (opts *options) parentPrinter(c *cobra.Command, formatter sibling.Formatter
 
 func (opts *options) buildParams(c *cobra.Command) *params {
 	params := &params{}
-	formatter := opts.formatter()
 	if opts.progress {
 		params.printer = &progressPrinter{out: c}
+	} else if opts.list {
+		params.printer = &listPrinter{out: c, formatter: opts.formatter(), nexter: opts.nexter()}
 	} else {
+		formatter := opts.formatter()
 		params.printer = &defaultPrinter{out: c, formatter: formatter, nexter: opts.nexter(), parent: opts.parentPrinter(c, formatter)}
 	}
 	return params

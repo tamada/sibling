@@ -5,7 +5,7 @@ import (
 )
 
 type params struct {
-	printer printer
+	printer resulter
 }
 
 type outputter interface {
@@ -14,7 +14,7 @@ type outputter interface {
 	Printf(format string, i ...interface{})
 }
 
-type printer interface {
+type resulter interface {
 	PrintHeader(header string)
 	Print(sib *sibling.Siblings) (*sibling.Siblings, error)
 }
@@ -58,7 +58,7 @@ func (pp *parentPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error)
 type defaultPrinter struct {
 	out       outputter
 	formatter sibling.Formatter
-	parent    printer
+	parent    resulter
 	nexter    sibling.Nexter
 }
 
@@ -75,4 +75,36 @@ func (dp *defaultPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error
 	current := sib2.Current()
 	dp.out.Println(dp.formatter.Format(current))
 	return sib2, nil
+}
+
+type listPrinter struct {
+	out       outputter
+	formatter sibling.Formatter
+	nexter    sibling.Nexter
+}
+
+func (lp *listPrinter) PrintHeader(header string) {
+	lp.out.Println(header)
+}
+
+func (lp *listPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+	sib2 := lp.nexter.Next(sib)
+	for index, dir := range sib.SiblingDirs {
+		mark := findMark(index, sib, sib2)
+		lp.out.Printf("%s %s\n", mark, lp.formatter.Format(dir))
+	}
+	return sib, nil
+}
+
+func findMark(index int, sib, sib2 *sibling.Siblings) string {
+	if index == sib.CurrentIndex() {
+		if sib2.Status == sibling.FINISH {
+			return "#"
+		} else {
+			return "*"
+		}
+	} else if index == sib2.CurrentIndex() {
+		return ">"
+	}
+	return " "
 }

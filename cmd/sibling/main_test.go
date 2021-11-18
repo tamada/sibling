@@ -15,9 +15,10 @@ func Example_Help() {
 	// Usage: sibling [FLAGs] [DIRs...]
 	// FLAGS
 	//     -a, --absolute      print the directory name in the absolute path
+	//     -l, --list          list the sibling directories
 	//     -p, --progress      print the progress traversing directories
-	//     -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
 	//     -P, --parent        print parent directory, when no more sibling directories (available on no-console mode)
+	//     -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
 	//
 	//     -h, --help          print this message
 	//     -v, --version       print version
@@ -60,6 +61,24 @@ func Example_ShellFunctionGenerator() {
 	//     return $sibling_status
 	// }
 	//
+	// function __cd_sibling_filtering() {
+	//     result="$(./sibling --list | $1)"
+	//     if [[ $(echo $result | wc -l) -ne 1 ]]; then
+	//         echo "Error: multiple paths are given"
+	//         return 1
+	//     fi
+	//     cd ${result:2}
+	//     pwd
+	// }
+	//
+	// sibling_peco() {
+	//     __cd_sibling_filtering peco
+	// }
+	//
+	// sibling_fzf() {
+	//     __cd_sibling_filtering fzf
+	// }
+	//
 	// cdnext(){
 	//     __change_directory_to_sibling next
 	// }
@@ -71,7 +90,9 @@ func Example_ShellFunctionGenerator() {
 	// cdrand(){
 	//     __change_directory_to_sibling random
 	// }
-
+	//
+	// alias nextdir="sibling -t next"
+	// alias prevdir="sibling -t previous"
 }
 
 func Example_parent() {

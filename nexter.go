@@ -54,27 +54,27 @@ func (random *Random) RestCount(siblings *Siblings) int {
 	if siblings.Status == FINISH {
 		return 0
 	}
-	return len(siblings.siblings)
+	return len(siblings.SiblingDirs)
 }
 
 func (random *Random) Next(siblings *Siblings) *Siblings {
 	rand.Seed(time.Now().Unix())
 	newCurrent := rand.Int() % siblings.TotalCount()
-	return &Siblings{current: newCurrent, siblings: siblings.siblings, Status: TRAVERSING}
+	return &Siblings{current: newCurrent, SiblingDirs: siblings.SiblingDirs, Status: TRAVERSING}
 }
 
 func (next *Next) RestCount(siblings *Siblings) int {
 	if siblings.Status == FINISH {
 		return 0
 	}
-	return len(siblings.siblings) - siblings.current - 1
+	return len(siblings.SiblingDirs) - siblings.current - 1
 }
 
 func (next *Next) Next(siblings *Siblings) *Siblings {
-	if (siblings.current + 1) == len(siblings.siblings) {
-		return &Siblings{current: -1, siblings: siblings.siblings, Status: FINISH}
+	if (siblings.current + 1) == len(siblings.SiblingDirs) {
+		return &Siblings{current: -1, SiblingDirs: siblings.SiblingDirs, Status: FINISH}
 	}
-	return &Siblings{current: siblings.current + 1, siblings: siblings.siblings, Status: TRAVERSING}
+	return &Siblings{current: siblings.current + 1, SiblingDirs: siblings.SiblingDirs, Status: TRAVERSING}
 }
 
 func (prev *Previous) RestCount(siblings *Siblings) int {
@@ -86,7 +86,7 @@ func (prev *Previous) RestCount(siblings *Siblings) int {
 
 func (prev *Previous) Next(siblings *Siblings) *Siblings {
 	if siblings.current == 0 {
-		return &Siblings{current: -1, siblings: siblings.siblings, Status: FINISH}
+		return &Siblings{current: -1, SiblingDirs: siblings.SiblingDirs, Status: FINISH}
 	}
-	return &Siblings{current: siblings.current - 1, siblings: siblings.siblings, Status: TRAVERSING}
+	return &Siblings{current: siblings.current - 1, SiblingDirs: siblings.SiblingDirs, Status: TRAVERSING}
 }

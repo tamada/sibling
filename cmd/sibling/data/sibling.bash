@@ -15,6 +15,24 @@ function __change_directory_to_sibling() {
     return $sibling_status
 }
 
+function __cd_sibling_filtering() {
+    result="$(./sibling --list | $1)"
+    if [[ $(echo $result | wc -l) -ne 1 ]]; then
+        echo "Error: multiple paths are given"
+        return 1
+    fi
+    cd ${result:2}
+    pwd
+}
+
+sibling_peco() {
+    __cd_sibling_filtering peco
+}
+
+sibling_fzf() {
+    __cd_sibling_filtering fzf
+}
+
 cdnext(){
     __change_directory_to_sibling next
 }
@@ -26,3 +44,6 @@ cdprev(){
 cdrand(){
     __change_directory_to_sibling random
 }
+
+alias nextdir="sibling -t next"
+alias prevdir="sibling -t previous"
