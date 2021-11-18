@@ -4,11 +4,7 @@ import (
 	"github.com/tamada/sibling"
 )
 
-type params struct {
-	printer resulter
-}
-
-type outputter interface {
+type printer interface {
 	Print(i ...interface{})
 	Println(i ...interface{})
 	Printf(format string, i ...interface{})
@@ -19,54 +15,54 @@ type resulter interface {
 	Print(sib *sibling.Siblings) (*sibling.Siblings, error)
 }
 
-type progressPrinter struct {
-	out outputter
+type progressResulter struct {
+	out printer
 }
 
-func (pp *progressPrinter) PrintHeader(header string) {
+func (pp *progressResulter) PrintHeader(header string) {
 	pp.out.Println(header)
 }
 
-func (pp *progressPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+func (pp *progressResulter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
 	pp.out.Printf("%3d/%3d\n", sib.CurrentIndex()+1, sib.TotalCount())
 	return sib, nil
 }
 
-type nullPrinter struct {
+type nullResulter struct {
 }
 
-func (np *nullPrinter) PrintHeader(header string) {
+func (np *nullResulter) PrintHeader(header string) {
 }
 
-func (np *nullPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+func (np *nullResulter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
 	return sib, nil
 }
 
-type parentPrinter struct {
-	out       outputter
+type parentResulter struct {
+	out       printer
 	formatter sibling.Formatter
 }
 
-func (pp *parentPrinter) PrintHeader(header string) {
+func (pp *parentResulter) PrintHeader(header string) {
 }
 
-func (pp *parentPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+func (pp *parentResulter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
 	pp.out.Println(sib.Current().Parent())
 	return sib, nil
 }
 
-type defaultPrinter struct {
-	out       outputter
+type defaultResulter struct {
+	out       printer
 	formatter sibling.Formatter
 	parent    resulter
 	nexter    sibling.Nexter
 }
 
-func (dp *defaultPrinter) PrintHeader(header string) {
+func (dp *defaultResulter) PrintHeader(header string) {
 	dp.out.Println(header)
 }
 
-func (dp *defaultPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+func (dp *defaultResulter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
 	sib2 := dp.nexter.Next(sib)
 	if sib2.Status == sibling.FINISH {
 		dp.parent.Print(sib)
@@ -77,17 +73,17 @@ func (dp *defaultPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error
 	return sib2, nil
 }
 
-type listPrinter struct {
-	out       outputter
+type listResulter struct {
+	out       printer
 	formatter sibling.Formatter
 	nexter    sibling.Nexter
 }
 
-func (lp *listPrinter) PrintHeader(header string) {
+func (lp *listResulter) PrintHeader(header string) {
 	lp.out.Println(header)
 }
 
-func (lp *listPrinter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
+func (lp *listResulter) Print(sib *sibling.Siblings) (*sibling.Siblings, error) {
 	sib2 := lp.nexter.Next(sib)
 	for index, dir := range sib.SiblingDirs {
 		mark := findMark(index, sib, sib2)

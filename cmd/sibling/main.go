@@ -79,22 +79,19 @@ func (opts *options) Parent() bool {
 
 func (opts *options) parentPrinter(c *cobra.Command, formatter sibling.Formatter) resulter {
 	if opts.parent {
-		return &parentPrinter{out: c, formatter: formatter}
+		return &parentResulter{out: c, formatter: formatter}
 	}
-	return &nullPrinter{}
+	return &nullResulter{}
 }
 
-func (opts *options) buildParams(c *cobra.Command) *params {
-	params := &params{}
+func (opts *options) buildResulter(c *cobra.Command) resulter {
 	if opts.progress {
-		params.printer = &progressPrinter{out: c}
+		return &progressResulter{out: c}
 	} else if opts.list {
-		params.printer = &listPrinter{out: c, formatter: opts.formatter(), nexter: opts.nexter()}
-	} else {
-		formatter := opts.formatter()
-		params.printer = &defaultPrinter{out: c, formatter: formatter, nexter: opts.nexter(), parent: opts.parentPrinter(c, formatter)}
+		return &listResulter{out: c, formatter: opts.formatter(), nexter: opts.nexter()}
 	}
-	return params
+	formatter := opts.formatter()
+	return &defaultResulter{out: c, formatter: formatter, nexter: opts.nexter(), parent: opts.parentPrinter(c, formatter)}
 }
 
 func validateArgs(c *cobra.Command, args []string) error {
@@ -113,26 +110,26 @@ func validateKind(kind string) error {
 	}
 }
 
-func performEach(arg string, opts *options, params *params) (*sibling.Siblings, error) {
+func performEach(arg string, opts *options, r resulter) (*sibling.Siblings, error) {
 	path := sibling.NewPath(arg)
 	sib, err := sibling.NewSiblings(path)
 	if err != nil {
 		return sib, err
 	}
-	return params.printer.Print(sib)
+	return r.Print(sib)
 }
 
 func perform(c *cobra.Command, args []string) error {
 	if shellInitializer != "" {
 		return printGenerator(shellInitializer, c)
 	}
-	params := opts.buildParams(c)
+	r := opts.buildResulter(c)
 	c.SilenceUsage = true
 	for _, arg := range constructArgs(args) {
 		if len(args) > 1 {
-			params.printer.PrintHeader(fmt.Sprintf("===== %s =====", arg))
+			r.PrintHeader(fmt.Sprintf("===== %s =====", arg))
 		}
-		siblings, err := performEach(arg, opts, params)
+		siblings, err := performEach(arg, opts, r)
 		if err != nil && !errors.Is(err, &sibling.Finish{}) {
 			return err
 		}
