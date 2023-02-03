@@ -33,15 +33,23 @@ sibling_fzf() {
     __cd_sibling_filtering fzf
 }
 
-cdnext(){
+cdfirst() {
+    __change_directory_to_sibling first
+}
+
+cdlast() {
+    __change_directory_to_sibling last
+}
+
+cdnext() {
     __change_directory_to_sibling next
 }
 
-cdprev(){
+cdprev() {
     __change_directory_to_sibling previous
 }
 
-cdrand(){
+cdrand() {
     __change_directory_to_sibling random
 }
 

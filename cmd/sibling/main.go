@@ -32,7 +32,7 @@ FLAGS
     -l, --list          list the sibling directories
     -p, --progress      print the progress traversing directories
     -P, --parent        print parent directory, when no more sibling directories (available on no-console mode)
-    -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
+    -t, --type <TYPE>   specify the traversing type (default: next, available: next, previous, first, last and random)
 
     -h, --help          print this message
     -v, --version       print version
@@ -57,7 +57,7 @@ func newCommand() *cobra.Command {
 	flags.BoolVarP(&opts.progress, "progress", "p", false, "print the progress of the traversing directories")
 	flags.BoolVarP(&opts.parent, "parent", "P", false, "print parent directory, when no more sibling directories (available on no-console mode)")
 	flags.BoolVarP(&opts.list, "list", "l", false, "list the sibling directories")
-	flags.StringVarP(&opts.kind, "type", "t", "next", "specify the traversing type of siblings. (default: next, available: next, previous, and random)")
+	flags.StringVarP(&opts.kind, "type", "t", "next", "specify the traversing type of siblings. (default: next, available: next, previous, first, last and random)")
 	flags.StringVarP(&shellInitializer, "init", "", "", "generate shell functions")
 	cmd.SetOut(os.Stdout)
 
@@ -103,7 +103,7 @@ func validateArgs(c *cobra.Command, args []string) error {
 
 func validateKind(kind string) error {
 	switch strings.ToLower(kind) {
-	case "next", "previous", "random":
+	case "next", "previous", "random", "first", "last":
 		return nil
 	default:
 		return fmt.Errorf("%s: invalid type", kind)

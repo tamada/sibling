@@ -18,7 +18,7 @@ func Example_Help() {
 	//     -l, --list          list the sibling directories
 	//     -p, --progress      print the progress traversing directories
 	//     -P, --parent        print parent directory, when no more sibling directories (available on no-console mode)
-	//     -t, --type <TYPE>   specify the traversing type of siblings (default: next, available: next, previous, random)
+	//     -t, --type <TYPE>   specify the traversing type (default: next, available: next, previous, first, last and random)
 	//
 	//     -h, --help          print this message
 	//     -v, --version       print version
@@ -79,15 +79,23 @@ func Example_ShellFunctionGenerator() {
 	//     __cd_sibling_filtering fzf
 	// }
 	//
-	// cdnext(){
+	// cdfirst() {
+	//     __change_directory_to_sibling first
+	// }
+	//
+	// cdlast() {
+	//     __change_directory_to_sibling last
+	// }
+	//
+	// cdnext() {
 	//     __change_directory_to_sibling next
 	// }
 	//
-	// cdprev(){
+	// cdprev() {
 	//     __change_directory_to_sibling previous
 	// }
 	//
-	// cdrand(){
+	// cdrand() {
 	//     __change_directory_to_sibling random
 	// }
 	//

@@ -14,8 +14,10 @@ type NexterType string
 
 const (
 	NEXT     NexterType = "next"
-	PREVIOUS NexterType = "previous"
-	RANDOM   NexterType = "random"
+	PREVIOUS            = "previous"
+	RANDOM              = "random"
+	FIRST               = "first"
+	LAST                = "last"
 )
 
 var AVAILABLE_TRAVERSING_TYPE = []string{string(NEXT), string(PREVIOUS), string(RANDOM)}
@@ -37,8 +39,18 @@ func NewNexter(kind NexterType) Nexter {
 		return new(Previous)
 	case RANDOM:
 		return new(Random)
+	case FIRST:
+		return new(First)
+	case LAST:
+		return new(Last)
 	}
 	return nil
+}
+
+type First struct {
+}
+
+type Last struct {
 }
 
 type Random struct {
@@ -48,6 +60,22 @@ type Next struct {
 }
 
 type Previous struct {
+}
+
+func (first *First) RestCount(siblings *Siblings) int {
+	return len(siblings.SiblingDirs)
+}
+
+func (fist *First) Next(siblings *Siblings) *Siblings {
+	return &Siblings{current: 0, SiblingDirs: siblings.SiblingDirs, Status: TRAVERSING}
+}
+
+func (lst *Last) RestCount(siblings *Siblings) int {
+	return 0
+}
+
+func (last *Last) Next(siblings *Siblings) *Siblings {
+	return &Siblings{current: len(siblings.SiblingDirs) - 1, SiblingDirs: siblings.SiblingDirs, Status: TRAVERSING}
 }
 
 func (random *Random) RestCount(siblings *Siblings) int {
