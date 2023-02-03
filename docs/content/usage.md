@@ -3,22 +3,26 @@ title: ":runner: Usage"
 ---
 
 ```sh
-sibling [OPTIONS] [DIRs...]
-OPTIONS
-    -a, --absolute      print the directory name in the absolute path.
-    -p, --progress      print the progress traversing directories.
-    -t, --type <TYPE>   specifies the traversing type of siblings. Default is 'next'.
-                        Available values are: 'next', 'previous', and 'random'.
-    -P, --parent        print parent directory, when no more sibling directories.
+get next/previous sibling directory name
 
-    -h, --help          print this message.
-    -v, --version       print version.
+Usage: sibling [FLAGs] [DIRs...]
+FLAGS
+    -a, --absolute      print the directory name in the absolute path
+    -l, --list          list the sibling directories
+    -p, --progress      print the progress traversing directories
+    -P, --parent        print parent directory, when no more sibling directories 
+                        (available on no-console mode)
+    -t, --type <TYPE>   specify the traversing type of siblings (default: next, 
+                        available: next, previous, first, last and random)
+
+    -h, --help          print this message
+    -v, --version       print version
 ARGUMENTS
-    DIR                 specifies directory. If not specified, the current directory is used.
+    DIR                 specify the directory. If not specified, the current directory is used
 ```
 
 `sibling` prints the next directory name with 0 status code.
-The next directory is decided by the traversing type. Available values are: `next`, `previous`, and `random`, default is `next`.
+The next directory is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last` and `random`, default is `next`.
 
 After visiting the final directory, `sibling` prints nothing and exits with non-zero status code.
 
@@ -48,7 +52,15 @@ function __change_directory_to_sibling() {
 }
 ```
 
-#### :fast_forward: `cdnext`
+#### :first_forward: `cdlast`
+
+```sh
+function cdlast() {
+    __change_directory_to_sibling last
+}
+```
+
+#### :arrow_forward: `cdnext`
 
 ```sh
 function cdnext() {
@@ -56,7 +68,16 @@ function cdnext() {
 }
 ```
 
-#### :rewind: `cdprev`
+#### :rewind: `cdfirst`
+
+```sh
+function cdfirst() {
+    __change_directory_to_sibling first
+}
+```
+
+
+#### :arrow_backward: `cdprev`
 
 ```sh
 function cdprev() {
@@ -64,7 +85,7 @@ function cdprev() {
 }
 ```
 
-#### :repeat: `cdrand`
+#### :twisted_rightwards_arrows: `cdrand`
 
 ```sh
 function cdrand() {
