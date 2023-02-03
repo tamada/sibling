@@ -10,7 +10,7 @@ title: ":house: Home"
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamada/sibling)](https://goreportcard.com/report/github.com/tamada/sibling)
 
 [![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-{{< .Site.Params.version >}}-green.svg)](https://github.com/tamada/sibling/releases/tag/v{{< .Site.Params.version >}})
+[![Version](https://img.shields.io/badge/Version-{{ .Site.Params.version }}-green.svg)](https://github.com/tamada/sibling/releases/tag/v{{ .Site.Params.version }})
 
 ## :speaking_head: Description
 
