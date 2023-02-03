@@ -16,16 +16,16 @@ const (
 )
 
 type Siblings struct {
-	current  int
-	siblings []*Path
-	Status   Status
+	current     int
+	SiblingDirs []*Path
+	Status      Status
 }
 
 func (sib *Siblings) Current() *Path {
 	if sib.current < 0 {
 		return nil
 	}
-	return sib.siblings[sib.current]
+	return sib.SiblingDirs[sib.current]
 }
 
 func (sib *Siblings) CurrentIndex() int {
@@ -33,7 +33,7 @@ func (sib *Siblings) CurrentIndex() int {
 }
 
 func (sib *Siblings) TotalCount() int {
-	return len(sib.siblings)
+	return len(sib.SiblingDirs)
 }
 
 func findCurrentIndex(path *Path, paths []*Path) int {
@@ -54,7 +54,7 @@ func NewSiblings(path *Path) (*Siblings, error) {
 	if index < 0 {
 		return nil, &NotFound{path: path}
 	}
-	return &Siblings{current: index, siblings: paths, Status: TRAVERSING}, nil
+	return &Siblings{current: index, SiblingDirs: paths, Status: TRAVERSING}, nil
 }
 
 type Finish struct {
