@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamada/sibling)](https://goreportcard.com/report/github.com/tamada/sibling)
 
 [![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.1.3-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.1.3)
+[![Version](https://img.shields.io/badge/Version-1.2.2-green.svg)](https://github.com/tamada/sibling/releases/tag/v1.2.2)
 
 get next/previous sibling directory name.
 
@@ -32,22 +32,24 @@ For this, I implemented `sibling`.
 ```sh
 get next/previous sibling directory name
 
-sibling [OPTIONS] [DIRs...]
-OPTIONS
-    -a, --absolute      print the directory name in the absolute path.
-    -p, --progress      print the progress traversing directories.
-    -t, --type <TYPE>   specifies the traversing type of siblings. Default is 'next'.
-                        Available values are: 'next', 'previous', and 'random'.
-    -P, --parent        print parent directory, when no more sibling directories.
+Usage: sibling [FLAGs] [DIRs...]
+FLAGS
+    -a, --absolute      print the directory name in the absolute path
+    -l, --list          list the sibling directories
+    -p, --progress      print the progress traversing directories
+    -P, --parent        print parent directory, when no more sibling directories
+                        (available on no-console mode)
+    -t, --type <TYPE>   specify the traversing type of siblings (default: next, 
+                        available: next, previous, first, last and random)
 
-    -h, --help          print this message.
-    -v, --version       print version.
+    -h, --help          print this message
+    -v, --version       print version
 ARGUMENTS
-    DIR                 specifies directory. If not specified, the current directory is used.
+    DIR                 specify the directory. If not specified, the current directory is used
 ```
 
 `sibling` prints the next directory name with 0 status code.
-The next directory is decided by the traversing type. Available values are: `next`, `previous`, and `random`, default is `next`.
+The next directory is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last` and `random`, default is `next`.
 
 After visiting the final directory, `sibling` prints nothing and exits with non-zero status code.
 
