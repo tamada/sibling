@@ -11,11 +11,11 @@ jobs:
       - name: Get branches
         id: vars
         run: |
-          echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-          echo "::set-output name=tag::${GITHUB_REF##**/v}"
+          echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF##**/v}" >> $GITHUB_OUTPUT
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ steps.vars.outputs.branch }}
           fetch-depth: 0
