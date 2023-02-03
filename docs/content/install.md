@@ -34,6 +34,6 @@ $ make
 
 #### Development
 
-- Go lang 1.16
+- Go lang 1.17
 - Dependencies (See `go.mod`)
   - github.com/spf13/cobra v1.2.1
