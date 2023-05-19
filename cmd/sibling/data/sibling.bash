@@ -1,4 +1,4 @@
-function __change_directory_to_sibling() {
+__change_directory_to_sibling() {
     traversing_type="$1"
     if [[ "$1" == "" ]]; then
         traversing_type="next"
@@ -15,7 +15,7 @@ function __change_directory_to_sibling() {
     return $sibling_status
 }
 
-function __cd_sibling_filtering() {
+__cd_sibling_filtering() {
     result="$(./sibling --list | $1)"
     if [[ $(echo $result | wc -l) -ne 1 ]]; then
         echo "Error: multiple paths are given"
@@ -53,5 +53,3 @@ cdrand() {
     __change_directory_to_sibling random
 }
 
-alias nextdir="sibling -t next"
-alias prevdir="sibling -t previous"
