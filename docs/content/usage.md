@@ -33,6 +33,8 @@ Therefore, write the snippet (`eval "$(sibling --init bash)"`) into your `.bash_
 
 #### :abcd: `change_directory_to_sibling`
 
+This function changes the working directory to the sibling directory.
+
 ```sh
 function __change_directory_to_sibling() {
     traversing_type="$1"
@@ -92,3 +94,13 @@ function cdrand() {
     __change_directory_to_sibling random
 }
 ```
+
+#### :abcd: `list files of the sibling directory`
+
+This function lists the specified sibling directory.
+
+* `lsnext`
+* `lsprev`
+* `lsrand`
+* `lsfirst`
+* `lslast`
