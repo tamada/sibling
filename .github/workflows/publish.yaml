@@ -64,7 +64,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           automatic_release_tag: v${{ steps.vars.outputs.tag }}
           title: Release v${{ steps.vars.outputs.tag }}
-          draft: true
+          draft: false
           prerelease: false
           files: |
             dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz

@@ -25,6 +25,41 @@ __cd_sibling_filtering() {
     pwd
 }
 
+__ls_sibling() {
+    traversing_type="$1"
+    if [[ "$1" == "" ]]; then
+        traversing_type="next"
+    fi
+    next=$(sibling --absolute --type $traversing_type)
+    sibling_status=$?
+    if [[ $sibling_status -ne 0 ]]; then
+        echo "no more siblings"
+    else
+        echo $next
+        ls $next
+    fi
+}
+
+lsnext() {
+    __ls_sibling next
+}
+
+lsprev() {
+    __ls_sibling previous
+}
+
+lsrand() {
+    __ls_sibling rand
+}
+
+lsfirst() {
+    __ls_sibling first
+}
+
+lslast() {
+    __ls_sibling last
+}
+
 sibling_peco() {
     __cd_sibling_filtering peco
 }
