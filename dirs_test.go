@@ -23,6 +23,7 @@ func TestNewDirsError(t *testing.T) {
 
 func TestNewDirsWithWorkingDir(t *testing.T) {
 	os.Chdir("testdata/numbers/3")
+	defer os.Chdir("../../..")
 	dirs, _ := NewDirs(".")
 	if dirs.CurrentPath() != "../3" {
 		t.Errorf("current path did not match, wont \"../3\", got %s", dirs.CurrentPath())
@@ -39,7 +40,6 @@ func TestNewDirs(t *testing.T) {
 		{"testdata/numbers/9", "testdata/numbers", 10, 9},
 		{"testdata/alphabets/c", "testdata/alphabets", 26, 2},
 	}
-
 	for _, td := range testdata {
 		dirs, _ := NewDirs(td.givenPath)
 		if dirs.CurrentName() != filepath.Base(td.givenPath) {

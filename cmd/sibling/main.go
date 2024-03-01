@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"os"
@@ -31,6 +32,10 @@ func parseFlags(args []string) (*flag.FlagSet, error) {
 	flags.BoolP("parent", "P", false, "print parent directory, when no more sibling directories")
 	flags.BoolP("quiet", "q", false, "quiet mode")
 	flags.BoolP("help", "h", false, "print this message")
+	flags.StringP("init", "", "", "generate shell initializer")
+	flags.BoolP("csv", "", false, "print the result in csv format")
+	flags.MarkHidden("csv")
+	flags.MarkHidden("init")
 	if err := flags.Parse(args); err != nil {
 		return nil, err
 	}
@@ -55,6 +60,7 @@ func constructPrinter(flags *flag.FlagSet) *sibling.Printer {
 	p.Progress = getBool(flags, "progress")
 	p.List = getBool(flags, "list")
 	p.Quiet = getBool(flags, "quiet")
+	p.Csv = getBool(flags, "csv")
 	return p
 }
 
@@ -87,11 +93,7 @@ func perform(nexter sibling.Nexter, printer *sibling.Printer, args []string) int
 	returnFlag := 0
 	for _, arg := range args {
 		dirs, noMoreFlag, err := performEach(arg, nexter)
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		errs = append(errs, err)
+		errs = appendErrors(errs, err)
 		printer.Print(dirs, noMoreFlag)
 		if noMoreFlag {
 			returnFlag = 1
@@ -103,11 +105,38 @@ func perform(nexter sibling.Nexter, printer *sibling.Printer, args []string) int
 	return returnFlag
 }
 
+func appendErrors(errs []error, err error) []error {
+	if err != nil {
+		return append(errs, err)
+	}
+	return errs
+}
+
 func constructArgs(args []string) []string {
 	if len(args) == 0 {
 		return []string{"."}
 	}
 	return args
+}
+
+//go:embed data
+var fs embed.FS
+
+func initSiblingImpl(shellName string) error {
+	data, err := fs.ReadFile("data/init." + shellName)
+	if err != nil {
+		return err
+	}
+	fmt.Print(string(data))
+	return nil
+}
+
+func initSibling(shellName string) int {
+	if err := initSiblingImpl(shellName); err != nil {
+		fmt.Println(err.Error())
+		return -5
+	}
+	return 0
 }
 
 func goMain(args []string) int {
@@ -117,6 +146,9 @@ func goMain(args []string) int {
 	}
 	if flag, _ := flags.GetBool("help"); flag {
 		return 0
+	}
+	if value, err := flags.GetString("init"); err == nil && value != "" {
+		return initSibling(value)
 	}
 	nexter, err := constructNexter(flags)
 	if err != nil {
