@@ -9,38 +9,23 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/tamada/sibling/v2"
+	"github.com/tamada/sibling/v2/cmd"
 )
-
-const VERSION string = "2.0.0-beta-1"
 
 func helpMessage(flags *flag.FlagSet, progName string) string {
 	return fmt.Sprintf(`%s version %s
 %s [OPTIONS] [DIRS...]
 OPTIONS
 %sDIRS
-    the target directory of sibling`, filepath.Base(progName), VERSION, filepath.Base(progName), flags.FlagUsages())
+    the target directory of sibling`, filepath.Base(progName), cmd.VERSION, filepath.Base(progName), flags.FlagUsages())
 }
 
 func parseFlags(args []string) (*flag.FlagSet, error) {
 	flags := flag.NewFlagSet("sibling", flag.ContinueOnError)
 	flags.Usage = func() { fmt.Println(helpMessage(flags, args[0])) }
-	flags.StringP("type", "t", "next", "specify nexter type (available: next, previous, first, last and random)")
-	flags.IntP("step", "s", 1, "specify the number of times to execute sibling.")
-	flags.BoolP("absolute", "a", false, "print the directory name in the absolute path")
-	flags.BoolP("list", "l", false, "list the sibling directories")
-	flags.BoolP("progress", "p", false, "print the progress traversing directories")
-	flags.BoolP("parent", "P", false, "print parent directory, when no more sibling directories")
-	flags.BoolP("quiet", "q", false, "quiet mode")
-	flags.BoolP("help", "h", false, "print this message")
-	flags.StringP("init", "", "", "generate shell initializer")
-	flags.BoolP("csv", "", false, "print the result in csv format")
-	flags.MarkHidden("csv")
-	flags.MarkHidden("init")
+	cmd.BuildFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return nil, err
-	}
-	if flag, _ := flags.GetBool("help"); flag {
-		flags.Usage()
 	}
 	return flags, nil
 }
@@ -145,6 +130,7 @@ func goMain(args []string) int {
 		return printError(err, -1)
 	}
 	if flag, _ := flags.GetBool("help"); flag {
+		flags.Usage()
 		return 0
 	}
 	if value, err := flags.GetString("init"); err == nil && value != "" {
