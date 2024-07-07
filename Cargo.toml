@@ -1,0 +1,22 @@
+[package]
+name = "sibling"
+version = "2.0.0-beta-1"
+description = "get next/previous sibling directory name."
+repository = "https://github.com/tamada/sibling"
+readme = "README.md"
+authors = [
+    "Haruaki Tamdaa <tamada_f@ke_cafebabe.jp"
+]
+license = "WTFL"
+categories = ["command-line-utilities"]
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.5", features = ["derive"] }
+rand = "0.8.5"
+rust-embed = "8.4.0"
+
+[build-dependencies]
+clap = { version = "4.5.5", features = ["derive"] }
+clap_complete = "4.5.7"
+toml = "0.8.14"
