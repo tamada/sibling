@@ -12,19 +12,38 @@ get next/previous sibling directory name.
 
 ## :speaking_head: Description
 
-When a directory has too may sub directories, we are tiresome to traverse whole of sub directories.
+When a directory has too many sub-directories, we are tiresome to traverse the whole of sub-directories.
 Because, sometimes we lose where we are.
-Ideally, we move the directory by specifying ‘next’ or ‘previous,' not directory name.
+Ideally, we move the directory by specifying ‘next’ or ‘previous,' not the directory name.
 
-The command like following makes us tired :-1:.
+The command like the following makes us tired :-1:.
 
     cd ../next_directory_name
 
-We should type command like below :+1:.
+We should type the command like below :+1:.
 
     cdnext
 
 For this, I implemented `sibling`.
+
+## Utility commands
+
+The `sibling` introduces the following utility commands.
+
+- change the working directory to the sibling directory:
+  - `cdnext`,
+  - `cdprev`,
+  - `cdfirst`,
+  - `cdlast`, and
+  - `cdrand`
+- list the sibling directory:
+  - `lsnext`,
+  - `lsprev`,
+  - `lsfirst`,
+  - `lslast`, and
+  - `lsrand`
+
+`cdnext` and `cdprev` allow the integer argument to repeat the traversing.
 
 ## :runner: Usage
 
@@ -138,6 +157,14 @@ brew tap tamada/brew
 brew install sibling
 ```
 
+And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
+The `--init` option accepts only `bash`.
+Other shell scripts are not supported, yet.
+
+```shell
+$(sibling --init bash)
+```
+
 ### :muscle: Compiling yourself
 
 Get source codes by `git clone` or download from [GitHub](https://github.com/tamada/sibling),
@@ -172,3 +199,9 @@ $ cargo build --release # the binary file is put on target/release/sibling.
 ### :man_office_worker: Developers :woman_office_worker:
 
 - [Haruaki Tamada](https://tamada.github.io)
+
+### :link: Useful links for directory traversing
+
+- [cdargs](https://github.com/cbxbiker61/cdargs)
+  - Directory bookmarking system - Enhanced cd utilities
+- [Is there a directory history for bash?](https://superuser.com/questions/299694/is-there-a-directory-history-for-bash)
