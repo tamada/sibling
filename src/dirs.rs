@@ -95,7 +95,7 @@ mod tests {
         let dirs = Dirs::new(PathBuf::from("testdata/b"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.dirs.len(), 4);
+        assert_eq!(dirs.dirs.len(), 26);
         assert_eq!(dirs.current, 1);
     }
 }
