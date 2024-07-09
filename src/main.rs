@@ -31,7 +31,7 @@ fn print_error(e: &SiblingError) {
         SiblingError::NotDir(path) => eprintln!("{:?}: Not a directory", path),
         SiblingError::NoParent(path) => eprintln!("{:?}: no parent directory", path),
         SiblingError::Array(array) => {
-            array.iter().for_each(|e| print_error(e));
+            array.iter().for_each(print_error);
         },
         SiblingError::NotFound(path) => eprintln!("{:?}: not found", path),
         SiblingError::Fatal(message) => eprintln!("fatal error: {}", message)

@@ -18,16 +18,14 @@ impl Dirs {
                     build_dirs(current_dir.parent(), dir),
                 Err(e) => Err(SiblingError::Io(e)),
             }
-        } else {
-            if current_dir.exists() {
-                if current_dir.is_dir() {
-                    build_dirs(current_dir.clone().parent(), current_dir)
-                } else {
-                    Err(SiblingError::NotDir(current_dir))
-                }
+        } else if current_dir.exists() {
+            if current_dir.is_dir() {
+                build_dirs(current_dir.clone().parent(), current_dir)
             } else {
-                Err(SiblingError::NotFound(current_dir))
+                Err(SiblingError::NotDir(current_dir))
             }
+        } else {
+            Err(SiblingError::NotFound(current_dir))
         }
     }
 

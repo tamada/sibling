@@ -48,7 +48,7 @@ fn result_string_impl(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
     let r = if opts.progress {
         format!("{} ({}/{})", pathbuf_to_string(dirs.next_path(), opts.absolute), dirs.next + 1, dirs.dirs.len())
     } else {
-        format!("{}", pathbuf_to_string(dirs.next_path(), opts.absolute))
+        pathbuf_to_string(dirs.next_path(), opts.absolute).to_string()
     };
     Ok(r)
 }

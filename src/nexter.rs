@@ -41,7 +41,7 @@ impl Nexter for Last {
 
 impl Nexter for Previous {
     fn next(&self, dirs: &mut Dirs, step: i32) -> Option<PathBuf> {
-        next_impl(dirs, step * -1)
+        next_impl(dirs, -step)
     }
 }
 
