@@ -1,0 +1,5 @@
+{{- $version := $.Site.Params.version }}
+{{- if eq (.Get "double_dash") "true" -}}
+{{-    $version = strings.Replace $version "-" "--" -}}
+{{- end -}}
+{{ $version }}

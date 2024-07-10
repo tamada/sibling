@@ -8,8 +8,8 @@ title: ":house: Home"
 
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/sibling)](https://rust-reportcard.xuri.me/report/github.com/tamada/sibling)
 
-[![License](https://img.shields.io/badge/License-WTFPL-green.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-{{ .Site.Params.version }}-green.svg)](https://github.com/tamada/sibling/releases/tag/v{{ .Site.Params.version }})
+[![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
+[![Version](https://img.shields.io/badge/Version-{{< version double_dash="true" >}}-information.svg)](https://github.com/tamada/sibling/releases/tag/v{{< version >}})
 
 ## :speaking_head: Description
 
