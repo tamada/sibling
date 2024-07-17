@@ -2,7 +2,7 @@ name: Version Up
 on:
   push:
     branches:
-      - 'release/v[0-9]+.[0-9]+.[0-9]*'
+      - 'release/v[0-9]+.[0-9]+.[0-9]*.*'
 
 jobs:
   versionup:
@@ -16,9 +16,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.vars.outputs.branch }}
-          fetch-depth: 0
 
       - name: Initialize
         shell: bash
@@ -26,8 +23,6 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "action@github.com"
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
  
       - name: Version up
         id: updating_version
