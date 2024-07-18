@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::cli::{PrintingOpts, Result};
 use crate::dirs::Dirs;
 
-pub(crate) fn result_string(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
+pub(crate) fn result_string(dirs: &Dirs, opts: &PrintingOpts) -> Result<String> {
     if opts.csv {
         csv_string(dirs, opts.absolute)
     } else if dirs.no_more_dir {
@@ -22,7 +22,7 @@ fn csv_string(dirs: &Dirs, absolute: bool) -> Result<String> {
             dirs.current + 1, dirs.next + 1, dirs.dirs.len()))
 }
 
-fn no_more_dir_string(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
+fn no_more_dir_string(dirs: &Dirs, opts: &PrintingOpts) -> Result<String> {
     if opts.parent {
         Ok(pathbuf_to_string(Some(dirs.parent.clone()), opts.absolute))
     } else {
@@ -30,7 +30,7 @@ fn no_more_dir_string(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
     }
 }
 
-fn list_string(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
+fn list_string(dirs: &Dirs, opts: &PrintingOpts) -> Result<String> {
     let mut result = vec![];
     for (i, dir) in dirs.dirs.iter().enumerate() {
         let prefix = if i == dirs.next as usize { "> " }
@@ -39,12 +39,12 @@ fn list_string(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
         } else {
             "  "
         };
-        result.push(format!("{}{}: {}", i + 1, prefix, pathbuf_to_string(Some(dir.to_path_buf()), opts.absolute)));
+        result.push(format!("{:>4} {}{}", i + 1, prefix, pathbuf_to_string(Some(dir.to_path_buf()), opts.absolute)));
     }
     Ok(result.join("\n"))
 }
 
-fn result_string_impl(dirs: &Dirs, opts: PrintingOpts) -> Result<String> {
+fn result_string_impl(dirs: &Dirs, opts: &PrintingOpts) -> Result<String> {
     let r = if opts.progress {
         format!("{} ({}/{})", pathbuf_to_string(dirs.next_path(), opts.absolute), dirs.next + 1, dirs.dirs.len())
     } else {

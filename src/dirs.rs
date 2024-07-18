@@ -15,7 +15,7 @@ impl Dirs {
         if current_dir == PathBuf::from(".") {
             match std::env::current_dir() {
                 Ok(dir) => 
-                    build_dirs(current_dir.parent(), dir),
+                    build_dirs(dir.clone().parent(), dir),
                 Err(e) => Err(SiblingError::Io(e)),
             }
         } else if current_dir.exists() {
@@ -92,10 +92,18 @@ mod tests {
 
     #[test]
     fn test_dirs_new() {
-        let dirs = Dirs::new(PathBuf::from("testdata/b"));
+        let dirs = Dirs::new(PathBuf::from("testdata/d"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 26);
-        assert_eq!(dirs.current, 1);
+        assert_eq!(dirs.current, 3);
+    }
+
+    #[test]
+    fn test_dir_dot() {
+        let dirs = Dirs::new(PathBuf::from("."));
+        assert!(dirs.is_ok());
+        let dirs = dirs.unwrap();
+        assert_eq!(dirs.current_path().file_name().map(|s| s.to_str()), Some("sibling".into()));
     }
 }
