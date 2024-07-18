@@ -48,11 +48,10 @@ jobs:
       - name: Build Site
         run: |
           (cd docs ; hugo)
-          
 
       - name: Create Distributions
         run:
-          make dist
+
 
       - name: Create release
         id: create_release
