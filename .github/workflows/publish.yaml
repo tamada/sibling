@@ -46,8 +46,9 @@ jobs:
           extended: true
 
       - name: Build Site
-        run:
+        run: |
           (cd docs ; hugo)
+          
 
       - name: Create Distributions
         run:

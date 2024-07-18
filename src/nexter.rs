@@ -83,7 +83,6 @@ fn next_impl(dirs: &mut Dirs, step: i32) -> Option<PathBuf> {
     } else {
         dirs.dirs.get(dirs.next as usize)
     };
-    dirs.current = dirs.next as usize;
     r.map(|f| f.to_path_buf())
 }
 
@@ -122,7 +121,7 @@ mod tests {
             Some(p) => assert_eq!(p, PathBuf::from("testdata/d")),
             None => panic!("unexpected None"),
         }
-        match nexter.next(&mut dirs, 1) {
+        match nexter.next(&mut dirs, 2) {
             Some(p) => assert_eq!(p, PathBuf::from("testdata/e")),
             None => panic!("unexpected None"),
         }
@@ -144,8 +143,12 @@ mod tests {
             Some(p) => assert_eq!(p, PathBuf::from("testdata/j")),
             None => panic!("unexpected None"),
         }
+        match nexter.next(&mut dirs, 1) {
+            Some(p) => assert_eq!(p, PathBuf::from("testdata/j")),
+            None => panic!("unexpected None"),
+        }
         match nexter.next(&mut dirs, 4) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/f")),
+            Some(p) => assert_eq!(p, PathBuf::from("testdata/g")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 26) {

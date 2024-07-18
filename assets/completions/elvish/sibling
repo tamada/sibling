@@ -1,0 +1,43 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[sibling] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'sibling'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'sibling'= {
+            cand -s 'specify the number of times to execute sibling'
+            cand --step 'specify the number of times to execute sibling'
+            cand -i 'generate the initialize script for the shell'
+            cand --init 'generate the initialize script for the shell'
+            cand -t 'specify the nexter type'
+            cand --type 'specify the nexter type'
+            cand --csv 'print the result in the csv format'
+            cand -a 'print the directory name in the absolute path'
+            cand --absolute 'print the directory name in the absolute path'
+            cand -l 'list the sibling directories'
+            cand --list 'list the sibling directories'
+            cand -p 'print the progress of traversing directories'
+            cand --progress 'print the progress of traversing directories'
+            cand -P 'print parent directory, when no more sibling directories are found'
+            cand --parent 'print parent directory, when no more sibling directories are found'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
+    ]
+    $completions[$command]
+}
