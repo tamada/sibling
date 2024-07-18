@@ -3,9 +3,10 @@ name = "sibling"
 version = "2.0.0-beta-1"
 description = "get next/previous sibling directory name."
 repository = "https://github.com/tamada/sibling"
+homepage = "https://tamada.github.io/sibling"
 readme = "README.md"
 authors = [
-    "Haruaki Tamdaa <tamada_f@ke_cafebabe.jp>"
+    "Haruaki Tamada <tamada_f@ke_cafebabe.jp>"
 ]
 license = "WTFL"
 categories = ["command-line-utilities"]
