@@ -1,0 +1,49 @@
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'sibling' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'sibling'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'sibling' {
+            [CompletionResult]::new('-s', 's', [CompletionResultType]::ParameterName, 'specify the number of times to execute sibling')
+            [CompletionResult]::new('--step', 'step', [CompletionResultType]::ParameterName, 'specify the number of times to execute sibling')
+            [CompletionResult]::new('-i', 'i', [CompletionResultType]::ParameterName, 'generate the initialize script for the shell')
+            [CompletionResult]::new('--init', 'init', [CompletionResultType]::ParameterName, 'generate the initialize script for the shell')
+            [CompletionResult]::new('-t', 't', [CompletionResultType]::ParameterName, 'specify the nexter type')
+            [CompletionResult]::new('--type', 'type', [CompletionResultType]::ParameterName, 'specify the nexter type')
+            [CompletionResult]::new('--csv', 'csv', [CompletionResultType]::ParameterName, 'print the result in the csv format')
+            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'print the directory name in the absolute path')
+            [CompletionResult]::new('--absolute', 'absolute', [CompletionResultType]::ParameterName, 'print the directory name in the absolute path')
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'list the sibling directories')
+            [CompletionResult]::new('--list', 'list', [CompletionResultType]::ParameterName, 'list the sibling directories')
+            [CompletionResult]::new('-p', 'p', [CompletionResultType]::ParameterName, 'print the progress of traversing directories')
+            [CompletionResult]::new('--progress', 'progress', [CompletionResultType]::ParameterName, 'print the progress of traversing directories')
+            [CompletionResult]::new('-P', 'P ', [CompletionResultType]::ParameterName, 'print parent directory, when no more sibling directories are found')
+            [CompletionResult]::new('--parent', 'parent', [CompletionResultType]::ParameterName, 'print parent directory, when no more sibling directories are found')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}
