@@ -8,3 +8,4 @@ complete -c sibling -s p -l progress -d 'print the progress of traversing direct
 complete -c sibling -s P -l parent -d 'print parent directory, when no more sibling directories are found'
 complete -c sibling -s h -l help -d 'Print help'
 complete -c sibling -s V -l version -d 'Print version'
+complete -c sibling -xa '(__fish_complete_directories)'

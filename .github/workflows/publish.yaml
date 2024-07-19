@@ -7,52 +7,19 @@ on:
     types: [closed]
 
 jobs:
-  publish:
+  setup:
     runs-on: ubuntu-latest
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
-    env:
-      REPO: https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+    outputs:
+      appname: sibling
+      tag: ${{ steps.vars.outputs.tag }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Initialize
-        shell: bash
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "action@github.com"
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-
-      - name: Get tag name
+      - name: Git Tag Name
         id: vars
         run: |
-          HEAD_REF=${{ github.head_ref }}
-          echo "tag=${HEAD_REF##*/v}" >> $GITHUB_OUTPUT
-
-      - name: setup rust
-        run: |
-          rustup update stable
-          cargo build --release
-  
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: '0.85.0'
-          extended: true
-
-      - name: Build Site
-        run: |
-          (cd docs ; hugo)
-          
-
-      - name: Create Distributions
-        run:
-          make dist
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF (${GITHUB_HEAD_REF##*/v})"
+          echo "tag=${GITHUB_HEAD_REF##*/v}" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
@@ -63,6 +30,120 @@ jobs:
           title: Release v${{ steps.vars.outputs.tag }}
           draft: false
           prerelease: false
-          files: |
-            dist/sibling-${{ steps.vars.outputs.tag }}_*.tar.gz
 
+  documents:
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      appname: ${{ needs.setup.outputs.appname }}
+      tag: ${{ needs.setup.outputs.tag }}
+    steps:
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.119.0'
+          extended: true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build Site
+        run: |
+          git worktree add gh-pages docs/public
+          (cd docs ; hugo)
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/public
+
+  publish:
+    runs-on: ${{ matrix.os }}
+    needs: documents
+    outputs:
+      appname: ${{ needs.documents.outputs.appname }}
+      tag: ${{ needs.documents.outputs.tag }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            artifact_name: ${{ needs.setup.outputs.appname }}
+            asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_linux_amd64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: ${{ needs.setup.outputs.appname }}
+            asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_linux_arm64
+          # - os: ubuntu-latest
+          #   target: aarch64-pc-windows-gnullvm
+          #   artifact_name: ${{ needs.setup.outputs.appname }}.exe
+          #   asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_windows_amd64
+          # - os: ubuntu-latest
+          #   target: x86_64-pc-windows-gnu
+          #   artifact_name: ${{ needs.setup.outputs.appname }}.exe
+          #   asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_windows_arm64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: ${{ needs.setup.outputs.appname }}
+            asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_darwin_amd64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: ${{ needs.setup.outputs.appname }}
+            asset_name: ${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}_darwin_arm64          
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      
+      - name: Setup variables
+        id: vars
+        shell: bash
+        run: |
+          DIR=$(echo "${{ needs.setup.outputs.appname }}-${{ needs.setup.outputs.tag }}")
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+      - name: Setup Rust
+        run: rustup update stable
+
+      - name: Setup Rust (1/2) (toolchain)
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Cross build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Cross build (Linux and Windows)
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      # publish release
+      - name: Create release file
+        shell: bash
+        run: |
+          DIR=${{ steps.vars.outputs.dir }}
+          DIST=${{ matrix.target }}
+          mkdir -p dist/$DIST/$DIR
+          # cp -r site/public dist/$DIST/$DIR/docs
+          cp -r README.md LICENSE assets/completions target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
+          tar cvfz dist/${{ matrix.asset_name }}.tar.gz -C dist/$DIST $DIR
+
+      - name: Upload release assets
+        id: upload-release-assets
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_path: dist/${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
+          asset_content_type: application/x-gzip
+          upload_url: ${{ needs.setup.outputs.upload_url }}

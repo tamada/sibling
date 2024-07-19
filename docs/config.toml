@@ -15,7 +15,7 @@ pygmentsStyle = "pygments"
     project_tagline = "get next/previous sibling directory name"
     dateFormat = "2006-01-02"
     katex = true
-    version = "2.0.0-beta-1"
+    version = "2.0.0-beta-2"
     footer = "[![GitHub](https://img.shields.io/badge/GitHub-tamada/sibling-blueviolet.svg?logo=github)](https://github.com/tamada/sibling) Made with [Hugo](https://gohugo.io/). Theme by [Cayman](https://github.com/zwbetz-gh/cayman-hugo-theme). Deployed to [GitHub Pages](https://pages.github.com/)."
 
 [menu]

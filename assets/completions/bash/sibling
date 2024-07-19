@@ -50,7 +50,7 @@ _sibling() {
                     return 0
                     ;;
                 *)
-                    COMPREPLY=()
+                    COMPREPLY=($(compgen -A directory -- "${cur}"))
                     ;;
             esac
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
