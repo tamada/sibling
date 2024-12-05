@@ -1,1 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Hugo 0.129.0">
+  <link rel="stylesheet" href="/sibling/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  
+  
+  
+  <link rel="stylesheet" href="/sibling/css/cayman.ea0e967413f3851071cc8ace3621bc4205fe8fa79b2abe3d7bf94ff2841f0d47.css">
+  <link rel="stylesheet" href="/sibling/css/style.css">
+  
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/harry.png">
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 
+  <title>🏠 Home | Sibling</title>
+</head>
+
+<body>
+  <section class="page-header">
+  
+    <img src="/sibling/images/folders.svg" class="avatar" alt="project_logo">
+  
+  <h1 class="project-name">
+    sibling
+  </h1>
+  <h2 class="project-tagline">
+    get next/previous sibling directory name
+  </h2>
+  <nav>
+    
+    
+      
+      
+      
+      
+      <a href="/sibling/" class="btn">🏠 Home</a>
+    
+      
+      
+      
+      
+      <a href="/sibling/install" class="btn">⚓ Install</a>
+    
+      
+      
+      
+      
+      <a href="/sibling/usage" class="btn">🏃‍♂️ Usage</a>
+    
+      
+      
+      
+      
+      <a href="/sibling/about" class="btn">😄 About</a>
+    
+  </nav>
+</section>
+
+  <section class="main-content">
+    
+<h1>🏠 Home</h1>
+
+<p><a href="https://github.com/tamada/sibling/actions/workflows/build.yaml"><img src="https://github.com/tamada/sibling/actions/workflows/build.yaml/badge.svg" alt="build"></a>
+<a href="https://coveralls.io/github/tamada/sibling?branch=main"><img src="https://coveralls.io/repos/github/tamada/sibling/badge.svg?branch=main" alt="Coverage Status"></a></p>
+<p><a href="https://rust-reportcard.xuri.me/report/github.com/tamada/sibling"><img src="https://rust-reportcard.xuri.me/badge/github.com/tamada/sibling" alt="Rust Report Card"></a></p>
+<p><a href="https://github.com/tamada/sibling/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-WTFPL-information.svg" alt="License"></a>
+<a href="https://github.com/tamada/sibling/releases/tag/v2.0.0-beta-3"><img src="https://img.shields.io/badge/Version-2.0.0--beta--3-information.svg" alt="Version"></a></p>
+<h2 id="speaking_head-description">&#x1f5e3;&#xfe0f; Description</h2>
+<p>When a directory has too may sub directories, we are tiresome to traverse whole of sub directories.
+Because, sometimes we lose where we are.
+Ideally, we move directory by specifying ‘next’ or ‘previous,&rsquo; not directory name.</p>
+<p>The command like following makes us tired &#x1f44e;.</p>
+<pre><code>cd ../next_directory_name
+</code></pre>
+<p>We should type command like below &#x1f44d;.</p>
+<pre><code>cdnext
+</code></pre>
+<p>For this, I implemented <code>sibling</code>.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#">&#x1f3e0; Home</a>
+<ul>
+<li><a href="#-description">&#x1f5e3;&#xfe0f; Description</a></li>
+</ul>
+</li>
+<li><a href="usage">&#x1f3c3; Usage</a>
+<ul>
+<li><a href="usage/#-utility-commands">&#x1f192; Utility commands</a></li>
+<li><a href="usage/#-usage">&#x1f3c3; Usage</a></li>
+</ul>
+</li>
+<li><a href="install">&#x2693; Installation</a>
+<ul>
+<li><a href="install/#-homebrew">&#x1f37a; Homebrew</a></li>
+<li><a href="install/#-install-from-source">&#x1f6e0;&#xfe0f; Install from source</a></li>
+<li><a href="install/#-requirements">&#x1f4bc; Requirements</a></li>
+</ul>
+</li>
+<li><a href="about">&#x1f604; About</a>
+<ul>
+<li><a href="about/#-license">&#x1f4dc; License</a></li>
+<li><a href="about/#-developers-">&#x1f468;&zwj;&#x1f4bc; Developers &#x1f469;&zwj;&#x1f4bc;</a></li>
+</ul>
+</li>
+</ul>
+
+
+<ul>
+
+
+</ul>
+
+    <footer class="site-footer">
+  <span class="site-footer-credits">
+    <a href="https://github.com/tamada/sibling"><img src="https://img.shields.io/badge/GitHub-tamada/sibling-blueviolet.svg?logo=github" alt="GitHub"></a> Made with <a href="https://gohugo.io/">Hugo</a>. Theme by <a href="https://github.com/zwbetz-gh/cayman-hugo-theme">Cayman</a>. Deployed to <a href="https://pages.github.com/">GitHub Pages</a>.
+  </span>
+</footer>
+
+  </section>
+  
+  
+
+</body>
+</html>

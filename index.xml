@@ -4,41 +4,30 @@
     <title>:house: Home on Sibling</title>
     <link>https://tamada.github.io/sibling/</link>
     <description>Recent content in :house: Home on Sibling</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 09 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 01 Jan 0001 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>:anchor: Installation</title>
       <link>https://tamada.github.io/sibling/install/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://tamada.github.io/sibling/install/</guid>
-      <description>🍺 Homebrew Install sibling via Homebrew, simply run:
-brew tap tamada/brew brew install sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.
-eval &amp;#34;$(sibling --init bash)&amp;#34; 💪 Compiling yourself Get source codes by git clone or download from GitHub, then run cargo to build sibling
-$ git clone https://github.com/tamada/sibling.git # or download from https://github.</description>
+      <description>&amp;#x1f37a; Homebrew Install sibling via Homebrew, simply run:&#xA;brew tap tamada/brew brew install sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.&#xA;eval &amp;#34;$(sibling --init bash)&amp;#34; &amp;#x1f4aa; Compiling yourself Get source codes by git clone or download from GitHub, then run cargo to build sibling&#xA;$ git clone https://github.com/tamada/sibling.git # or download from https://github.</description>
     </item>
-    
     <item>
       <title>:runner: Usage</title>
       <link>https://tamada.github.io/sibling/usage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://tamada.github.io/sibling/usage/</guid>
-      <description>🆒 Utility commands The sibling introduce the following utility commands.
-change working directory the sibling directory. cdnext cdprev cdlast cdfirst cdrand list the sibling directory. lsnext lsprev lsfirst lslast lsrand cdnext and cdprev allow the integer argument to repeat the traversing.
-To install the above utility commands into your environment, write the snippet (eval &amp;quot;$(sibling --init bash)&amp;quot;) into your .bash_profile, and restart the bash session.
-🏃‍♂️ Usage get next/previous sibling directory name.</description>
+      <description>&amp;#x1f192; Utility commands The sibling introduce the following utility commands.&#xA;change working directory the sibling directory. cdnext cdprev cdlast cdfirst cdrand list the sibling directory. lsnext lsprev lsfirst lslast lsrand cdnext and cdprev allow the integer argument to repeat the traversing.&#xA;To install the above utility commands into your environment, write the snippet (eval &amp;quot;$(sibling --init bash)&amp;quot;) into your .bash_profile, and restart the bash session.&#xA;&amp;#x1f3c3; Usage get next/previous sibling directory name.</description>
     </item>
-    
     <item>
       <title>:smile: About</title>
       <link>https://tamada.github.io/sibling/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://tamada.github.io/sibling/about/</guid>
-      <description>📜 License WTFPL 👍 Commercial use 👍 Modification 👍 Distribution 👍 Private use 👨‍💼 Developers 👩‍💼 Haruaki Tamada 🔗 Useful links for directory traversing cdargs Directory bookmarking system - Enhanced cd utilities Is there a directory history for bash? </description>
+      <description>&amp;#x1f4dc; License WTFPL &amp;#x1f44d; Commercial use &amp;#x1f44d; Modification &amp;#x1f44d; Distribution &amp;#x1f44d; Private use &amp;#x1f468;&amp;zwj;&amp;#x1f4bc; Developers &amp;#x1f469;&amp;zwj;&amp;#x1f4bc; Haruaki Tamada &amp;#x1f517; Useful links for directory traversing cdargs Directory bookmarking system - Enhanced cd utilities Is there a directory history for bash? </description>
     </item>
-    
   </channel>
 </rss>
