@@ -6,11 +6,7 @@
     <description>Recent content in :house: Home on Sibling</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 08 Nov 2021 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 09 Jul 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://tamada.github.io/sibling/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>:anchor: Installation</title>
       <link>https://tamada.github.io/sibling/install/</link>
@@ -18,9 +14,9 @@
       
       <guid>https://tamada.github.io/sibling/install/</guid>
       <description>🍺 Homebrew Install sibling via Homebrew, simply run:
-brew tap tamada/brew brew install sibling Go lang Install by CLI, run:
-go get github.com/tamada/sibling 💪 Compiling yourself Get source codes by git clone or download from GitHub, then run make to build sibling
-$ git clone https://github.com/tamada/sibling.git # or download from https://github.com/tamada/sibling $ cd sibling $ make 💼 Requirements Development  Go lang 1.16 Dependencies (See go.mod)  github.com/spf13/cobra v1.2.1    </description>
+brew tap tamada/brew brew install sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.
+eval &amp;#34;$(sibling --init bash)&amp;#34; 💪 Compiling yourself Get source codes by git clone or download from GitHub, then run cargo to build sibling
+$ git clone https://github.com/tamada/sibling.git # or download from https://github.</description>
     </item>
     
     <item>
@@ -29,7 +25,10 @@ $ git clone https://github.com/tamada/sibling.git # or download from https://git
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tamada.github.io/sibling/usage/</guid>
-      <description>sibling [OPTIONS] [DIRs...] OPTIONS -a, --absolute print the directory name in the absolute path. -p, --progress print the progress traversing directories. -t, --type &amp;lt;TYPE&amp;gt; specifies the traversing type of siblings. Default is &amp;#39;next&amp;#39;. Available values are: &amp;#39;next&amp;#39;, &amp;#39;previous&amp;#39;, and &amp;#39;random&amp;#39;. -P, --parent print parent directory, when no more sibling directories. -h, --help print this message. -v, --version print version. ARGUMENTS DIR specifies directory. If not specified, the current directory is used.</description>
+      <description>🆒 Utility commands The sibling introduce the following utility commands.
+change working directory the sibling directory. cdnext cdprev cdlast cdfirst cdrand list the sibling directory. lsnext lsprev lsfirst lslast lsrand cdnext and cdprev allow the integer argument to repeat the traversing.
+To install the above utility commands into your environment, write the snippet (eval &amp;quot;$(sibling --init bash)&amp;quot;) into your .bash_profile, and restart the bash session.
+🏃‍♂️ Usage get next/previous sibling directory name.</description>
     </item>
     
     <item>
@@ -38,7 +37,7 @@ $ git clone https://github.com/tamada/sibling.git # or download from https://git
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tamada.github.io/sibling/about/</guid>
-      <description>📜 License  WTFPL  👍 Commercial use 👍 Modification 👍 Distribution 👍 Private use    👨‍💼 Developers 👩‍💼  Haruaki Tamada  </description>
+      <description>📜 License WTFPL 👍 Commercial use 👍 Modification 👍 Distribution 👍 Private use 👨‍💼 Developers 👩‍💼 Haruaki Tamada 🔗 Useful links for directory traversing cdargs Directory bookmarking system - Enhanced cd utilities Is there a directory history for bash? </description>
     </item>
     
   </channel>
