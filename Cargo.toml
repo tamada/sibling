@@ -19,14 +19,14 @@ license = false
 eula = false
 
 [dependencies]
-clap = { version = "4.5.5", features = ["derive"] }
+clap = { version = "4.5.23", features = ["derive"] }
 rand = "0.8.5"
-rust-embed = "8.4.0"
+rust-embed = "8.5.0"
 
 [build-dependencies]
 clap = { version = "4.5.5", features = ["derive"] }
-clap_complete = "4.5.7"
-toml = "0.8.14"
+clap_complete = "4.5.38"
+toml = "0.8.19"
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
