@@ -13,7 +13,7 @@
       <link>https://tamada.github.io/sibling/install/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://tamada.github.io/sibling/install/</guid>
-      <description>&amp;#x1f37a; Homebrew Install sibling via Homebrew, simply run:&#xA;brew tap tamada/brew brew install sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.&#xA;eval &amp;#34;$(sibling --init bash)&amp;#34; &amp;#x1f4aa; Compiling yourself Get source codes by git clone or download from GitHub, then run cargo to build sibling&#xA;$ git clone https://github.com/tamada/sibling.git # or download from https://github.</description>
+      <description>&amp;#x1f37a; Homebrew Install sibling via Homebrew, simply run:&#xA;brew install tamada/tap/sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.&#xA;eval &amp;#34;$(sibling --init bash)&amp;#34; &amp;#x1f4aa; Compiling yourself Get source codes by git clone or download from GitHub, then run cargo to build sibling&#xA;$ git clone https://github.com/tamada/sibling.git # or download from https://github.com/tamada/sibling $ cd sibling $ cargo build &amp;#x1f4bc; Requirements Development Rust 1.</description>
     </item>
     <item>
       <title>:runner: Usage</title>
