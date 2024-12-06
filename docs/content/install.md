@@ -7,8 +7,7 @@ title: ":anchor: Installation"
 Install `sibling` via [Homebrew](https://brew.sh), simply run:
 
 ```sh
-brew tap tamada/brew
-brew install sibling
+brew install tamada/tap/sibling
 ```
 
 And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
