@@ -36,6 +36,6 @@ $ cargo build
 
 - Rust 1.78 or later
 - Dependencies (See `Cargo.toml`)
-  - clap 4.5.5
+  - clap 4.5.23
   - rand 0.8.5
-  - rust-embed 8.4.0
+  - rust-embed 8.5.0
