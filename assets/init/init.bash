@@ -5,16 +5,16 @@ __change_directory_to_sibling() {
     fi
     step=1
     if [[ $# -eq 2 ]]; then
-       step=$2
+        step=$2
     fi
     next=$(sibling --type $traversing_type --csv --step $step)
     sibling_status=$?
-    result=$(echo $next | tr -s ',' ' ')
+    result=($(echo $next | tr -s ',' ' '))
     if [[ $sibling_status -eq 0 ]] ; then
-        cd ${result[1]}
-        echo "$PWD (${result[3]}/${result[4]})"
+        cd "$(echo ${result[2]} | xargs)"
+        echo "$PWD (${result[4]}/${result[5]})"
     else
-        echo "Done (${result[3]}/${result[4]})"
+        echo "Done (${result[4]}/${result[5]})"
         cd ..
     fi
     return $sibling_status
@@ -37,14 +37,15 @@ __ls_sibling() {
     fi
     step=1
     if [[ $# -eq 2 ]]; then
-       step=$2
+        step=$2
     fi
     next=$(sibling --absolute --type $traversing_type --csv --step $step)
     sibling_status=$?
-    result=$(echo $next | tr -s ',' ' ')
+    result=($(echo $next | tr -s ',' ' '))
     if [[ $sibling_status -eq 0 ]]; then
-        echo ${result[1]}
-        ls ${result[1]}
+        r=$(echo ${result[2]} | xargs)
+        echo "$r (${result[4]}/${result[5]})"
+        ls "$r"
     else
         echo "no more siblings"
     fi
@@ -59,7 +60,7 @@ lsprev() {
 }
 
 lsrand() {
-    __ls_sibling rand
+    __ls_sibling random
 }
 
 lsfirst() {
