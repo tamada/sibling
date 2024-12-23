@@ -1,6 +1,6 @@
 [package]
 name = "sibling"
-version = "2.0.0-beta-1"
+version = "2.0.0-beta-6"
 description = "get next/previous sibling directory name."
 repository = "https://github.com/tamada/sibling"
 homepage = "https://tamada.github.io/sibling"
