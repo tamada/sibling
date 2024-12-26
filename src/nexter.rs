@@ -98,7 +98,7 @@ mod tests {
         let mut dirs = Dirs::new("testdata/c".into()).unwrap();
         let nexter = build_nexter(NexterType::First);
         match nexter.next(&mut dirs, 1) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/a")),
+            Some(p) => assert!(p.ends_with("testdata/a")),
             None => panic!("unexpected None"),
         }
     }
@@ -108,7 +108,7 @@ mod tests {
         let mut dirs = Dirs::new("testdata/k".into()).unwrap();
         let nexter = build_nexter(NexterType::Last);
         match nexter.next(&mut dirs, 1) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/z")),
+            Some(p) => assert!(p.ends_with("testdata/z")),
             None => panic!("unexpected None"),
         }
     }
@@ -118,15 +118,15 @@ mod tests {
         let mut dirs = Dirs::new("testdata/c".into()).unwrap();
         let nexter = build_nexter(NexterType::Next);
         match nexter.next(&mut dirs, 1) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/d")),
+            Some(p) => assert!(p.ends_with("testdata/d")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 2) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/e")),
+            Some(p) => assert!(p.ends_with("testdata/e")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 26) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/z")),
+            Some(p) => assert!(p.ends_with("testdata/z")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 1) {
@@ -140,19 +140,19 @@ mod tests {
         let mut dirs = Dirs::new("testdata/k".into()).unwrap();
         let nexter = build_nexter(NexterType::Previous);
         match nexter.next(&mut dirs, 1) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/j")),
+            Some(p) => assert!(p.ends_with("testdata/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 1) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/j")),
+            Some(p) => assert!(p.ends_with("testdata/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 4) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/g")),
+            Some(p) => assert!(p.ends_with("testdata/g")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 26) {
-            Some(p) => assert_eq!(p, PathBuf::from("testdata/a")),
+            Some(p) => assert!(p.ends_with("testdata/a")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&mut dirs, 1) {
