@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::{fs, path::{Path, PathBuf}};
 
 use crate::cli::{Result, SiblingError};
 
@@ -20,7 +20,8 @@ impl Dirs {
             }
         } else if current_dir.exists() {
             if current_dir.is_dir() {
-                build_dirs(current_dir.clone().parent(), current_dir)
+                let current = fs::canonicalize(&current_dir).unwrap();
+                build_dirs(current.clone().parent(), current)
             } else {
                 Err(SiblingError::NotDir(current_dir))
             }
@@ -48,7 +49,7 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
         None => return Err(SiblingError::NoParent(current)),
     };
     let mut errs = vec![];
-    let dirs = collect_dirs(parent, &mut errs);
+    let dirs = collect_dirs(&parent, &mut errs);
     if !errs.is_empty() {
         Err(SiblingError::Array(errs))
     } else {
