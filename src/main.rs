@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::vec;
 
 use clap::Parser;
 use crate::cli::{CliOpts, PrintingOpts, Result, SiblingError};
@@ -13,6 +14,18 @@ mod printer;
 fn perform_impl(mut dirs: dirs::Dirs, nexter: &Box<dyn Nexter>, step: i32, opts: &PrintingOpts) -> Result<String> {
     nexter.next(&mut dirs, step);
     printer::result_string(&dirs, opts)
+}
+
+fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
+    let nexter = nexter::build_nexter(opts.nexter);
+    let r = match opts.input {
+        None => Err(SiblingError::Fatal("input is not specified".into())),
+        Some(file) => match dirs::Dirs::new_from_file(file) {
+            Err(e) => Err(e),
+            Ok(dirs) => perform_impl(dirs, &nexter, opts.step, &opts.p_opts),
+        }
+    };
+    vec![r]
 }
 
 fn perform_each(dir: std::path::PathBuf, nexter: &Box<dyn Nexter>, step: i32, opts: &PrintingOpts) -> Result<String> {
@@ -45,6 +58,8 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
 fn perform(opts: CliOpts) -> Vec<Result<String>> {
     if let Some(shell) = opts.init {
         vec![init::generate_init_script(shell)]
+    } else if opts.input.is_some() {
+        perform_from_file(opts)
     } else {
         perform_sibling(opts)
     }
@@ -58,6 +73,7 @@ fn print_error(e: &SiblingError) {
         SiblingError::Array(array) => {
             array.iter().for_each(print_error);
         },
+        SiblingError::NotFile(path) => eprintln!("{:?}: not a file", path),
         SiblingError::NotFound(path) => eprintln!("{:?}: not found", path),
         SiblingError::Fatal(message) => eprintln!("fatal error: {}", message)
     }
@@ -96,6 +112,22 @@ mod tests {
         match r.get(0).unwrap() {
             Err(e) => print_error(&e),
             Ok(result) => println!("{}", result),
+        }
+    }
+
+    #[test]
+    fn test_from_file() {
+        let opts_r = cli::CliOpts::try_parse_from(vec!["sibling", "--input", "testdata/dirlist.txt", "--type", "previous"]);
+
+        if let Err(e) = &opts_r {
+            eprintln!("{}", e);
+        }
+        assert!(opts_r.is_ok());
+        let r = perform(opts_r.unwrap());
+        assert_eq!(r.len(), 1);
+        match r.get(0).unwrap() {
+            Err(e) => print_error(&e),
+            Ok(result) => assert_eq!(result, "testdata/a")
         }
     }
 }

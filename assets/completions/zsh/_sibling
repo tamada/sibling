@@ -15,12 +15,13 @@ _sibling() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" : \
-'-s+[specify the number of times to execute sibling]:COUNT: ' \
-'--step=[specify the number of times to execute sibling]:COUNT: ' \
-'-i+[generate the initialize script for the shell]:SHELL: ' \
-'--init=[generate the initialize script for the shell]:SHELL: ' \
+'-s+[specify the number of times to execute sibling]:COUNT:_default' \
+'--step=[specify the number of times to execute sibling]:COUNT:_default' \
+'--init=[generate the initialize script for the shell]:SHELL:_default' \
 '-t+[specify the nexter type]:TYPE:(first last previous next random keep)' \
 '--type=[specify the nexter type]:TYPE:(first last previous next random keep)' \
+'-i+[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
+'--input=[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
 '--csv[print the result in the csv format]' \
 '-a[print the directory name in the absolute path]' \
 '--absolute[print the directory name in the absolute path]' \

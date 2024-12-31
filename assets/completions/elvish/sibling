@@ -20,10 +20,11 @@ set edit:completion:arg-completer[sibling] = {|@words|
         &'sibling'= {
             cand -s 'specify the number of times to execute sibling'
             cand --step 'specify the number of times to execute sibling'
-            cand -i 'generate the initialize script for the shell'
             cand --init 'generate the initialize script for the shell'
             cand -t 'specify the nexter type'
             cand --type 'specify the nexter type'
+            cand -i 'directory list from file, if FILE is "-", reads from stdin.'
+            cand --input 'directory list from file, if FILE is "-", reads from stdin.'
             cand --csv 'print the result in the csv format'
             cand -a 'print the directory name in the absolute path'
             cand --absolute 'print the directory name in the absolute path'
