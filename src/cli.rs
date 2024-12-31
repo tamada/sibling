@@ -10,6 +10,7 @@ pub enum SiblingError {
     NotFound(PathBuf),
     NoParent(PathBuf),
     NotDir(PathBuf),
+    NotFile(PathBuf),
     Fatal(String),
     Array(Vec<SiblingError>),
 }
@@ -38,11 +39,14 @@ pub struct CliOpts {
     #[arg(short, long, help = "specify the number of times to execute sibling", value_name = "COUNT", default_value_t = 1)]
     pub step: i32,
 
-    #[arg(short, long, help = "generate the initialize script for the shell", value_name = "SHELL", hide = true, default_missing_value = "bash")]
+    #[arg(long, help = "generate the initialize script for the shell", value_name = "SHELL", hide = true, default_missing_value = "bash")]
     pub init: Option<String>,
 
     #[arg(short = 't', long = "type", help = "specify the nexter type", value_enum, default_value_t = NexterType::Next, value_name = "TYPE", ignore_case = true)]
     pub nexter: NexterType,
+
+    #[arg(short, long, help = "directory list from file, if FILE is \"-\", reads from stdin.", value_name = "FILE")]
+    pub input: Option<String>,
 
     #[arg(index = 1, help = "the target directory", value_name = "DIR")]
     pub dirs: Vec<PathBuf>,

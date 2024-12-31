@@ -1,4 +1,5 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 
 use crate::cli::{Result, SiblingError};
 
@@ -20,13 +21,26 @@ impl Dirs {
             }
         } else if current_dir.exists() {
             if current_dir.is_dir() {
-                let current = fs::canonicalize(&current_dir).unwrap();
+                let current = std::fs::canonicalize(&current_dir).unwrap();
                 build_dirs(current.clone().parent(), current)
             } else {
                 Err(SiblingError::NotDir(current_dir))
             }
         } else {
             Err(SiblingError::NotFound(current_dir))
+        }
+    }
+    pub fn new_from_file(file: String) -> Result<Self> {
+        if file == "-" {
+            return build_from_reader(Box::new(std::io::stdin().lock()));
+        }
+        let path = PathBuf::from(file);
+        if !path.exists() {
+            return Err(SiblingError::NotFound(path));
+        } else if path.is_dir() {
+            return Err(SiblingError::NotFile(path));
+        } else {
+            return build_from_list(path);
         }
     }
 
@@ -87,6 +101,48 @@ fn find_current(dirs: &[PathBuf], current: &PathBuf) -> usize {
     dirs.iter().position(|dir| dir == current).unwrap_or(0)
 }
 
+fn build_from_reader(reader: Box<dyn BufRead>) -> Result<Dirs> {
+    let lines = reader.lines()
+        .filter_map(|line| line.map(|n| n.trim().to_string()).ok())
+        .collect::<Vec<String>>();
+    let base = if let Some(base) = lines.iter().find(|l| l.starts_with("parent:")) {
+        base.chars().skip(7).collect::<String>().trim().to_string()
+    } else {
+        ".".to_string()
+    };
+    let dirs = lines.iter()
+            .filter(|l| !l.starts_with("parent:"))
+            .map(|line| PathBuf::from(line))
+            .collect::<Vec<PathBuf>>();
+    let current = find_current_dir_index(&dirs);
+    Ok(Dirs {
+        dirs,
+        parent: PathBuf::from(base),
+        current: current,
+        next: -1,
+        no_more_dir: false,
+    })
+}
+
+fn find_current_dir_index(dirs: &Vec<PathBuf>) -> usize {
+    if let Ok(pwd) = std::env::current_dir() {
+        let cwd = PathBuf::from(".");
+        if let Some(pos) = dirs.iter().position(|dir| dir == &cwd || pwd.ends_with(dir)) {
+            return pos;
+        }
+    }
+    0 as usize
+}
+
+fn build_from_list(filename: PathBuf) -> Result<Dirs> {
+    if let Ok(f) = std::fs::File::open(filename) {
+        let reader = BufReader::new(f);
+        build_from_reader(Box::new(reader))
+    } else {
+        Err(SiblingError::Io(std::io::Error::last_os_error()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -106,5 +162,15 @@ mod tests {
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.current_path().file_name().map(|s| s.to_str()), Some("sibling".into()));
+    }
+
+    #[test]
+    fn test_dir_from_file() {
+        let dirs = Dirs::new_from_file("testdata/dirlist.txt".into());
+        assert!(dirs.is_ok());
+        let dirs = dirs.unwrap();
+        assert_eq!(dirs.dirs.len(), 4);
+        assert_eq!(dirs.current, 1);
+        assert_eq!(dirs.parent, PathBuf::from("testdata"));
     }
 }
