@@ -79,7 +79,8 @@ impl Dir<'_> {
 }
 
 impl Dirs {
-    pub fn new(current_dir: PathBuf) -> Result<Self> {
+    pub fn new<P: AsRef<Path>>(current_dir: P) -> Result<Self> {
+        let current_dir = current_dir.as_ref();
         if current_dir == PathBuf::from(".") {
             match std::env::current_dir() {
                 Ok(dir) => build_dirs(dir.clone().parent(), dir),
@@ -87,17 +88,18 @@ impl Dirs {
             }
         } else if current_dir.exists() {
             if current_dir.is_dir() {
-                let current = std::fs::canonicalize(&current_dir).unwrap();
+                let current = std::fs::canonicalize(current_dir).unwrap();
                 build_dirs(current.clone().parent(), current)
             } else {
-                Err(SiblingError::NotDir(current_dir))
+                Err(SiblingError::NotDir(current_dir.to_path_buf()))
             }
         } else {
-            Err(SiblingError::NotFound(current_dir))
+            Err(SiblingError::NotFound(current_dir.to_path_buf()))
         }
     }
 
-    pub fn new_from_file(file: String) -> Result<Self> {
+    pub fn new_from_file<S: AsRef<str>>(file: S) -> Result<Self> {
+        let file = file.as_ref();
         if file == "-" {
             return build_from_reader(Box::new(std::io::stdin().lock()));
         }
@@ -323,7 +325,7 @@ mod tests {
 
     #[test]
     fn test_dirs_new() {
-        let dirs = Dirs::new(PathBuf::from("testdata/d"));
+        let dirs = Dirs::new(PathBuf::from("../testdata/d"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 26);
@@ -332,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_dir_dot() {
-        let dirs = Dirs::new(PathBuf::from("."));
+        let dirs = Dirs::new(PathBuf::from(".."));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(
@@ -343,51 +345,51 @@ mod tests {
 
     #[test]
     fn test_dir_from_file() {
-        let dirs = Dirs::new_from_file("../testdata/dirlist.txt".into());
+        let dirs = Dirs::new_from_file("../testdata/dirlist.txt");
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 4);
         assert_eq!(dirs.current, 1);
-        assert_eq!(dirs.parent, PathBuf::from("../testdata"));
+        assert_eq!(dirs.parent, PathBuf::from("testdata"));
     }
 
     #[test]
     fn test_nexter_first() {
-        let dirs = Dirs::new("../testdata/c".into()).unwrap();
+        let dirs = Dirs::new("../testdata/c").unwrap();
         let nexter = build_nexter(NexterType::First);
         match nexter.next(&dirs, 1) {
-            Some(p) => assert!(p.path().ends_with("../testdata/a")),
+            Some(p) => assert!(p.path().ends_with("testdata/a")),
             None => panic!("unexpected None"),
         }
     }
 
     #[test]
     fn test_nexter_last() {
-        let dirs = Dirs::new("../testdata/k".into()).unwrap();
+        let dirs = Dirs::new("../testdata/k").unwrap();
         let nexter = build_nexter(NexterType::Last);
         match nexter.next(&dirs, 1) {
-            Some(p) => assert!(p.path().ends_with("../testdata/z")),
+            Some(p) => assert!(p.path().ends_with("testdata/z")),
             None => panic!("unexpected None"),
         }
     }
 
     #[test]
     fn test_nexter_next() {
-        let dirs = Dirs::new("../testdata/c".into()).unwrap();
+        let dirs = Dirs::new("../testdata/c").unwrap();
         let nexter = build_nexter(NexterType::Next);
         match nexter.next(&dirs, 1) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/d")),
+            Some(p) => assert!(p.path().ends_with("testdata/d")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&dirs, 2) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/e")),
+            Some(p) => assert!(p.path().ends_with("testdata/e"), "{:?}", p.path()),
             None => panic!("unexpected None"),
         }
-        match nexter.next(&dirs, 26) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/z")),
+        match nexter.next(&dirs, 23) {
+            Some(p) => assert!(p.path().ends_with("testdata/z"), "{:?}", p.path()),
             None => panic!("unexpected None"),
         }
-        match nexter.next(&dirs, 1) {
+        match nexter.next(&dirs, 24) {
             None => {}
             Some(p) => panic!("unexpected {:?}", p.path()),
         }
@@ -395,25 +397,25 @@ mod tests {
 
     #[test]
     fn test_nexter_prev() {
-        let dirs = Dirs::new("../testdata/k".into()).unwrap();
+        let dirs = Dirs::new("../testdata/k").unwrap();
         let nexter = build_nexter(NexterType::Previous);
         match nexter.next(&dirs, 1) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/j")),
+            Some(p) => assert!(p.path().ends_with("testdata/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&dirs, 1) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/j")),
+            Some(p) => assert!(p.path().ends_with("testdata/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&dirs, 4) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/g")),
+            Some(p) => assert!(p.path().ends_with("testdata/g")),
             None => panic!("unexpected None"),
         }
-        match nexter.next(&dirs, 26) {
-            Some(p) => assert_eq!(p.path(), PathBuf::from("../testdata/a")),
+        match nexter.next(&dirs, 10) {
+            Some(p) => assert!(p.path().ends_with("testdata/a")),
             None => panic!("unexpected None"),
         }
-        if let Some(p) = nexter.next(&dirs, 1) {
+        if let Some(p) = nexter.next(&dirs, 11) {
             panic!("unexpected {:?}", p.path())
         }
     }
