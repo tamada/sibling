@@ -39,6 +39,30 @@ pub struct CliOpts {
 
     #[arg(index = 1, help = "the target directory", value_name = "DIR")]
     pub dirs: Vec<PathBuf>,
+
+    #[cfg(debug_assertions)]
+    #[clap(flatten)]
+    pub(crate) compopts: CompletionOpts,
+}
+
+#[cfg(debug_assertions)]
+#[derive(Parser, Debug)]
+pub(crate) struct CompletionOpts {
+    #[arg(
+        long = "generate-completion-files",
+        help = "Generate completion files",
+        hide = true
+    )]
+    pub(crate) completion: bool,
+
+    #[arg(
+        long = "completion-out-dir",
+        value_name = "DIR",
+        default_value = "assets/completions",
+        help = "Output directory of completion files",
+        hide = true
+    )]
+    pub(crate) dest: PathBuf,
 }
 
 #[derive(Debug, Parser)]

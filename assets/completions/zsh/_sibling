@@ -22,6 +22,7 @@ _sibling() {
 '--type=[specify the nexter type]:TYPE:(first last previous next random keep)' \
 '-i+[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
 '--input=[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
+'--completion-out-dir=[Output directory of completion files]:DIR:_files' \
 '--csv[print the result in the csv format]' \
 '-a[print the directory name in the absolute path]' \
 '--absolute[print the directory name in the absolute path]' \
@@ -31,6 +32,7 @@ _sibling() {
 '--progress[print the progress of traversing directories]' \
 '-P[print parent directory, when no more sibling directories are found]' \
 '--parent[print parent directory, when no more sibling directories are found]' \
+'--generate-completion-files[Generate completion files]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \

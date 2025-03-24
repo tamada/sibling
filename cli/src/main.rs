@@ -7,6 +7,7 @@ use sibling::Nexter;
 use sibling::{Result, SiblingError};
 
 mod cli;
+mod gencomp;
 mod init;
 mod printer;
 
@@ -96,6 +97,12 @@ fn main() {
         args.collect()
     };
     let opts = cli::CliOpts::parse_from(args);
+    if cfg!(debug_assertions) {
+        #[cfg(debug_assertions)]
+        if opts.compopts.completion {
+            return gencomp::generate(opts.compopts.dest);
+        }
+    }
     for item in perform(opts) {
         match item {
             Ok(result) => println!("{}", result),
