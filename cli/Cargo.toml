@@ -1,0 +1,17 @@
+[package]
+name = "sibling-cli"
+readme = "README.md"
+description = "get next/previous sibling directory name."
+categories = ["command-line-utilities"]
+repository.workspace = true
+homepage.workspace = true
+version.workspace = true
+authors.workspace = true 
+edition.workspace = true
+
+[dependencies]
+clap = { version = "4.5.23", features = ["derive"] }
+clap_complete = "4.5.38"
+rust-embed = "8.5.0"
+sibling = { path = "../lib"}
+toml = "0.8.19"

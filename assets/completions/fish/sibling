@@ -2,10 +2,12 @@ complete -c sibling -s s -l step -d 'specify the number of times to execute sibl
 complete -c sibling -l init -d 'generate the initialize script for the shell' -r
 complete -c sibling -s t -l type -d 'specify the nexter type' -r -f -a "{first\t'',last\t'',previous\t'',next\t'',random\t'',keep\t''}"
 complete -c sibling -s i -l input -d 'directory list from file, if FILE is "-", reads from stdin.' -r
+complete -c sibling -l completion-out-dir -d 'Output directory of completion files' -r -F
 complete -c sibling -l csv -d 'print the result in the csv format'
 complete -c sibling -s a -l absolute -d 'print the directory name in the absolute path'
 complete -c sibling -s l -l list -d 'list the sibling directories'
 complete -c sibling -s p -l progress -d 'print the progress of traversing directories'
 complete -c sibling -s P -l parent -d 'print parent directory, when no more sibling directories are found'
+complete -c sibling -l generate-completion-files -d 'Generate completion files'
 complete -c sibling -s h -l help -d 'Print help'
 complete -c sibling -s V -l version -d 'Print version'

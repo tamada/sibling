@@ -1,37 +1,19 @@
-[package]
-name = "sibling"
-version = "2.0.0-beta-7"
-description = "get next/previous sibling directory name."
+[workspace]
+members = [ "lib", "cli" ]
+
+resolver = "3"
+
+[workspace.package]
+version = "2.0.1"
 repository = "https://github.com/tamada/sibling"
 homepage = "https://tamada.github.io/sibling"
 readme = "README.md"
 authors = [
     "Haruaki Tamada <tamada_f@ke_cafebabe.jp>"
 ]
-license = "WTFL"
+license-file = "LICENSE"
 categories = ["command-line-utilities"]
 edition = "2021"
-
-[package.metadata.wix]
-upgrade-guid = "D4DB88AD-BA23-4F88-A9B4-74C774EBEA37"
-path-guid = "5A8D6CFE-2D9B-4F9E-80F2-439C0D9E43BC"
-license = false
-eula = false
-
-[dependencies]
-clap = { version = "4.5.23", features = ["derive"] }
-rand = "0.8.5"
-rust-embed = "8.5.0"
-
-[build-dependencies]
-clap = { version = "4.5.5", features = ["derive"] }
-clap_complete = "4.5.38"
-toml = "0.8.19"
-
-# The profile that 'cargo dist' will build with
-[profile.dist]
-inherits = "release"
-lto = "thin"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

@@ -19,7 +19,7 @@ _sibling() {
 
     case "${cmd}" in
         sibling)
-            opts="-a -l -p -P -s -t -i -h -V --csv --absolute --list --progress --parent --step --init --type --input --help --version [DIR]..."
+            opts="-a -l -p -P -s -t -i -h -V --csv --absolute --list --progress --parent --step --init --type --input --generate-completion-files --completion-out-dir --help --version [DIR]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -50,6 +50,10 @@ _sibling() {
                     return 0
                     ;;
                 -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --completion-out-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
