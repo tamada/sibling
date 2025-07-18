@@ -9,9 +9,9 @@ mod generator {
     fn generate_impl(s: Shell, app: &mut Command, appname: &str, outdir: &Path, file: String) {
         let destfile = outdir.join(file);
         std::fs::create_dir_all(destfile.parent().unwrap()).unwrap();
-        let mut dest = File::create(destfile).unwrap();
-
-        clap_complete::generate(s, app, appname, &mut dest);
+        if let Ok(mut dest) = File::create(destfile) {
+            clap_complete::generate(s, app, appname, &mut dest);
+        }
     }
 
     pub(super) fn generate(outdir: PathBuf) {
