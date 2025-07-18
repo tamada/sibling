@@ -22,7 +22,7 @@ fn perform_impl(
 }
 
 fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::build_nexter(opts.nexter);
+    let nexter = sibling::NexterFactory::build(opts.nexter);
     let r = match opts.input {
         None => Err(SiblingError::Fatal("input is not specified".into())),
         Some(file) => match sibling::Dirs::new_from_file(file) {
@@ -46,7 +46,7 @@ fn perform_each(
 }
 
 fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::build_nexter(opts.nexter);
+    let nexter = sibling::NexterFactory::build(opts.nexter);
     let target_dirs = if opts.dirs.is_empty() {
         vec![std::env::current_dir().unwrap()]
     } else {

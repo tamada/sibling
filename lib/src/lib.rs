@@ -248,17 +248,6 @@ impl NexterFactory {
     }
 }
 
-pub fn build_nexter(nexter_type: NexterType) -> Box<dyn Nexter> {
-    match nexter_type {
-        NexterType::First => Box::new(First {}),
-        NexterType::Last => Box::new(Last {}),
-        NexterType::Previous => Box::new(Previous {}),
-        NexterType::Next => Box::new(Next {}),
-        NexterType::Random => Box::new(Random {}),
-        NexterType::Keep => Box::new(Keep {}),
-    }
-}
-
 struct First {}
 struct Last {}
 struct Previous {}
@@ -356,7 +345,7 @@ mod tests {
     #[test]
     fn test_nexter_first() {
         let dirs = Dirs::new("../testdata/c").unwrap();
-        let nexter = build_nexter(NexterType::First);
+        let nexter = NexterFactory::build(NexterType::First);
         match nexter.next(&dirs, 1) {
             Some(p) => assert!(p.path().ends_with("testdata/a")),
             None => panic!("unexpected None"),
@@ -366,7 +355,7 @@ mod tests {
     #[test]
     fn test_nexter_last() {
         let dirs = Dirs::new("../testdata/k").unwrap();
-        let nexter = build_nexter(NexterType::Last);
+        let nexter = NexterFactory::build(NexterType::Last);
         match nexter.next(&dirs, 1) {
             Some(p) => assert!(p.path().ends_with("testdata/z")),
             None => panic!("unexpected None"),
@@ -376,7 +365,7 @@ mod tests {
     #[test]
     fn test_nexter_next() {
         let dirs = Dirs::new("../testdata/c").unwrap();
-        let nexter = build_nexter(NexterType::Next);
+        let nexter = NexterFactory::build(NexterType::Next);
         match nexter.next(&dirs, 1) {
             Some(p) => assert!(p.path().ends_with("testdata/d")),
             None => panic!("unexpected None"),
@@ -398,7 +387,7 @@ mod tests {
     #[test]
     fn test_nexter_prev() {
         let dirs = Dirs::new("../testdata/k").unwrap();
-        let nexter = build_nexter(NexterType::Previous);
+        let nexter = NexterFactory::build(NexterType::Previous);
         match nexter.next(&dirs, 1) {
             Some(p) => assert!(p.path().ends_with("testdata/j")),
             None => panic!("unexpected None"),
