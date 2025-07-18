@@ -77,15 +77,15 @@ fn perform(opts: CliOpts) -> Vec<Result<String>> {
 
 fn print_error(e: &SiblingError) {
     match e {
-        SiblingError::Io(e) => eprintln!("I/O error: {}", e),
-        SiblingError::NotDir(path) => eprintln!("{:?}: Not a directory", path),
-        SiblingError::NoParent(path) => eprintln!("{:?}: no parent directory", path),
+        SiblingError::Io(e) => eprintln!("I/O error: {e}"),
+        SiblingError::NotDir(path) => eprintln!("{path:?}: Not a directory"),
+        SiblingError::NoParent(path) => eprintln!("{path:?}: no parent directory"),
         SiblingError::Array(array) => {
             array.iter().for_each(print_error);
         }
-        SiblingError::NotFile(path) => eprintln!("{:?}: not a file", path),
-        SiblingError::NotFound(path) => eprintln!("{:?}: not found", path),
-        SiblingError::Fatal(message) => eprintln!("fatal error: {}", message),
+        SiblingError::NotFile(path) => eprintln!("{path:?}: not a file"),
+        SiblingError::NotFound(path) => eprintln!("{path:?}: not found"),
+        SiblingError::Fatal(message) => eprintln!("fatal error: {message}"),
     }
 }
 
@@ -105,7 +105,7 @@ fn main() {
     }
     for item in perform(opts) {
         match item {
-            Ok(result) => println!("{}", result),
+            Ok(result) => println!("{result}"),
             Err(e) => print_error(&e),
         }
     }
@@ -120,14 +120,14 @@ mod tests {
         let opts_r = cli::CliOpts::try_parse_from(vec!["sibling", "."]);
 
         if let Err(e) = &opts_r {
-            eprintln!("{}", e);
+            eprintln!("{e}");
         }
         assert!(opts_r.is_ok());
         let r = perform(opts_r.unwrap());
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
             Err(e) => print_error(e),
-            Ok(result) => println!("{}", result),
+            Ok(result) => println!("{result}"),
         }
     }
 
@@ -142,7 +142,7 @@ mod tests {
         ]);
 
         if let Err(e) = &opts_r {
-            eprintln!("{}", e);
+            eprintln!("{e}");
         }
         assert!(opts_r.is_ok());
         let r = perform(opts_r.unwrap());

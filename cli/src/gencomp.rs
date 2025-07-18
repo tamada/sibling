@@ -25,35 +25,35 @@ mod generator {
             &mut app,
             appname,
             &outdir,
-            format!("bash/{}", appname),
+            format!("bash/{appname}"),
         );
         generate_impl(
             Shell::Elvish,
             &mut app,
             appname,
             &outdir,
-            format!("elvish/{}", appname),
+            format!("elvish/{appname}"),
         );
         generate_impl(
             Shell::Fish,
             &mut app,
             appname,
             &outdir,
-            format!("fish/{}", appname),
+            format!("fish/{appname}"),
         );
         generate_impl(
             Shell::PowerShell,
             &mut app,
             appname,
             &outdir,
-            format!("powershell/{}", appname),
+            format!("powershell/{appname}"),
         );
         generate_impl(
             Shell::Zsh,
             &mut app,
             appname,
             &outdir,
-            format!("zsh/_{}", appname),
+            format!("zsh/_{appname}"),
         );
     }
 }

@@ -12,8 +12,7 @@ pub(crate) fn generate_init_script(shell_name: String) -> Result<String> {
         "zsh" => "init.bash",
         _ => {
             return Err(SiblingError::Fatal(format!(
-                "{}: Unsupported shell",
-                shell_name
+                "{shell_name}: Unsupported shell"
             )))
         }
     };
@@ -21,8 +20,7 @@ pub(crate) fn generate_init_script(shell_name: String) -> Result<String> {
         Some(file) => match std::str::from_utf8(file.data.as_ref()) {
             Ok(script) => Ok(script.to_string()),
             Err(_) => Err(SiblingError::Fatal(format!(
-                "{}: Invalid script",
-                script_file
+                "{script_file}: Invalid script"
             ))),
         },
         None => Err(SiblingError::NotFound(script_file.into())),
