@@ -102,16 +102,6 @@ $ cd sibling
 $ cargo build --release # the binary file is put on target/release/sibling.
 ```
 
-### :briefcase: Requirements
-
-#### Development
-
-- Rust 1.78 or later
-- Dependencies (See `Cargo.toml`)
-  - clap 4.5.5
-  - rand 0.8.5
-  - rust-embed 8.4.0
-
 ## :smile: About the project
 
 ### :scroll: License

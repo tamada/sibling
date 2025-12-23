@@ -4,7 +4,7 @@ use std::vec;
 use crate::cli::{CliOpts, PrintingOpts};
 use clap::Parser;
 use sibling::Nexter;
-use sibling::{Result, SiblingError};
+use sibling::{Result, Error};
 
 mod cli;
 mod gencomp;
@@ -24,7 +24,7 @@ fn perform_impl(
 fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
     let nexter = sibling::NexterFactory::build(opts.nexter);
     let r = match opts.input {
-        None => Err(SiblingError::Fatal("input is not specified".into())),
+        None => Err(Error::Fatal("input is not specified".into())),
         Some(file) => match sibling::Dirs::new_from_file(file) {
             Err(e) => Err(e),
             Ok(dirs) => perform_impl(dirs, nexter.as_ref(), opts.step, &opts.p_opts),
@@ -75,17 +75,17 @@ fn perform(opts: CliOpts) -> Vec<Result<String>> {
     }
 }
 
-fn print_error(e: &SiblingError) {
+fn print_error(e: &Error) {
     match e {
-        SiblingError::Io(e) => eprintln!("I/O error: {e}"),
-        SiblingError::NotDir(path) => eprintln!("{path:?}: Not a directory"),
-        SiblingError::NoParent(path) => eprintln!("{path:?}: no parent directory"),
-        SiblingError::Array(array) => {
+        Error::Io(e) => eprintln!("I/O error: {e}"),
+        Error::NotDir(path) => eprintln!("{path:?}: Not a directory"),
+        Error::NoParent(path) => eprintln!("{path:?}: no parent directory"),
+        Error::Array(array) => {
             array.iter().for_each(print_error);
         }
-        SiblingError::NotFile(path) => eprintln!("{path:?}: not a file"),
-        SiblingError::NotFound(path) => eprintln!("{path:?}: not found"),
-        SiblingError::Fatal(message) => eprintln!("fatal error: {message}"),
+        Error::NotFile(path) => eprintln!("{path:?}: not a file"),
+        Error::NotFound(path) => eprintln!("{path:?}: not found"),
+        Error::Fatal(message) => eprintln!("fatal error: {message}"),
     }
 }
 

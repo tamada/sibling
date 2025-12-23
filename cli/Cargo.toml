@@ -2,7 +2,8 @@
 name = "sibling-cli"
 readme = "README.md"
 description = "get next/previous sibling directory name."
-categories = ["command-line-utilities"]
+categories = ["command-line-utilities", "filesystem"]
+keywords = ["directory-traversing", "sibling-directories", "filesystem", "cli"]
 repository.workspace = true
 homepage.workspace = true
 version.workspace = true
@@ -14,4 +15,8 @@ clap = { version = "4.5.23", features = ["derive"] }
 clap_complete = "4.5.38"
 rust-embed = "8.5.0"
 sibling = { path = "../lib"}
-toml = "0.8.19"
+toml = "0.9.8"
+
+[[bin]]
+name = "sibling"
+path = "src/main.rs"
