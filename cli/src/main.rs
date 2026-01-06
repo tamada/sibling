@@ -3,8 +3,7 @@ use std::vec;
 
 use crate::cli::{CliOpts, PrintingOpts};
 use clap::Parser;
-use sibling::Nexter;
-use sibling::{Result, Error};
+use sibling::{Dirs, Error, Nexter, Result};
 
 mod cli;
 mod gencomp;
@@ -12,7 +11,7 @@ mod init;
 mod printer;
 
 fn perform_impl(
-    dirs: sibling::Dirs,
+    dirs: Dirs,
     nexter: &dyn Nexter,
     step: usize,
     opts: &PrintingOpts,
@@ -25,7 +24,7 @@ fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
     let nexter = sibling::NexterFactory::build(opts.nexter);
     let r = match opts.input {
         None => Err(Error::Fatal("input is not specified".into())),
-        Some(file) => match sibling::Dirs::new_from_file(file) {
+        Some(file) => match Dirs::new_from_file(file) {
             Err(e) => Err(e),
             Ok(dirs) => perform_impl(dirs, nexter.as_ref(), opts.step, &opts.p_opts),
         },
@@ -39,7 +38,7 @@ fn perform_each(
     step: usize,
     opts: &PrintingOpts,
 ) -> Result<String> {
-    match sibling::Dirs::new(dir) {
+    match Dirs::new(dir) {
         Err(e) => Err(e),
         Ok(dirs) => perform_impl(dirs, nexter, step, opts),
     }

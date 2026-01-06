@@ -17,6 +17,7 @@ use std::path::{Path, PathBuf};
 
 use clap::ValueEnum;
 
+/// The result type for sibling operations.
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// The type of the nexter.
