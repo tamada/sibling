@@ -1,4 +1,4 @@
-//! The library for travesing the sibling directories.
+//! The library for traversing the sibling directories.
 //! This library provides the interface for obtaining the next/previous sibling directories of a given directory by sorting with alphabetical order.
 //! 
 //! It supports various strategies for selecting the next directory,
@@ -205,7 +205,7 @@ impl Dirs {
 
     /// Get the next directory using the given [`Nexter`].
     pub fn next(&self, nexter: &dyn Nexter) -> Option<Dir<'_>> {
-        nexter.next(self)
+        nexter.next_with(self, 1)
     }
 
     /// Get the next directory using the given [`Nexter`] and step.
@@ -275,7 +275,7 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
         }
     }
     if log::log_enabled!(log::Level::Warn) && dirs.is_empty() {
-        log::warn!("collect_dirs: no directories under {}", parent.display());        
+        log::warn!("collect_dirs: no directories under {}", parent.display());
     }
     dirs.sort();
     dirs
@@ -353,11 +353,11 @@ pub trait Nexter {
     }
 }
 
-/// Factory pattern for creating [Nexter] instances.
+/// Factory pattern for creating [`Nexter`] instances.
 pub struct NexterFactory {}
 
 impl NexterFactory {
-    /// Build a [Nexter] instance based on the given [NexterType].
+    /// Build a [`Nexter`] instance based on the given [`NexterType`].
     pub fn build(nexter_type: NexterType) -> Box<dyn Nexter> {
         log::trace!("NexterFactory::build(nexter_type={:?})", nexter_type);
         match nexter_type {
@@ -421,7 +421,7 @@ impl Nexter for Keep {
 
 fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
     let next = dirs.current as i32 + step;
-    log::trace!("next_impl(step={step}, current={}, next={next})", dirs.current);    
+    log::trace!("next_impl(step={step}, current={}, next={next})", dirs.current);
     if next < 0 || next >= dirs.dirs.len() as i32 {
         log::warn!("next_impl: out of range (next={next}, len={})", dirs.dirs.len());
         None

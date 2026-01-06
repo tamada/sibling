@@ -27,20 +27,20 @@ use sibling::{Dirs, NexterFactory, NexterType};
 
 fn main() -> sibling::Result<()> {
     // Build from the current directory
-	let dirs = Dirs::new(".")?;
+    let dirs = Dirs::new(".")?;
 
-	// Move to the next sibling
-	let next = NexterFactory::build(NexterType::Next)
-			.next(&dirs)
-			.map(|d| d.path());
+    // Move to the next sibling
+    let next = NexterFactory::build(NexterType::Next)
+            .next(&dirs)
+            .map(|d| d.path());
 
     // Move two steps backward
-	let prev2 = NexterFactory::build(NexterType::Previous)
-			.next_with(&dirs, 2)
-			.map(|d| d.path());
+    let prev2 = NexterFactory::build(NexterType::Previous)
+            .next_with(&dirs, 2)
+            .map(|d| d.path());
 
-	println!("next={:?}, prev2={:?}", next, prev2);
-	Ok(())
+    println!("next={:?}, prev2={:?}", next, prev2);
+    Ok(())
 }
 ```
 
@@ -59,7 +59,7 @@ Optionally, the first line may set the parent as `parent:/path/to/parent`.
 
 Example: `dirlist.txt`
 
-```
+```txt
 parent:/projects
 a
 b
