@@ -100,8 +100,8 @@ impl Dir<'_> {
     }
 
     /// Get the path of the directory.
-    pub fn path(&self) -> PathBuf {
-        self.dirs.dirs[self.index].clone()
+    pub fn path(&self) -> &Path {
+        &self.dirs.dirs[self.index]
     }
 
     /// Get the index of the directory.
@@ -116,7 +116,7 @@ impl Dir<'_> {
 }
 
 impl Dirs {
-    /// Create a new [`Dirs`] instance from the given current directory.
+    /// Create a new [`Dirs`] instance from the given directory and its sibling directories.
     /// If the current directory is ".", it uses the current working directory.
     /// 
     /// # Returns
@@ -185,8 +185,8 @@ impl Dirs {
     }
 
     /// Get the parent directory path.
-    pub fn parent(&self) -> PathBuf {
-        self.parent.clone()
+    pub fn parent(&self) -> &Path {
+        self.parent.as_path()
     }
 
     /// Get the current directory as a [`Dir`] instance.
@@ -460,6 +460,17 @@ mod tests {
     }
 
     #[test]
+    fn test_dirs() {
+        let dirs = Dirs::new(PathBuf::from("../testdata/d")).unwrap();
+        let abspath = Path::new("../testdata").canonicalize().unwrap();
+        assert_eq!(dirs.parent(), &abspath);
+        assert_eq!(dirs.current().index(), 3);
+        assert!(!dirs.is_empty());
+        assert_eq!(dirs.len(), 26);
+    }
+
+
+    #[test]
     fn test_dir_from_file() {
         let dirs = Dirs::new_from_file("../testdata/dirlist.txt");
         assert!(dirs.is_ok());
@@ -475,6 +486,16 @@ mod tests {
         let nexter = NexterFactory::build(NexterType::First);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/a")),
+            None => panic!("unexpected None"),
+        }
+    }
+
+    #[test]
+    fn test_nexter_keep() {
+        let dirs = Dirs::new("../testdata/c").unwrap();
+        let nexter = NexterFactory::build(NexterType::Keep);
+        match nexter.next(&dirs) {
+            Some(p) => assert!(p.path().ends_with("testdata/c")),
             None => panic!("unexpected None"),
         }
     }
