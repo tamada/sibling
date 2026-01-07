@@ -74,20 +74,6 @@ fn perform(opts: CliOpts) -> Vec<Result<String>> {
     }
 }
 
-fn print_error(e: &Error) {
-    match e {
-        Error::Io(e) => eprintln!("I/O error: {e}"),
-        Error::NotDir(path) => eprintln!("{path:?}: Not a directory"),
-        Error::NoParent(path) => eprintln!("{path:?}: no parent directory"),
-        Error::Array(array) => {
-            array.iter().for_each(print_error);
-        }
-        Error::NotFile(path) => eprintln!("{path:?}: not a file"),
-        Error::NotFound(path) => eprintln!("{path:?}: not found"),
-        Error::Fatal(message) => eprintln!("fatal error: {message}"),
-    }
-}
-
 fn main() {
     let mut args = std::env::args();
     let args = if args.len() == 1 {
@@ -105,7 +91,7 @@ fn main() {
     for item in perform(opts) {
         match item {
             Ok(result) => println!("{result}"),
-            Err(e) => print_error(&e),
+            Err(e) => eprintln!("{e}"),
         }
     }
 }
@@ -125,7 +111,7 @@ mod tests {
         let r = perform(opts_r.unwrap());
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
-            Err(e) => print_error(e),
+            Err(e) => eprintln!("{e}"),
             Ok(result) => println!("{result}"),
         }
     }
@@ -147,7 +133,7 @@ mod tests {
         let r = perform(opts_r.unwrap());
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
-            Err(e) => print_error(e),
+            Err(e) => eprintln!("{e}"),
             Ok(result) => assert_eq!(result, "testdata/a"),
         }
     }

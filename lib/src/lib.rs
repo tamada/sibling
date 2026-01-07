@@ -12,6 +12,7 @@
 //! let nexter = sibling::NexterFactory::build(sibling::NexterType::Next);
 //! let next_dir = nexter.next(&dirs); // Get the next sibling directory
 //! ```
+use std::fmt::Display;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
@@ -54,6 +55,24 @@ pub enum Error {
     Fatal(String),
     /// Multiple errors occurred (array of errors).
     Array(Vec<Error>),
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Io(e) => write!(f, "I/O error: {e}"),
+            Error::NotDir(path) => write!(f, "{path:?}: Not a directory"),
+            Error::NoParent(path) => write!(f, "{path:?}: no parent directory"),
+            Error::Array(array) => {
+                array.iter().map(|e| {
+                    e.to_string()
+                }).collect::<Vec<_>>().join(", ").fmt(f)
+            },
+            Error::NotFile(path) => write!(f, "{path:?}: not a file"),
+            Error::NotFound(path) => write!(f, "{path:?}: not found"),
+            Error::Fatal(message) => write!(f, "fatal error: {message}"),
+        }
+    }
 }
 
 /// Stores a list of sibling directories, the parent directory path, and the index of the current directory.
