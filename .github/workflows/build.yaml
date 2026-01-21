@@ -21,14 +21,16 @@ jobs:
           rustup update stable
 
       - name: build
-        run: cargo build --release
+        run: |
+          cargo clippy -- -D warnings
+          cargo build --release
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
         if: matrix.os == 'ubuntu-latest'
         
       - name: Generate code coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path coverage.lcov
+        run: cargo llvm-cov --workspace --lcov --output-path coverage.lcov
         if: matrix.os == 'ubuntu-latest'
         
       - name: coveralls
