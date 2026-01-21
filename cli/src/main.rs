@@ -121,7 +121,7 @@ mod tests {
         let opts_r = cli::CliOpts::try_parse_from(vec![
             "sibling",
             "--input",
-            "testdata/dirlist.txt",
+            "testdata/basic/dirlist.txt",
             "--type",
             "previous",
         ]);
@@ -134,7 +134,7 @@ mod tests {
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
             Err(e) => eprintln!("{e}"),
-            Ok(result) => assert_eq!(result, "testdata/a"),
+            Ok(result) => assert_eq!(result, "testdata/basic/a"),
         }
     }
 }

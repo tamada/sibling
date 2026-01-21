@@ -1,14 +1,15 @@
 //! The library for traversing the sibling directories.
 //! This library provides the interface for obtaining the next/previous sibling directories of a given directory by sorting with alphabetical order.
-//! 
+//!
 //! It supports various strategies for selecting the next directory,
 //! such as [first](NexterType::First), [last](NexterType::Last), [next](NexterType::Next),
 //! [previous](NexterType::Previous), [random](NexterType::Random), and [keep](NexterType::Keep) current.
-//! 
+//!
 //! ## Example
-//! 
+//!
 //! ```rust
-//! let dirs = sibling::Dirs::new("/path/to/current/dir").unwrap();
+//! let dirs = sibling::Dirs::new("../testdata/basic")
+//!     .expect("Failed to create Dirs");
 //! let nexter = sibling::NexterFactory::build(sibling::NexterType::Next);
 //! let next_dir = nexter.next(&dirs); // Get the next sibling directory
 //! ```
@@ -63,11 +64,12 @@ impl Display for Error {
             Error::Io(e) => write!(f, "I/O error: {e}"),
             Error::NotDir(path) => write!(f, "{path:?}: Not a directory"),
             Error::NoParent(path) => write!(f, "{path:?}: no parent directory"),
-            Error::Array(array) => {
-                array.iter().map(|e| {
-                    e.to_string()
-                }).collect::<Vec<_>>().join(", ").fmt(f)
-            },
+            Error::Array(array) => array
+                .iter()
+                .map(|e| e.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+                .fmt(f),
             Error::NotFile(path) => write!(f, "{path:?}: not a file"),
             Error::NotFound(path) => write!(f, "{path:?}: not found"),
             Error::Fatal(message) => write!(f, "fatal error: {message}"),
@@ -100,7 +102,7 @@ pub struct Dir<'a> {
 impl Dir<'_> {
     /// Create a new [`Dir`] instance.
     pub fn new(dirs: &Dirs, index: usize) -> Dir<'_> {
-        log::trace!("Dir::new(index={})", index);
+        log::trace!("Dir::new(index={index})");
         Dir {
             dirs,
             index,
@@ -110,7 +112,7 @@ impl Dir<'_> {
 
     /// Create a new [`Dir`] instance with the last item flag.
     pub fn new_of_last_item(dirs: &Dirs, index: usize) -> Dir<'_> {
-        log::trace!("Dir::new_of_last_item(index={})", index);
+        log::trace!("Dir::new_of_last_item(index={index})");
         Dir {
             dirs,
             index,
@@ -137,13 +139,13 @@ impl Dir<'_> {
 impl Dirs {
     /// Create a new [`Dirs`] instance from the given directory and its sibling directories.
     /// If the current directory is ".", it uses the current working directory.
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// A [`Result`]<[`Dirs`]> instance.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - Returns [`Error::Io`] if an I/O error occurs.
     /// - Returns [`Error::NotDir`] if the given path is not a directory.
     /// - Returns [`Error::NotFound`] if the given path does not exist.
@@ -154,7 +156,7 @@ impl Dirs {
             match std::env::current_dir() {
                 Ok(dir) => build_dirs(dir.clone().parent(), dir),
                 Err(e) => {
-                    log::error!("Dirs::new: I/O error: {}", e);
+                    log::error!("Dirs::new: I/O error: {e}");
                     Err(Error::Io(e))
                 }
             }
@@ -178,9 +180,9 @@ impl Dirs {
     ///
     /// # Returns
     /// A [`Result`]<[`Dirs`]> instance.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - Returns [`Error::Io`] if an I/O error occurs.
     /// - Returns [`Error::NotFile`] if the given path is not a file.
     /// - Returns [`Error::NotFound`] if the given path does not exist.
@@ -246,7 +248,7 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
         Some(p) => p,
         None => {
             log::error!("build_dirs: No parent for current={}", current.display());
-            return Err(Error::NoParent(current))
+            return Err(Error::NoParent(current));
         }
     };
     let mut errs = vec![];
@@ -288,7 +290,7 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
                     }
                 }
                 Err(e) => {
-                    log::error!("collect_dirs: I/O error: {}", e);
+                    log::error!("collect_dirs: I/O error: {e}");
                     errs.push(Error::Io(e));
                 }
             };
@@ -379,7 +381,7 @@ pub struct NexterFactory {}
 impl NexterFactory {
     /// Build a [`Nexter`] instance based on the given [`NexterType`].
     pub fn build(nexter_type: NexterType) -> Box<dyn Nexter> {
-        log::trace!("NexterFactory::build(nexter_type={:?})", nexter_type);
+        log::trace!("NexterFactory::build(nexter_type={nexter_type:?})");
         match nexter_type {
             NexterType::First => Box::new(First {}),
             NexterType::Last => Box::new(Last {}),
@@ -428,7 +430,7 @@ impl Nexter for Random {
         use rand::Rng;
         let mut rng = rand::rng();
         let next = rng.random_range(0..dirs.dirs.len()) as usize;
-        log::trace!("Random::next_with -> index {}", next);
+        log::trace!("Random::next_with -> index {next}");
         Some(Dir::new(dirs, next))
     }
 }
@@ -441,9 +443,15 @@ impl Nexter for Keep {
 
 fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
     let next = dirs.current as i32 + step;
-    log::trace!("next_impl(step={step}, current={}, next={next})", dirs.current);
+    log::trace!(
+        "next_impl(step={step}, current={}, next={next})",
+        dirs.current
+    );
     if next < 0 || next >= dirs.dirs.len() as i32 {
-        log::warn!("next_impl: out of range (next={next}, len={})", dirs.dirs.len());
+        log::warn!(
+            "next_impl: out of range (next={next}, len={})",
+            dirs.dirs.len()
+        );
         None
     } else if next == 0 {
         Some(Dir::new_of_last_item(dirs, 0))
@@ -460,7 +468,7 @@ mod tests {
 
     #[test]
     fn test_dirs_new() {
-        let dirs = Dirs::new(PathBuf::from("../testdata/d"));
+        let dirs = Dirs::new(PathBuf::from("../testdata/basic/d"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 26);
@@ -480,69 +488,68 @@ mod tests {
 
     #[test]
     fn test_dirs() {
-        let dirs = Dirs::new(PathBuf::from("../testdata/d")).unwrap();
-        let abspath = Path::new("../testdata").canonicalize().unwrap();
+        let dirs = Dirs::new(PathBuf::from("../testdata/basic/d")).unwrap();
+        let abspath = Path::new("../testdata/basic").canonicalize().unwrap();
         assert_eq!(dirs.parent(), &abspath);
         assert_eq!(dirs.current().index(), 3);
         assert!(!dirs.is_empty());
         assert_eq!(dirs.len(), 26);
     }
 
-
     #[test]
     fn test_dir_from_file() {
-        let dirs = Dirs::new_from_file("../testdata/dirlist.txt");
+        let dirs = Dirs::new_from_file("../testdata/basic/dirlist.txt");
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 4);
         assert_eq!(dirs.current, 1);
-        assert_eq!(dirs.parent, PathBuf::from("testdata"));
+        assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
     }
 
     #[test]
     fn test_nexter_first() {
-        let dirs = Dirs::new("../testdata/c").unwrap();
+        let dirs = Dirs::new("../testdata/basic/c").unwrap();
         let nexter = NexterFactory::build(NexterType::First);
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/a")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/a")),
             None => panic!("unexpected None"),
         }
     }
 
     #[test]
     fn test_nexter_keep() {
-        let dirs = Dirs::new("../testdata/c").unwrap();
+        let dirs = Dirs::new("../testdata/basic/c").unwrap();
         let nexter = NexterFactory::build(NexterType::Keep);
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/c")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/c")),
             None => panic!("unexpected None"),
         }
     }
 
     #[test]
     fn test_nexter_last() {
-        let dirs = Dirs::new("../testdata/k").unwrap();
+        let dirs = Dirs::new("../testdata/basic/k").unwrap();
         let nexter = NexterFactory::build(NexterType::Last);
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/z")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/z")),
             None => panic!("unexpected None"),
         }
     }
 
     #[test]
     fn test_nexter_next() {
-        let dirs = Dirs::new("../testdata/c").unwrap();
+        let dirs = Dirs::new("../testdata/basic/c").unwrap();
         let nexter = NexterFactory::build(NexterType::Next);
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/d")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/d")),
             None => panic!("unexpected None"),
         }
         match nexter.next_with(&dirs, 2) {
-            Some(p) => assert!(p.path().ends_with("testdata/e"), "{:?}", p.path()),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/e"), "{:?}", p.path()),
             None => panic!("unexpected None"),
         }
         match nexter.next_with(&dirs, 23) {
-            Some(p) => assert!(p.path().ends_with("testdata/z"), "{:?}", p.path()),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/z"), "{:?}", p.path()),
             None => panic!("unexpected None"),
         }
         match nexter.next_with(&dirs, 24) {
@@ -553,22 +560,22 @@ mod tests {
 
     #[test]
     fn test_nexter_prev() {
-        let dirs = Dirs::new("../testdata/k").unwrap();
+        let dirs = Dirs::new("../testdata/basic/k").unwrap();
         let nexter = NexterFactory::build(NexterType::Previous);
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/j")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next(&dirs) {
-            Some(p) => assert!(p.path().ends_with("testdata/j")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/j")),
             None => panic!("unexpected None"),
         }
         match nexter.next_with(&dirs, 4) {
-            Some(p) => assert!(p.path().ends_with("testdata/g")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/g")),
             None => panic!("unexpected None"),
         }
         match nexter.next_with(&dirs, 10) {
-            Some(p) => assert!(p.path().ends_with("testdata/a")),
+            Some(p) => assert!(p.path().ends_with("testdata/basic/a")),
             None => panic!("unexpected None"),
         }
         if let Some(p) = nexter.next_with(&dirs, 11) {

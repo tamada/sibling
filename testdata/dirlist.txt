@@ -1,5 +1,0 @@
-testdata/a
-.
-testdata/b
-testdata/c
-parent:testdata
