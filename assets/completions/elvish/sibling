@@ -20,6 +20,7 @@ set edit:completion:arg-completer[sibling] = {|@words|
         &'sibling'= {
             cand -s 'specify the number of times to execute sibling'
             cand --step 'specify the number of times to execute sibling'
+            cand --log 'set the log level'
             cand --init 'generate the initialize script for the shell'
             cand -t 'specify the nexter type'
             cand --type 'specify the nexter type'
@@ -36,8 +37,8 @@ set edit:completion:arg-completer[sibling] = {|@words|
             cand -P 'print parent directory, when no more sibling directories are found'
             cand --parent 'print parent directory, when no more sibling directories are found'
             cand --generate-completion-files 'Generate completion files'
-            cand -h 'Print help'
-            cand --help 'Print help'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
             cand -V 'Print version'
             cand --version 'Print version'
         }

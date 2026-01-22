@@ -1,0 +1,5 @@
+testdata/basic/a
+.
+testdata/basic/b
+testdata/basic/c
+parent:testdata/basic

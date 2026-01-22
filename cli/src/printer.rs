@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::cli::PrintingOpts;
 use sibling::{Dir, Dirs, Result};
@@ -10,10 +10,10 @@ pub(crate) fn result_string(
 ) -> Result<String> {
     if opts.csv {
         csv_string(dirs, next, opts.absolute)
-    } else if next.is_some() && next.clone().unwrap().is_last_item() {
-        no_more_dir_string(dirs, opts)
     } else if opts.list {
         list_string(dirs, next, opts)
+    } else if next.is_none() {
+        no_more_dir_string(dirs, opts)
     } else {
         result_string_impl(dirs, next, opts)
     }
@@ -24,7 +24,7 @@ fn csv_string(dirs: &Dirs, next: Option<Dir<'_>>, absolute: bool) -> Result<Stri
     Ok(format!(
         r##""{}","{}",{},{},{}"##,
         pathbuf_to_string(Some(dirs.current().path()), absolute),
-        pathbuf_to_string(next.clone().map(|p| p.path()), absolute),
+        pathbuf_to_string(next.as_ref().map(|p| p.path()), absolute),
         current.index() + 1,
         next.map(|n| n.index() as i32 + 1).unwrap_or(-1),
         dirs.len()
@@ -55,7 +55,7 @@ fn list_string(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -> Resul
             "{:>4} {}{}",
             i + 1,
             prefix,
-            pathbuf_to_string(Some(dir.to_path_buf()), opts.absolute)
+            pathbuf_to_string(Some(dir), opts.absolute)
         ));
     }
     Ok(result.join("\n"))
@@ -65,17 +65,17 @@ fn result_string_impl(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -
     let r = if opts.progress {
         format!(
             "{} ({}/{})",
-            pathbuf_to_string(next.clone().map(|n| n.path()), opts.absolute),
+            pathbuf_to_string(next.as_ref().map(|n| n.path()), opts.absolute),
             next.map(|n| n.index() as i32).unwrap_or(-1) + 1,
             dirs.len()
         )
     } else {
-        pathbuf_to_string(next.map(|n| n.path()), opts.absolute).to_string()
+        pathbuf_to_string(next.as_ref().map(|n| n.path()), opts.absolute).to_string()
     };
     Ok(r)
 }
 
-fn pathbuf_to_string(path: Option<PathBuf>, absolute: bool) -> String {
+fn pathbuf_to_string(path: Option<&Path>, absolute: bool) -> String {
     match path {
         Some(p) => {
             if absolute {

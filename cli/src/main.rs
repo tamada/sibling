@@ -1,18 +1,40 @@
-use std::path::PathBuf;
 use std::vec;
 
 use crate::cli::{CliOpts, PrintingOpts};
 use clap::Parser;
-use sibling::Nexter;
-use sibling::{Result, SiblingError};
+use sibling::{Dirs, Error, Nexter, Result};
 
 mod cli;
 mod gencomp;
 mod init;
 mod printer;
 
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum LogLevel {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+fn init_log(level: &LogLevel) {
+    use LogLevel::*;
+    if std::env::var_os("RUST_LOG").is_none() {
+        match level {
+            Error => std::env::set_var("RUST_LOG", "error"),
+            Warn => std::env::set_var("RUST_LOG", "warn"),
+            Info => std::env::set_var("RUST_LOG", "info"),
+            Debug => std::env::set_var("RUST_LOG", "debug"),
+            Trace => std::env::set_var("RUST_LOG", "trace"),
+        };
+    }
+    env_logger::init();
+    log::info!("Log level set to {level:?}");
+}
+
 fn perform_impl(
-    dirs: sibling::Dirs,
+    dirs: Dirs,
     nexter: &dyn Nexter,
     step: usize,
     opts: &PrintingOpts,
@@ -24,8 +46,8 @@ fn perform_impl(
 fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
     let nexter = sibling::NexterFactory::build(opts.nexter);
     let r = match opts.input {
-        None => Err(SiblingError::Fatal("input is not specified".into())),
-        Some(file) => match sibling::Dirs::new_from_file(file) {
+        None => Err(Error::Fatal("input is not specified".into())),
+        Some(file) => match Dirs::new_from_file(file) {
             Err(e) => Err(e),
             Ok(dirs) => perform_impl(dirs, nexter.as_ref(), opts.step, &opts.p_opts),
         },
@@ -39,7 +61,7 @@ fn perform_each(
     step: usize,
     opts: &PrintingOpts,
 ) -> Result<String> {
-    match sibling::Dirs::new(dir) {
+    match Dirs::new(dir) {
         Err(e) => Err(e),
         Ok(dirs) => perform_impl(dirs, nexter, step, opts),
     }
@@ -54,7 +76,7 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
     };
     let mut result = vec![];
     for dir in target_dirs {
-        let dir = if dir == PathBuf::from(".") {
+        let dir = if dir == std::path::Path::new(".") {
             std::env::current_dir().unwrap()
         } else {
             dir
@@ -75,20 +97,6 @@ fn perform(opts: CliOpts) -> Vec<Result<String>> {
     }
 }
 
-fn print_error(e: &SiblingError) {
-    match e {
-        SiblingError::Io(e) => eprintln!("I/O error: {e}"),
-        SiblingError::NotDir(path) => eprintln!("{path:?}: Not a directory"),
-        SiblingError::NoParent(path) => eprintln!("{path:?}: no parent directory"),
-        SiblingError::Array(array) => {
-            array.iter().for_each(print_error);
-        }
-        SiblingError::NotFile(path) => eprintln!("{path:?}: not a file"),
-        SiblingError::NotFound(path) => eprintln!("{path:?}: not found"),
-        SiblingError::Fatal(message) => eprintln!("fatal error: {message}"),
-    }
-}
-
 fn main() {
     let mut args = std::env::args();
     let args = if args.len() == 1 {
@@ -97,6 +105,7 @@ fn main() {
         args.collect()
     };
     let opts = cli::CliOpts::parse_from(args);
+    init_log(&opts.log);
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if opts.compopts.completion {
@@ -106,7 +115,7 @@ fn main() {
     for item in perform(opts) {
         match item {
             Ok(result) => println!("{result}"),
-            Err(e) => print_error(&e),
+            Err(e) => eprintln!("{e}"),
         }
     }
 }
@@ -126,7 +135,7 @@ mod tests {
         let r = perform(opts_r.unwrap());
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
-            Err(e) => print_error(e),
+            Err(e) => eprintln!("{e}"),
             Ok(result) => println!("{result}"),
         }
     }
@@ -136,7 +145,7 @@ mod tests {
         let opts_r = cli::CliOpts::try_parse_from(vec![
             "sibling",
             "--input",
-            "testdata/dirlist.txt",
+            "testdata/basic/dirlist.txt",
             "--type",
             "previous",
         ]);
@@ -148,8 +157,8 @@ mod tests {
         let r = perform(opts_r.unwrap());
         assert_eq!(r.len(), 1);
         match r.first().unwrap() {
-            Err(e) => print_error(e),
-            Ok(result) => assert_eq!(result, "testdata/a"),
+            Err(e) => eprintln!("{e}"),
+            Ok(result) => assert_eq!(result, "testdata/basic/a"),
         }
     }
 }
