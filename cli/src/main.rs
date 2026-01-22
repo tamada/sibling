@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use std::vec;
 
 use crate::cli::{CliOpts, PrintingOpts};
@@ -75,7 +74,7 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
     };
     let mut result = vec![];
     for dir in target_dirs {
-        let dir = if dir == PathBuf::from(".") {
+        let dir = if dir == std::path::Path::new(".") {
             std::env::current_dir().unwrap()
         } else {
             dir
