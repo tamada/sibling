@@ -152,7 +152,7 @@ impl Dirs {
     pub fn new<P: AsRef<Path>>(current_dir: P) -> Result<Self> {
         let current_dir = current_dir.as_ref();
         log::debug!("Dirs::new(current_dir={})", current_dir.display());
-        if current_dir == PathBuf::from(".") {
+        if current_dir == Path::new(".") {
             match std::env::current_dir() {
                 Ok(dir) => build_dirs(dir.clone().parent(), dir),
                 Err(e) => {
