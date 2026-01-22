@@ -29,7 +29,7 @@ fn init_log(level: &LogLevel) {
         Trace => std::env::set_var("RUST_LOG", "trace"),
     };
     env_logger::init();
-    log::info!("Log level set to {:?}", level);
+    log::info!("Log level set to {level:?}");
 }
 
 fn perform_impl(

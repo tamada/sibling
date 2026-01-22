@@ -14,8 +14,6 @@ pub(crate) fn result_string(
         list_string(dirs, next, opts)
     } else if next.is_none() {
         no_more_dir_string(dirs, opts)
-    } else if next.is_some() && next.as_ref().map(|d| d.is_last_item()).unwrap_or(false) {
-        result_string_impl(dirs, next, opts)
     } else {
         result_string_impl(dirs, next, opts)
     }
