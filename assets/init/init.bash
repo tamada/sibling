@@ -7,16 +7,20 @@ __change_directory_to_sibling() {
     if [[ $# -eq 2 ]]; then
         step=$2
     fi
-    next=$(sibling --type $traversing_type --csv --step $step)
+    result=$(sibling --type $traversing_type --csv --step $step)
     sibling_status=$?
-    result=($(echo $next | tr -s ',' ' '))
-    if [[ $sibling_status -eq 0 ]] ; then
-        cd "$(echo ${result[2]} | xargs)"
-        echo "$PWD (${result[4]}/${result[5]})"
-    else
-        echo "Done (${result[4]}/${result[5]})"
-        cd ..
-    fi
+    echo $result | while IFS=, read current next ci ni total
+    do
+        # echo "Current: $current, Next: $next, ci: $ci, ni: $ni, total: $total"
+        if [[ $sibling_status -eq 0 ]] ; then
+            # strip the first and last double quotes
+            cd "$(echo $next | sed -e 's/^"//' -e 's/"$//')"
+            echo "$PWD ($ci/$total)"
+        else
+            echo "Done ($ci/$total)"
+            cd ..
+        fi
+    done
     return $sibling_status
 }
 

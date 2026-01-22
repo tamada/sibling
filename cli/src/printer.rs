@@ -10,10 +10,12 @@ pub(crate) fn result_string(
 ) -> Result<String> {
     if opts.csv {
         csv_string(dirs, next, opts.absolute)
-    } else if next.is_some() && next.clone().unwrap().is_last_item() {
-        no_more_dir_string(dirs, opts)
     } else if opts.list {
         list_string(dirs, next, opts)
+    } else if next.is_none() {
+        no_more_dir_string(dirs, opts)
+    } else if next.is_some() && next.as_ref().map(|d| d.is_last_item()).unwrap_or(false) {
+        result_string_impl(dirs, next, opts)
     } else {
         result_string_impl(dirs, next, opts)
     }

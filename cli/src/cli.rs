@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+use crate::LogLevel;
+
 #[derive(Debug, Parser)]
 #[clap(version, author, about, arg_required_else_help = true)]
 pub struct CliOpts {
@@ -16,6 +18,16 @@ pub struct CliOpts {
         default_value_t = 1
     )]
     pub step: usize,
+
+    #[arg(
+        long,
+        help = "set the log level",
+        value_enum,
+        default_value_t = LogLevel::Warn,
+        value_name = "LEVEL",
+        ignore_case = true
+    )]
+    pub log: LogLevel,
 
     #[arg(
         long,

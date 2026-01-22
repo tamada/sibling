@@ -257,21 +257,20 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
         Err(Error::Array(errs))
     } else {
         let current_index = find_current(&dirs, &current);
-        if current_index == 0 {
+        let index = if current_index == -1 {
             log::warn!(
                 "build_dirs: current directory not found in siblings: {}",
                 current.display()
             );
-        }
-        log::info!(
-            "build_dirs: siblings={}, current_index={}",
-            dirs.len(),
-            current_index
-        );
+            0
+        } else {
+            current_index as usize
+        };
+        log::info!("build_dirs: siblings={}, current_index={index}", dirs.len());
         Ok(Dirs {
             dirs,
             parent: parent.to_path_buf(),
-            current: current_index,
+            current: index,
         })
     }
 }
@@ -304,8 +303,11 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
 }
 
 /// Return the index of current in dirs, or 0 if not found.
-fn find_current(dirs: &[PathBuf], current: &PathBuf) -> usize {
-    let idx = dirs.iter().position(|dir| dir == current).unwrap_or(0);
+fn find_current(dirs: &[PathBuf], current: &PathBuf) -> i32 {
+    let idx = dirs.iter()
+        .position(|dir| dir == current)
+        .map(|i| i as i32)
+        .unwrap_or(-1);
     log::trace!("find_current: index={} for {}", idx, current.display());
     idx
 }
@@ -473,6 +475,15 @@ mod tests {
         let dirs = dirs.unwrap();
         assert_eq!(dirs.dirs.len(), 26);
         assert_eq!(dirs.current, 3);
+    }
+
+    #[test]
+    fn test_worried_dirs() {
+        let dirs = Dirs::new(PathBuf::from("../testdata/worried/dir with spaces"));
+        assert!(dirs.is_ok());
+        let dirs = dirs.unwrap();
+        assert_eq!(dirs.dirs.len(), 2);
+        assert_eq!(dirs.current, 0);
     }
 
     #[test]

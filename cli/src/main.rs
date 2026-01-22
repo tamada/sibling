@@ -10,6 +10,28 @@ mod gencomp;
 mod init;
 mod printer;
 
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum LogLevel {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+fn init_log(level: &LogLevel) {
+    use LogLevel::*;
+    match level {
+        Error => std::env::set_var("RUST_LOG", "error"),
+        Warn => std::env::set_var("RUST_LOG", "warn"),
+        Info => std::env::set_var("RUST_LOG", "info"),
+        Debug => std::env::set_var("RUST_LOG", "debug"),
+        Trace => std::env::set_var("RUST_LOG", "trace"),
+    };
+    env_logger::init();
+    log::info!("Log level set to {:?}", level);
+}
+
 fn perform_impl(
     dirs: Dirs,
     nexter: &dyn Nexter,
@@ -82,6 +104,7 @@ fn main() {
         args.collect()
     };
     let opts = cli::CliOpts::parse_from(args);
+    init_log(&opts.log);
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if opts.compopts.completion {
