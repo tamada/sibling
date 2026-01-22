@@ -25,17 +25,17 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// The type of the nexter.
 #[derive(Debug, Eq, PartialEq, Clone, ValueEnum)]
 pub enum NexterType {
-    /// the first sibling directory.
+    /// The first sibling directory.
     First,
-    /// the last sibling directory.
+    /// The last sibling directory.
     Last,
-    /// the previous sibling directory (step parameter specifies how many to go back).
+    /// The previous sibling directory (step parameter specifies how many to go back).
     Previous,
-    /// the next sibling directory (step parameter specifies how many to go forward).
+    /// The next sibling directory (step parameter specifies how many to go forward).
     Next,
-    /// a random sibling directory (step parameter is ignored).
+    /// A random sibling directory (step parameter is ignored).
     Random,
-    /// keep the current directory (step parameter is ignored).
+    /// Keep the current directory (step parameter is ignored).
     Keep,
 }
 
@@ -63,16 +63,16 @@ impl Display for Error {
         match self {
             Error::Io(e) => write!(f, "I/O error: {e}"),
             Error::NotDir(path) => write!(f, "{path:?}: Not a directory"),
-            Error::NoParent(path) => write!(f, "{path:?}: no parent directory"),
+            Error::NoParent(path) => write!(f, "{path:?}: No parent directory"),
             Error::Array(array) => array
                 .iter()
                 .map(|e| e.to_string())
                 .collect::<Vec<_>>()
                 .join(", ")
                 .fmt(f),
-            Error::NotFile(path) => write!(f, "{path:?}: not a file"),
-            Error::NotFound(path) => write!(f, "{path:?}: not found"),
-            Error::Fatal(message) => write!(f, "fatal error: {message}"),
+            Error::NotFile(path) => write!(f, "{path:?}: Not a file"),
+            Error::NotFound(path) => write!(f, "{path:?}: Not found"),
+            Error::Fatal(message) => write!(f, "Fatal error: {message}"),
         }
     }
 }

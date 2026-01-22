@@ -20,13 +20,15 @@ pub enum LogLevel {
 
 fn init_log(level: &LogLevel) {
     use LogLevel::*;
-    match level {
-        Error => std::env::set_var("RUST_LOG", "error"),
-        Warn => std::env::set_var("RUST_LOG", "warn"),
-        Info => std::env::set_var("RUST_LOG", "info"),
-        Debug => std::env::set_var("RUST_LOG", "debug"),
-        Trace => std::env::set_var("RUST_LOG", "trace"),
-    };
+    if std::env::var_os("RUST_LOG").is_none() {
+        match level {
+            Error => std::env::set_var("RUST_LOG", "error"),
+            Warn => std::env::set_var("RUST_LOG", "warn"),
+            Info => std::env::set_var("RUST_LOG", "info"),
+            Debug => std::env::set_var("RUST_LOG", "debug"),
+            Trace => std::env::set_var("RUST_LOG", "trace"),
+        };
+    }
     env_logger::init();
     log::info!("Log level set to {level:?}");
 }
