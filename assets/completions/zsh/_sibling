@@ -17,9 +17,20 @@ _sibling() {
     _arguments "${_arguments_options[@]}" : \
 '-s+[specify the number of times to execute sibling]:COUNT:_default' \
 '--step=[specify the number of times to execute sibling]:COUNT:_default' \
+'--log=[set the log level]:LEVEL:(error warn info debug trace)' \
 '--init=[generate the initialize script for the shell]:SHELL:_default' \
-'-t+[specify the nexter type]:TYPE:(first last previous next random keep)' \
-'--type=[specify the nexter type]:TYPE:(first last previous next random keep)' \
+'-t+[specify the nexter type]:TYPE:((first\:"The first sibling directory"
+last\:"The last sibling directory"
+previous\:"The previous sibling directory (step parameter specifies how many to go back)"
+next\:"The next sibling directory (step parameter specifies how many to go forward)"
+random\:"A random sibling directory (step parameter is ignored)"
+keep\:"Keep the current directory (step parameter is ignored)"))' \
+'--type=[specify the nexter type]:TYPE:((first\:"The first sibling directory"
+last\:"The last sibling directory"
+previous\:"The previous sibling directory (step parameter specifies how many to go back)"
+next\:"The next sibling directory (step parameter specifies how many to go forward)"
+random\:"A random sibling directory (step parameter is ignored)"
+keep\:"Keep the current directory (step parameter is ignored)"))' \
 '-i+[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
 '--input=[directory list from file, if FILE is "-", reads from stdin.]:FILE:_default' \
 '--completion-out-dir=[Output directory of completion files]:DIR:_files' \
@@ -33,8 +44,8 @@ _sibling() {
 '-P[print parent directory, when no more sibling directories are found]' \
 '--parent[print parent directory, when no more sibling directories are found]' \
 '--generate-completion-files[Generate completion files]' \
-'-h[Print help]' \
-'--help[Print help]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 '*::dirs -- the target directory:_files' \

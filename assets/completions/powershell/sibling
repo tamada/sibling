@@ -23,6 +23,7 @@ Register-ArgumentCompleter -Native -CommandName 'sibling' -ScriptBlock {
         'sibling' {
             [CompletionResult]::new('-s', '-s', [CompletionResultType]::ParameterName, 'specify the number of times to execute sibling')
             [CompletionResult]::new('--step', '--step', [CompletionResultType]::ParameterName, 'specify the number of times to execute sibling')
+            [CompletionResult]::new('--log', '--log', [CompletionResultType]::ParameterName, 'set the log level')
             [CompletionResult]::new('--init', '--init', [CompletionResultType]::ParameterName, 'generate the initialize script for the shell')
             [CompletionResult]::new('-t', '-t', [CompletionResultType]::ParameterName, 'specify the nexter type')
             [CompletionResult]::new('--type', '--type', [CompletionResultType]::ParameterName, 'specify the nexter type')
@@ -39,8 +40,8 @@ Register-ArgumentCompleter -Native -CommandName 'sibling' -ScriptBlock {
             [CompletionResult]::new('-P', '-P ', [CompletionResultType]::ParameterName, 'print parent directory, when no more sibling directories are found')
             [CompletionResult]::new('--parent', '--parent', [CompletionResultType]::ParameterName, 'print parent directory, when no more sibling directories are found')
             [CompletionResult]::new('--generate-completion-files', '--generate-completion-files', [CompletionResultType]::ParameterName, 'Generate completion files')
-            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
             break

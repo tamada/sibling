@@ -1,12 +1,16 @@
 _sibling() {
     local i cur prev opts cmd
     COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+        cur="$2"
+    else
+        cur="${COMP_WORDS[COMP_CWORD]}"
+    fi
+    prev="$3"
     cmd=""
     opts=""
 
-    for i in ${COMP_WORDS[@]}
+    for i in "${COMP_WORDS[@]:0:COMP_CWORD}"
     do
         case "${cmd},${i}" in
             ",$1")
@@ -19,7 +23,7 @@ _sibling() {
 
     case "${cmd}" in
         sibling)
-            opts="-a -l -p -P -s -t -i -h -V --csv --absolute --list --progress --parent --step --init --type --input --generate-completion-files --completion-out-dir --help --version [DIR]..."
+            opts="-a -l -p -P -s -t -i -h -V --csv --absolute --list --progress --parent --step --log --init --type --input --generate-completion-files --completion-out-dir --help --version [DIR]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -31,6 +35,10 @@ _sibling() {
                     ;;
                 -s)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --log)
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 --init)
@@ -54,11 +62,11 @@ _sibling() {
                     return 0
                     ;;
                 --completion-out-dir)
-                    COMPREPLY=($(compgen -f "${cur}"))
+                    COMPREPLY=($(compgen -d "${cur}"))
                     return 0
                     ;;
                 *)
-                    COMPREPLY=()
+                    COMPREPLY=($(compgen -d "${cur}"))
                     ;;
             esac
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

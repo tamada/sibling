@@ -43,24 +43,26 @@ The binary will be at `target/release/sibling`.
 
 ## Usage
 
-```
+```shell
 get next/previous sibling directory name.
 
-Usage: sibling [OPTIONS] [DIR]
+Usage: sibling [OPTIONS] [DIR]...
 
 Arguments:
-  [DIR]  the target directory [default: .]
+  [DIR]...  the target directory
 
 Options:
   -a, --absolute      print the directory name in the absolute path
   -l, --list          list the sibling directories
   -p, --progress      print the progress of traversing directories
-  -P, --parent        print parent directory, when no more sibling directories
+  -P, --parent        print parent directory, when no more sibling directories are found
   -s, --step <COUNT>  specify the number of times to execute sibling [default: 1]
+      --log <LEVEL>   set the log level [default: warn]
+                      [possible values: error, warn, info, debug, trace]
   -t, --type <TYPE>   specify the nexter type [default: next]
                       [possible values: first, last, previous, next, random, keep]
-  -i, --input <FILE>  directory list from file, if FILE is "-", reads from stdin
-  -h, --help          Print help
+  -i, --input <FILE>  directory list from file, if FILE is "-", reads from stdin.
+  -h, --help          Print help (see more with '--help')
   -V, --version       Print version
 ```
 
