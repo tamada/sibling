@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 
 use crate::LogLevel;
 
@@ -77,15 +77,23 @@ pub(crate) struct CompletionOpts {
     pub(crate) dest: PathBuf,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, ValueEnum)]
+pub enum Format {
+    Json,
+    Csv,
+    List,
+    Default,
+}
+
 #[derive(Debug, Parser)]
 pub(crate) struct PrintingOpts {
     #[arg(
-        long,
-        help = "print the result in the csv format",
-        default_value_t = false,
-        hide = true
+        short, long,
+        help = "print the result in the specified format",
+        default_value_t = Format::Default,
+        value_enum,
     )]
-    pub csv: bool,
+    pub format: Format,
 
     #[arg(
         short,
@@ -94,14 +102,6 @@ pub(crate) struct PrintingOpts {
         default_value_t = false
     )]
     pub absolute: bool,
-
-    #[arg(
-        short,
-        long,
-        help = "list the sibling directories",
-        default_value_t = false
-    )]
-    pub list: bool,
 
     #[arg(
         short,

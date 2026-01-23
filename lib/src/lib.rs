@@ -62,16 +62,16 @@ impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::Io(e) => write!(f, "I/O error: {e}"),
-            Error::NotDir(path) => write!(f, "{path:?}: Not a directory"),
-            Error::NoParent(path) => write!(f, "{path:?}: No parent directory"),
+            Error::NotDir(path) => write!(f, "{}: Not a directory", path.display()),
+            Error::NoParent(path) => write!(f, "{}: No parent directory", path.display()),
             Error::Array(array) => array
                 .iter()
-                .map(|e| e.to_string())
+                .map(std::string::ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(", ")
                 .fmt(f),
-            Error::NotFile(path) => write!(f, "{path:?}: Not a file"),
-            Error::NotFound(path) => write!(f, "{path:?}: Not found"),
+            Error::NotFile(path) => write!(f, "{}: Not a file", path.display()),
+            Error::NotFound(path) => write!(f, "{}: Not found", path.display()),
             Error::Fatal(message) => write!(f, "Fatal error: {message}"),
         }
     }
@@ -81,7 +81,7 @@ impl Display for Error {
 #[derive(Debug, Clone)]
 pub struct Dirs {
     /// The list of sibling directories, sorted alphabetically.
-    dirs: Vec<PathBuf>,
+    entries: Vec<PathBuf>,
     /// The parent directory that contains all the sibling directories.
     parent: PathBuf,
     /// The index of the current directory in the `dirs` vector.
@@ -101,6 +101,7 @@ pub struct Dir<'a> {
 
 impl Dir<'_> {
     /// Create a new [`Dir`] instance.
+    #[must_use]
     pub fn new(dirs: &Dirs, index: usize) -> Dir<'_> {
         log::trace!("Dir::new(index={index})");
         Dir {
@@ -111,6 +112,7 @@ impl Dir<'_> {
     }
 
     /// Create a new [`Dir`] instance with the last item flag.
+    #[must_use]
     pub fn new_of_last_item(dirs: &Dirs, index: usize) -> Dir<'_> {
         log::trace!("Dir::new_of_last_item(index={index})");
         Dir {
@@ -121,16 +123,19 @@ impl Dir<'_> {
     }
 
     /// Get the path of the directory.
+    #[must_use]
     pub fn path(&self) -> &Path {
-        &self.dirs.dirs[self.index]
+        &self.dirs.entries[self.index]
     }
 
     /// Get the index of the directory.
+    #[must_use]
     pub fn index(&self) -> usize {
         self.index
     }
 
     /// Check if this directory is the last item.
+    #[must_use]
     pub fn is_last_item(&self) -> bool {
         self.last_item
     }
@@ -162,7 +167,7 @@ impl Dirs {
             }
         } else if current_dir.exists() {
             if current_dir.is_dir() {
-                let current = std::fs::canonicalize(current_dir).unwrap();
+                let current = std::fs::canonicalize(current_dir).map_err(Error::Io)?;
                 build_dirs(current.clone().parent(), current)
             } else {
                 log::error!("Dirs::new: Not a directory: {}", current_dir.display());
@@ -191,7 +196,7 @@ impl Dirs {
         let file = file.as_ref();
         if file == "-" {
             log::info!("Reading directories from stdin");
-            return build_from_reader(Box::new(std::io::stdin().lock()));
+            return Ok(build_from_reader(Box::new(std::io::stdin().lock())));
         }
         let path = PathBuf::from(file);
         if !path.exists() {
@@ -201,61 +206,70 @@ impl Dirs {
             log::error!("Dirs::new_from_file: Not a file: {}", path.display());
             Err(Error::NotFile(path))
         } else {
-            build_from_list(path)
+            build_from_list(&path)
         }
     }
 
     /// Get the parent directory path.
+    #[must_use]
     pub fn parent(&self) -> &Path {
         self.parent.as_path()
     }
 
     /// Get the current directory as a [`Dir`] instance.
+    #[must_use]
     pub fn current(&self) -> Dir<'_> {
         Dir::new(self, self.current)
     }
 
     /// Check if the directory list is empty.
+    #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.dirs.is_empty()
+        self.entries.is_empty()
     }
 
     /// Get the number of directories in the list.
-    pub fn len(&self) -> usize {
-        self.dirs.len()
+    /// 
+    /// ## Panics
+    /// 
+    /// This function will panic if the number of directories exceeds `i32::MAX`.
+    #[must_use]
+    pub fn len(&self) -> i32 {
+        i32::try_from(self.entries.len()).unwrap()
     }
 
     /// Get the next directory using the given [`Nexter`].
+    #[must_use]
     pub fn next(&self, nexter: &dyn Nexter) -> Option<Dir<'_>> {
         nexter.next_with(self, 1)
     }
 
     /// Get the next directory using the given [`Nexter`] and step.
+    /// 
+    /// ## Panics
+    /// 
+    /// This function will panic if the step exceeds `i32::MAX`.
+    #[must_use]
     pub fn next_with(&self, nexter: &dyn Nexter, step: usize) -> Option<Dir<'_>> {
-        nexter.next_with(self, step as i32)
+        nexter.next_with(self, i32::try_from(step).unwrap())
     }
 
     /// Get an iterator over the directories.
     pub fn directories(&self) -> impl Iterator<Item = &PathBuf> {
-        self.dirs.iter()
+        self.entries.iter()
     }
 }
 
 /// Collect sibling directories under parent and compute the index of current.
 fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
-    log::trace!("build_dirs(parent={parent:?}, current={current:?})");
-    let parent = match parent {
-        Some(p) => p,
-        None => {
-            log::error!("build_dirs: No parent for current={}", current.display());
-            return Err(Error::NoParent(current));
-        }
+    log::trace!("build_dirs(parent={parent:?}, current={})", current.display());
+    let Some(parent) =  parent else {
+        log::error!("build_dirs: No parent for current={}", current.display());
+        return Err(Error::NoParent(current));
     };
     let mut errs = vec![];
     let dirs = collect_dirs(parent, &mut errs);
-    if !errs.is_empty() {
-        Err(Error::Array(errs))
-    } else {
+    if errs.is_empty() {
         let current_index = find_current(&dirs, &current);
         let index = if current_index == -1 {
             log::warn!(
@@ -264,14 +278,16 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
             );
             0
         } else {
-            current_index as usize
+            usize::try_from(current_index).unwrap()
         };
         log::info!("build_dirs: siblings={}, current_index={index}", dirs.len());
         Ok(Dirs {
-            dirs,
+            entries: dirs,
             parent: parent.to_path_buf(),
             current: index,
         })
+    } else {
+        Err(Error::Array(errs))
     }
 }
 
@@ -292,7 +308,7 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
                     log::error!("collect_dirs: I/O error: {e}");
                     errs.push(Error::Io(e));
                 }
-            };
+            }
         }
     }
     if log::log_enabled!(log::Level::Warn) && dirs.is_empty() {
@@ -304,16 +320,16 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
 
 /// Return the index of current in dirs, or 0 if not found.
 fn find_current(dirs: &[PathBuf], current: &PathBuf) -> i32 {
-    let idx = dirs.iter()
+    let idx = dirs
+        .iter()
         .position(|dir| dir == current)
-        .map(|i| i as i32)
-        .unwrap_or(-1);
+        .map_or(-1, |i| i32::try_from(i).unwrap());
     log::trace!("find_current: index={} for {}", idx, current.display());
     idx
 }
 
 /// Parse lines from a reader; parent: sets base, remaining lines are directory entries.
-fn build_from_reader(reader: Box<dyn BufRead>) -> Result<Dirs> {
+fn build_from_reader(reader: Box<dyn BufRead>) -> Dirs {
     let lines = reader
         .lines()
         .filter_map(|line| line.map(|n| n.trim().to_string()).ok())
@@ -333,11 +349,11 @@ fn build_from_reader(reader: Box<dyn BufRead>) -> Result<Dirs> {
     if current == 0 {
         log::warn!("build_from_reader: current directory not found in siblings");
     }
-    Ok(Dirs {
-        dirs,
+    Dirs {
+        entries: dirs,
         parent: PathBuf::from(base),
         current,
-    })
+    }
 }
 
 fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
@@ -354,10 +370,10 @@ fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
     0
 }
 
-fn build_from_list(filename: PathBuf) -> Result<Dirs> {
-    if let Ok(f) = std::fs::File::open(&filename) {
+fn build_from_list(filename: &Path) -> Result<Dirs> {
+    if let Ok(f) = std::fs::File::open(filename) {
         let reader = BufReader::new(f);
-        build_from_reader(Box::new(reader))
+        Ok(build_from_reader(Box::new(reader)))
     } else {
         log::error!("build_from_list: I/O error: {}", filename.display());
         Err(Error::Io(std::io::Error::last_os_error()))
@@ -382,7 +398,8 @@ pub struct NexterFactory {}
 
 impl NexterFactory {
     /// Build a [`Nexter`] instance based on the given [`NexterType`].
-    pub fn build(nexter_type: NexterType) -> Box<dyn Nexter> {
+    #[must_use]
+    pub fn build(nexter_type: &NexterType) -> Box<dyn Nexter> {
         log::trace!("NexterFactory::build(nexter_type={nexter_type:?})");
         match nexter_type {
             NexterType::First => Box::new(First {}),
@@ -410,20 +427,20 @@ impl Nexter for First {
 
 impl Nexter for Last {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        let next = dirs.dirs.len() - 1;
-        Some(Dir::new_of_last_item(dirs, next))
+        let next = dirs.len() - 1;
+        Some(Dir::new_of_last_item(dirs, usize::try_from(next).unwrap()))
     }
 }
 
 impl Nexter for Previous {
-    fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        next_impl(dirs, -_step)
+    fn next_with<'a>(&self, dirs: &'a Dirs, step: i32) -> Option<Dir<'a>> {
+        next_impl(dirs, -step)
     }
 }
 
 impl Nexter for Next {
-    fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        next_impl(dirs, _step)
+    fn next_with<'a>(&self, dirs: &'a Dirs, step: i32) -> Option<Dir<'a>> {
+        next_impl(dirs, step)
     }
 }
 
@@ -431,9 +448,9 @@ impl Nexter for Random {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
         use rand::Rng;
         let mut rng = rand::rng();
-        let next = rng.random_range(0..dirs.dirs.len()) as usize;
+        let next = rng.random_range(0..dirs.len());
         log::trace!("Random::next_with -> index {next}");
-        Some(Dir::new(dirs, next))
+        Some(Dir::new(dirs, usize::try_from(next).unwrap()))
     }
 }
 
@@ -444,23 +461,24 @@ impl Nexter for Keep {
 }
 
 fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
-    let next = dirs.current as i32 + step;
+    let next = i32::try_from(dirs.current).unwrap() + step;
+    let length = dirs.len();
     log::trace!(
         "next_impl(step={step}, current={}, next={next})",
         dirs.current
     );
-    if next < 0 || next >= dirs.dirs.len() as i32 {
+    if next < 0 || next >= dirs.len() {
         log::warn!(
             "next_impl: out of range (next={next}, len={})",
-            dirs.dirs.len()
+            dirs.len()
         );
         None
     } else if next == 0 {
         Some(Dir::new_of_last_item(dirs, 0))
-    } else if next == dirs.dirs.len() as i32 - 1 {
-        Some(Dir::new_of_last_item(dirs, dirs.dirs.len() - 1))
+    } else if next == length - 1 {
+        Some(Dir::new_of_last_item(dirs, usize::try_from(length - 1).unwrap()))
     } else {
-        Some(Dir::new(dirs, next as usize))
+        Some(Dir::new(dirs, usize::try_from(next).unwrap()))
     }
 }
 
@@ -473,7 +491,7 @@ mod tests {
         let dirs = Dirs::new(PathBuf::from("../testdata/basic/d"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.dirs.len(), 26);
+        assert_eq!(dirs.len(), 26);
         assert_eq!(dirs.current, 3);
     }
 
@@ -482,7 +500,7 @@ mod tests {
         let dirs = Dirs::new(PathBuf::from("../testdata/worried/dir with spaces"));
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.dirs.len(), 2);
+        assert_eq!(dirs.len(), 2);
         assert_eq!(dirs.current, 0);
     }
 
@@ -512,7 +530,7 @@ mod tests {
         let dirs = Dirs::new_from_file("../testdata/basic/dirlist.txt");
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.dirs.len(), 4);
+        assert_eq!(dirs.len(), 4);
         assert_eq!(dirs.current, 1);
         assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
     }
@@ -520,7 +538,7 @@ mod tests {
     #[test]
     fn test_nexter_first() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::First);
+        let nexter = NexterFactory::build(&NexterType::First);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/a")),
             None => panic!("unexpected None"),
@@ -530,7 +548,7 @@ mod tests {
     #[test]
     fn test_nexter_keep() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::Keep);
+        let nexter = NexterFactory::build(&NexterType::Keep);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/c")),
             None => panic!("unexpected None"),
@@ -540,7 +558,7 @@ mod tests {
     #[test]
     fn test_nexter_last() {
         let dirs = Dirs::new("../testdata/basic/k").unwrap();
-        let nexter = NexterFactory::build(NexterType::Last);
+        let nexter = NexterFactory::build(&NexterType::Last);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/z")),
             None => panic!("unexpected None"),
@@ -550,7 +568,7 @@ mod tests {
     #[test]
     fn test_nexter_next() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::Next);
+        let nexter = NexterFactory::build(&NexterType::Next);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/d")),
             None => panic!("unexpected None"),
@@ -572,7 +590,7 @@ mod tests {
     #[test]
     fn test_nexter_prev() {
         let dirs = Dirs::new("../testdata/basic/k").unwrap();
-        let nexter = NexterFactory::build(NexterType::Previous);
+        let nexter = NexterFactory::build(&NexterType::Previous);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/j")),
             None => panic!("unexpected None"),
