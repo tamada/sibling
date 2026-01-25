@@ -154,3 +154,23 @@ jobs:
           asset_name: ${{ matrix.asset_name }}.tar.gz
           asset_content_type: application/x-gzip
           upload_url: ${{ needs.documents.outputs.upload_url }}
+
+  publish_to_crates_io:
+    runs-on: ubuntu-latest
+    needs: publish
+    outputs:
+      appname: ${{ needs.publish.outputs.appname }}
+      tag: ${{ needs.publish.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with custom registry
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run:
+          cargo publish --package sibling
