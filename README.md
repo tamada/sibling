@@ -5,8 +5,9 @@
 
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/sibling)](https://rust-reportcard.xuri.me/report/github.com/tamada/sibling)
 
+[![crates.io](https://img.shields.io/badge/crates.io-v2.0.4-orange.svg?logo=rust)](https://crates.io/crates/sibling)
 [![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.0.4-information.svg)](https://github.com/tamada/sibling/releases/tag/v2.0.4)
+[![Version](https://img.shields.io/badge/Version-v2.0.4-information.svg)](https://github.com/tamada/sibling/releases/tag/v2.0.4)
 
 get the next/previous sibling directory name.
 
