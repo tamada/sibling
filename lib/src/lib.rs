@@ -428,10 +428,10 @@ impl Nexter for First {
 impl Nexter for Last {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
         if dirs.is_empty() {
-            return None;
+            None
         } else {
             let next = dirs.len() - 1;
-            Some(Dir::new_of_last_item(dirs, usize::try_from(next).unwrap()))
+            Some(Dir::new_of_last_item(dirs, next))
         }
     }
 }
@@ -454,7 +454,7 @@ impl Nexter for Random {
         let mut rng = rand::rng();
         let next = rng.random_range(0..dirs.len());
         log::trace!("Random::next_with -> index {next}");
-        Some(Dir::new(dirs, usize::try_from(next).unwrap()))
+        Some(Dir::new(dirs, next))
     }
 }
 
