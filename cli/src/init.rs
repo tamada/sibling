@@ -6,10 +6,9 @@ use sibling::{Error, Result};
 #[folder = "../assets/init"]
 struct Assets;
 
-pub(crate) fn generate_init_script(shell_name: String) -> Result<String> {
+pub(crate) fn generate_init_script(shell_name: &str) -> Result<String> {
     let script_file = match shell_name.to_lowercase().as_str() {
-        "bash" => "init.bash",
-        "zsh" => "init.bash",
+        "bash" | "zsh" => "init.bash",
         _ => return Err(Error::Fatal(format!("{shell_name}: Unsupported shell"))),
     };
     match Assets::get(script_file) {

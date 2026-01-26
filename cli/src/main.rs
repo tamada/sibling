@@ -19,7 +19,7 @@ pub enum LogLevel {
 }
 
 fn init_log(level: &LogLevel) {
-    use LogLevel::*;
+    use LogLevel::{Error, Warn, Info, Debug, Trace};
     if std::env::var_os("RUST_LOG").is_none() {
         match level {
             Error => std::env::set_var("RUST_LOG", "error"),
@@ -27,29 +27,29 @@ fn init_log(level: &LogLevel) {
             Info => std::env::set_var("RUST_LOG", "info"),
             Debug => std::env::set_var("RUST_LOG", "debug"),
             Trace => std::env::set_var("RUST_LOG", "trace"),
-        };
+        }
     }
     env_logger::init();
     log::info!("Log level set to {level:?}");
 }
 
 fn perform_impl(
-    dirs: Dirs,
+    dirs: &Dirs,
     nexter: &dyn Nexter,
     step: usize,
     opts: &PrintingOpts,
-) -> Result<String> {
+) -> String {
     let next = dirs.next_with(nexter, step);
-    printer::result_string(&dirs, next, opts)
+    printer::result_string(dirs, next, opts)
 }
 
 fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::NexterFactory::build(opts.nexter);
+    let nexter = sibling::NexterFactory::create(opts.nexter);
     let r = match opts.input {
         None => Err(Error::Fatal("input is not specified".into())),
         Some(file) => match Dirs::new_from_file(file) {
             Err(e) => Err(e),
-            Ok(dirs) => perform_impl(dirs, nexter.as_ref(), opts.step, &opts.p_opts),
+            Ok(dirs) => Ok(perform_impl(&dirs, nexter.as_ref(), opts.step, &opts.p_opts)),
         },
     };
     vec![r]
@@ -63,12 +63,12 @@ fn perform_each(
 ) -> Result<String> {
     match Dirs::new(dir) {
         Err(e) => Err(e),
-        Ok(dirs) => perform_impl(dirs, nexter, step, opts),
+        Ok(dirs) => Ok(perform_impl(&dirs, nexter, step, opts)),
     }
 }
 
 fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::NexterFactory::build(opts.nexter);
+    let nexter = sibling::NexterFactory::create(opts.nexter);
     let target_dirs = if opts.dirs.is_empty() {
         vec![std::env::current_dir().unwrap()]
     } else {
@@ -89,7 +89,7 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
 
 fn perform(opts: CliOpts) -> Vec<Result<String>> {
     if let Some(shell) = opts.init {
-        vec![init::generate_init_script(shell)]
+        vec![init::generate_init_script(&shell)]
     } else if opts.input.is_some() {
         perform_from_file(opts)
     } else {
@@ -109,7 +109,7 @@ fn main() {
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if opts.compopts.completion {
-            return gencomp::generate(opts.compopts.dest);
+            return gencomp::generate(&opts.compopts.dest);
         }
     }
     for item in perform(opts) {
