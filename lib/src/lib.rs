@@ -92,7 +92,7 @@ pub struct Dirs {
 #[derive(Debug, Clone)]
 pub struct Dir<'a> {
     /// Reference to the parent `Dirs` instance.
-    dirs: &'a Dirs,
+    siblings: &'a Dirs,
     /// The index of this directory in the `Dirs.dirs` vector.
     index: usize,
     /// Flag indicating if this is the first or last directory in the sorted list.
@@ -102,10 +102,10 @@ pub struct Dir<'a> {
 impl Dir<'_> {
     /// Create a new [`Dir`] instance.
     #[must_use]
-    pub fn new(dirs: &Dirs, index: usize) -> Dir<'_> {
+    pub fn new(siblings: &Dirs, index: usize) -> Dir<'_> {
         log::trace!("Dir::new(index={index})");
         Dir {
-            dirs,
+            siblings,
             index,
             last_item: false,
         }
@@ -113,10 +113,10 @@ impl Dir<'_> {
 
     /// Create a new [`Dir`] instance with the last item flag.
     #[must_use]
-    pub fn new_of_last_item(dirs: &Dirs, index: usize) -> Dir<'_> {
+    pub fn new_of_last_item(siblings: &Dirs, index: usize) -> Dir<'_> {
         log::trace!("Dir::new_of_last_item(index={index})");
         Dir {
-            dirs,
+            siblings,
             index,
             last_item: true,
         }
@@ -125,7 +125,7 @@ impl Dir<'_> {
     /// Get the path of the directory.
     #[must_use]
     pub fn path(&self) -> &Path {
-        &self.dirs.entries[self.index]
+        &self.siblings.entries[self.index]
     }
 
     /// Get the index of the directory.
@@ -229,13 +229,9 @@ impl Dirs {
     }
 
     /// Get the number of directories in the list.
-    /// 
-    /// ## Panics
-    /// 
-    /// This function will panic if the number of directories exceeds `i32::MAX`.
     #[must_use]
-    pub fn len(&self) -> i32 {
-        i32::try_from(self.entries.len()).unwrap()
+    pub fn len(&self) -> usize {
+        self.entries.len()
     }
 
     /// Get the next directory using the given [`Nexter`].
@@ -421,14 +417,22 @@ struct Keep {}
 
 impl Nexter for First {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        Some(Dir::new_of_last_item(dirs, 0))
+        if dirs.is_empty() {
+            None
+        } else {
+            Some(Dir::new_of_last_item(dirs, 0))
+        }
     }
 }
 
 impl Nexter for Last {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        let next = dirs.len() - 1;
-        Some(Dir::new_of_last_item(dirs, usize::try_from(next).unwrap()))
+        if dirs.is_empty() {
+            return None;
+        } else {
+            let next = dirs.len() - 1;
+            Some(Dir::new_of_last_item(dirs, usize::try_from(next).unwrap()))
+        }
     }
 }
 
@@ -462,15 +466,14 @@ impl Nexter for Keep {
 
 fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
     let next = i32::try_from(dirs.current).unwrap() + step;
-    let length = dirs.len();
+    let length = i32::try_from(dirs.len()).unwrap();
     log::trace!(
         "next_impl(step={step}, current={}, next={next})",
         dirs.current
     );
-    if next < 0 || next >= dirs.len() {
+    if next < 0 || next >= length {
         log::warn!(
-            "next_impl: out of range (next={next}, len={})",
-            dirs.len()
+            "next_impl: out of range (next={next}, len={length})",
         );
         None
     } else if next == 0 {
