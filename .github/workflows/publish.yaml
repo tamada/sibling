@@ -6,6 +6,9 @@ on:
       - main
     types: [closed]
 
+permissions:
+  contents: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
