@@ -10,7 +10,7 @@
 //! ```rust
 //! let dirs = sibling::Dirs::new("../testdata/basic")
 //!     .expect("Failed to create Dirs");
-//! let nexter = sibling::NexterFactory::build(sibling::NexterType::Next);
+//! let nexter = sibling::NexterFactory::create(sibling::NexterType::Next);
 //! let next_dir = nexter.next(&dirs); // Get the next sibling directory
 //! ```
 use std::fmt::Display;
@@ -395,8 +395,8 @@ pub struct NexterFactory {}
 impl NexterFactory {
     /// Build a [`Nexter`] instance based on the given [`NexterType`].
     #[must_use]
-    pub fn build(nexter_type: NexterType) -> Box<dyn Nexter> {
-        log::trace!("NexterFactory::build(nexter_type={nexter_type:?})");
+    pub fn create(nexter_type: NexterType) -> Box<dyn Nexter> {
+        log::trace!("NexterFactory::create(nexter_type={nexter_type:?})");
         match nexter_type {
             NexterType::First => Box::new(First {}),
             NexterType::Last => Box::new(Last {}),
@@ -541,7 +541,7 @@ mod tests {
     #[test]
     fn test_nexter_first() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::First);
+        let nexter = NexterFactory::create(NexterType::First);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/a")),
             None => panic!("unexpected None"),
@@ -551,7 +551,7 @@ mod tests {
     #[test]
     fn test_nexter_keep() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::Keep);
+        let nexter = NexterFactory::create(NexterType::Keep);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/c")),
             None => panic!("unexpected None"),
@@ -561,7 +561,7 @@ mod tests {
     #[test]
     fn test_nexter_last() {
         let dirs = Dirs::new("../testdata/basic/k").unwrap();
-        let nexter = NexterFactory::build(NexterType::Last);
+        let nexter = NexterFactory::create(NexterType::Last);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/z")),
             None => panic!("unexpected None"),
@@ -571,7 +571,7 @@ mod tests {
     #[test]
     fn test_nexter_next() {
         let dirs = Dirs::new("../testdata/basic/c").unwrap();
-        let nexter = NexterFactory::build(NexterType::Next);
+        let nexter = NexterFactory::create(NexterType::Next);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/d")),
             None => panic!("unexpected None"),
@@ -593,7 +593,7 @@ mod tests {
     #[test]
     fn test_nexter_prev() {
         let dirs = Dirs::new("../testdata/basic/k").unwrap();
-        let nexter = NexterFactory::build(NexterType::Previous);
+        let nexter = NexterFactory::create(NexterType::Previous);
         match nexter.next(&dirs) {
             Some(p) => assert!(p.path().ends_with("testdata/basic/j")),
             None => panic!("unexpected None"),
