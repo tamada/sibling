@@ -1,9 +1,0 @@
-{{- $img := .Get "src" }}
-{{- $width := .Get "width" }}
-{{- $caption := .Get "caption" }}
-<figure>
-    <img src="{{ $img }}" width="{{ $width }}">
-    <figcaption>
-        {{ $caption | markdownify }}
-    </figcaption>
-</figure>

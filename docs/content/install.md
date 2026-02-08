@@ -1,8 +1,9 @@
 ---
 title: ":anchor: Installation"
+date: 2024-07-09
 ---
 
-### :beer: Homebrew
+## :beer: Homebrew
 
 Install `sibling` via [Homebrew](https://brew.sh), simply run:
 
@@ -18,7 +19,7 @@ Other shell scripts are not supported, yet.
 eval "$(sibling --init bash)"
 ```
 
-### :muscle: Compiling yourself
+## :muscle: Compiling yourself
 
 Get source codes by `git clone` or download from [GitHub](https://github.com/tamada/sibling),
 then run `cargo` to build `sibling`
@@ -29,9 +30,9 @@ $ cd sibling
 $ cargo build
 ```
 
-### :briefcase: Requirements
+## :briefcase: Requirements
 
-#### Development
+### Development
 
 - Rust 1.78 or later
 - Dependencies (See `Cargo.toml`)
