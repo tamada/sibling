@@ -39,6 +39,26 @@ pub enum NexterType {
     Keep,
 }
 
+impl From<&str> for NexterType {
+    fn from(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "first" => NexterType::First,
+            "last" => NexterType::Last,
+            "previous" => NexterType::Previous,
+            "next" => NexterType::Next,
+            "random" => NexterType::Random,
+            "keep" => NexterType::Keep,
+            _ => NexterType::Next,
+        }
+    }
+}
+
+impl From<String> for NexterType {
+    fn from(s: String) -> Self {
+        NexterType::from(s.as_str())
+    }
+}
+
 /// The error type for sibling.
 #[derive(Debug)]
 pub enum Error {
@@ -241,13 +261,8 @@ impl Dirs {
     }
 
     /// Get the next directory using the given [`Nexter`] and step.
-    /// 
-    /// ## Panics
-    /// 
-    /// This function will panic if the step exceeds `i32::MAX`.
-    #[must_use]
-    pub fn next_with(&self, nexter: &dyn Nexter, step: usize) -> Option<Dir<'_>> {
-        nexter.next_with(self, i32::try_from(step).unwrap())
+    pub fn next_with(&self, nexter: &dyn Nexter, step: i32) -> Option<Dir<'_>> {
+        nexter.next_with(self, step)
     }
 
     /// Get an iterator over the directories.
@@ -450,9 +465,7 @@ impl Nexter for Next {
 
 impl Nexter for Random {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        use rand::Rng;
-        let mut rng = rand::rng();
-        let next = rng.random_range(0..dirs.len());
+        let next = rand::random_range(0..dirs.len());
         log::trace!("Random::next_with -> index {next}");
         Some(Dir::new(dirs, next))
     }

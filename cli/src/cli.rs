@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
 
-use crate::LogLevel;
+use crate::{LogLevel, minisib};
 
 #[derive(Debug, Parser)]
 #[clap(version, author, about, arg_required_else_help = true)]
@@ -10,14 +10,8 @@ pub struct CliOpts {
     #[clap(flatten)]
     pub(crate) p_opts: PrintingOpts,
 
-    #[arg(
-        short,
-        long,
-        help = "specify the number of times to execute sibling",
-        value_name = "COUNT",
-        default_value_t = 1
-    )]
-    pub step: usize,
+    #[clap(flatten)]
+    pub(crate) nexter_opts: NexterOpts,
 
     #[arg(
         long,
@@ -38,6 +32,28 @@ pub struct CliOpts {
     )]
     pub init: Option<String>,
 
+    #[arg(index = 1, help = "the target directory", value_name = "DIR")]
+    pub dirs: Vec<PathBuf>,
+
+    #[cfg(debug_assertions)]
+    #[clap(flatten)]
+    pub(crate) compopts: CompletionOpts,
+
+    #[clap(subcommand)]
+    pub(crate) minisib: Option<minisib::MiniSibCommand>,
+}
+
+#[derive(Parser, Debug)]
+pub(crate) struct NexterOpts {
+    #[arg(
+        short,
+        long,
+        help = "specify the number of times to execute sibling",
+        value_name = "COUNT",
+        default_value_t = 1
+    )]
+    pub step: i32,
+
     #[arg(short = 't', long = "type", help = "specify the nexter type", value_enum, default_value_t = sibling::NexterType::Next, value_name = "TYPE", ignore_case = true)]
     pub nexter: sibling::NexterType,
 
@@ -49,12 +65,8 @@ pub struct CliOpts {
     )]
     pub input: Option<String>,
 
-    #[arg(index = 1, help = "the target directory", value_name = "DIR")]
-    pub dirs: Vec<PathBuf>,
-
-    #[cfg(debug_assertions)]
-    #[clap(flatten)]
-    pub(crate) compopts: CompletionOpts,
+    #[arg(short = 'S', long, help = "strictly check the directory traversing", default_value_t = false)]
+    pub strict: bool,
 }
 
 #[cfg(debug_assertions)]

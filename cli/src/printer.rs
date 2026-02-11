@@ -78,7 +78,7 @@ fn list_string(dirs: &Dirs, next: Option<&Dir<'_>>, opts: &PrintingOpts) -> Stri
 }
 
 fn result_string_impl(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -> String {
-    let r = if opts.progress {
+    if opts.progress {
         format!(
             "{} ({}/{})",
             pathbuf_to_string(next.as_ref().map(Dir::path), opts.absolute),
@@ -87,8 +87,7 @@ fn result_string_impl(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -
         )
     } else {
         pathbuf_to_string(next.as_ref().map(Dir::path), opts.absolute).to_string()
-    };
-    r
+    }
 }
 
 fn pathbuf_to_string(path: Option<&Path>, absolute: bool) -> String {

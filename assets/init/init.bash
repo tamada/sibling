@@ -1,26 +1,26 @@
-__change_directory_to_sibling() {
+__change_directory_with_sibling() {
     traversing_type="$1"
     if [[ "$traversing_type" == "" ]]; then
         traversing_type="next"
+    else
+        shift
     fi
-    step=1
-    if [[ $# -eq 2 ]]; then
-        step=$2
-    fi
-    result=$(sibling --type $traversing_type --csv --step $step)
+    eval "$(sibling minisib $traversing_type $@ | {
+        read -r next;      echo "next='$next';"
+        read -r length;    echo "length='$length';"
+        read -r current;   echo "current='$current';"
+        read -r last_flag; echo "last_flag='$last_flag';"
+    })"
     sibling_status=$?
-    echo $result | while IFS=, read current next ci ni total
-    do
-        # echo "Current: $current, Next: $next, ci: $ci, ni: $ni, total: $total"
-        if [[ $sibling_status -eq 0 ]] ; then
-            # strip the first and last double quotes
-            cd "$(echo $next | sed -e 's/^"//' -e 's/"$//')"
-            echo "$PWD ($ci/$total)"
-        else
-            echo "Done ($ci/$total)"
-            cd ..
-        fi
-    done
+    # echo "Current: $current, Next: $next, ci: $ci, ni: $ni, total: $total"
+    if [[ $sibling_status -eq 0 ]] ; then
+        # strip the first and last double quotes
+        cd $next
+        echo "$PWD (${current}/${length})"
+    else
+        echo "Done (${current}/${length})"
+        cd ..
+    fi
     return $sibling_status
 }
 
@@ -84,22 +84,21 @@ sibling_fzf() {
 }
 
 cdfirst() {
-    __change_directory_to_sibling first
+    __change_directory_with_sibling first $@
 }
 
 cdlast() {
-    __change_directory_to_sibling last
+    __change_directory_with_sibling last $@
 }
 
 cdnext() {
-    __change_directory_to_sibling next $@
+    __change_directory_with_sibling next $@
 }
 
 cdprev() {
-    __change_directory_to_sibling previous $@
+    __change_directory_with_sibling previous $@
 }
 
 cdrand() {
-    __change_directory_to_sibling random
+    __change_directory_with_sibling random $@
 }
-
