@@ -7,7 +7,8 @@ use sibling::{Dirs, Error, Nexter, Result};
 mod cli;
 mod gencomp;
 mod init;
-mod printer;
+pub(crate) mod minisib;
+pub(crate) mod printer;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub enum LogLevel {
@@ -18,38 +19,23 @@ pub enum LogLevel {
     Trace,
 }
 
-fn init_log(level: &LogLevel) {
-    use LogLevel::{Error, Warn, Info, Debug, Trace};
-    if std::env::var_os("RUST_LOG").is_none() {
-        match level {
-            Error => std::env::set_var("RUST_LOG", "error"),
-            Warn => std::env::set_var("RUST_LOG", "warn"),
-            Info => std::env::set_var("RUST_LOG", "info"),
-            Debug => std::env::set_var("RUST_LOG", "debug"),
-            Trace => std::env::set_var("RUST_LOG", "trace"),
-        }
-    }
-    env_logger::init();
-    log::info!("Log level set to {level:?}");
-}
-
-fn perform_impl(
-    dirs: &Dirs,
-    nexter: &dyn Nexter,
-    step: usize,
-    opts: &PrintingOpts,
-) -> String {
+fn perform_impl(dirs: &Dirs, nexter: &dyn Nexter, step: i32, opts: &PrintingOpts) -> String {
     let next = dirs.next_with(nexter, step);
     printer::result_string(dirs, next, opts)
 }
 
 fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::NexterFactory::create(opts.nexter);
-    let r = match opts.input {
+    let nexter = sibling::NexterFactory::create(opts.nexter_opts.nexter);
+    let r = match opts.nexter_opts.input {
         None => Err(Error::Fatal("input is not specified".into())),
-        Some(file) => match Dirs::new_from_file(file) {
+        Some(file) => match Dirs::new_from_file_with(file, opts.nexter_opts.all) {
             Err(e) => Err(e),
-            Ok(dirs) => Ok(perform_impl(&dirs, nexter.as_ref(), opts.step, &opts.p_opts)),
+            Ok(dirs) => Ok(perform_impl(
+                &dirs,
+                nexter.as_ref(),
+                opts.nexter_opts.step,
+                &opts.p_opts,
+            )),
         },
     };
     vec![r]
@@ -58,7 +44,7 @@ fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
 fn perform_each(
     dir: std::path::PathBuf,
     nexter: &dyn Nexter,
-    step: usize,
+    step: i32,
     opts: &PrintingOpts,
 ) -> Result<String> {
     match Dirs::new(dir) {
@@ -68,7 +54,7 @@ fn perform_each(
 }
 
 fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
-    let nexter = sibling::NexterFactory::create(opts.nexter);
+    let nexter = sibling::NexterFactory::create(opts.nexter_opts.nexter);
     let target_dirs = if opts.dirs.is_empty() {
         vec![std::env::current_dir().unwrap()]
     } else {
@@ -81,31 +67,27 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
         } else {
             dir
         };
-        let r = perform_each(dir, nexter.as_ref(), opts.step, &opts.p_opts);
+        let r = perform_each(dir, nexter.as_ref(), opts.nexter_opts.step, &opts.p_opts);
         result.push(r);
     }
     result
 }
 
 fn perform(opts: CliOpts) -> Vec<Result<String>> {
-    if let Some(shell) = opts.init {
+    if let Some(shell) = opts.init_script.init {
         vec![init::generate_init_script(&shell)]
-    } else if opts.input.is_some() {
+    } else if opts.nexter_opts.input.is_some() {
         perform_from_file(opts)
+    } else if let Some(minisib) = opts.minisib {
+        vec![minisib.perform()]
     } else {
         perform_sibling(opts)
     }
 }
 
 fn main() {
-    let mut args = std::env::args();
-    let args = if args.len() == 1 {
-        vec![args.next().unwrap(), ".".into()]
-    } else {
-        args.collect()
-    };
-    let opts = cli::CliOpts::parse_from(args);
-    init_log(&opts.log);
+    let mut opts = cli::CliOpts::parse();
+    opts.init();
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if opts.compopts.completion {

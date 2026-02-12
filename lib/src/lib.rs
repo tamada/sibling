@@ -16,6 +16,7 @@
 use std::fmt::Display;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use clap::ValueEnum;
 
@@ -39,9 +40,28 @@ pub enum NexterType {
     Keep,
 }
 
+impl FromStr for NexterType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s.to_lowercase().as_str() {
+            "first" => Ok(NexterType::First),
+            "last" => Ok(NexterType::Last),
+            "previous" => Ok(NexterType::Previous),
+            "next" => Ok(NexterType::Next),
+            "random" => Ok(NexterType::Random),
+            "keep" => Ok(NexterType::Keep),
+            _ => Err(Error::UnknownNexterType(s.to_string())),
+        }
+    }
+}
+
 /// The error type for sibling.
 #[derive(Debug)]
 pub enum Error {
+    /// Multiple errors occurred (array of errors).
+    Array(Vec<Error>),
+    /// A fatal error with a custom message.
+    Fatal(String),
     /// I/O error occurred while accessing the file system.
     Io(std::io::Error),
     /// The specified path was not found.
@@ -52,10 +72,8 @@ pub enum Error {
     NotDir(PathBuf),
     /// The specified path is not a file.
     NotFile(PathBuf),
-    /// A fatal error with a custom message.
-    Fatal(String),
-    /// Multiple errors occurred (array of errors).
-    Array(Vec<Error>),
+    /// The specified nexter type is unknown.
+    UnknownNexterType(String),
 }
 
 impl Display for Error {
@@ -73,17 +91,21 @@ impl Display for Error {
             Error::NotFile(path) => write!(f, "{}: Not a file", path.display()),
             Error::NotFound(path) => write!(f, "{}: Not found", path.display()),
             Error::Fatal(message) => write!(f, "Fatal error: {message}"),
+            Error::UnknownNexterType(s) => write!(f, "Unknown nexter type: {s}"),
         }
     }
 }
 
 /// Stores a list of sibling directories, the parent directory path, and the index of the current directory.
+/// This struct manages the entries of sibling directories, parent directory, and the current directory index.
 #[derive(Debug, Clone)]
 pub struct Dirs {
     /// The list of sibling directories, sorted alphabetically.
     entries: Vec<PathBuf>,
     /// The parent directory that contains all the sibling directories.
     parent: PathBuf,
+    /// Flag indicating whether the current directory is among the sibling directories.
+    on_dirs: bool,
     /// The index of the current directory in the `dirs` vector.
     current: usize,
 }
@@ -147,7 +169,9 @@ impl Dirs {
     ///
     /// # Returns
     ///
-    /// A [`Result`]<[`Dirs`]> instance.
+    /// A [`Result`]<[`Dirs`], [`Error`]> instance.
+    /// The resultant `Dirs` contains the list of sibling directories of the given path.
+    /// The parent directory is set to the parent of the given path.
     ///
     /// # Errors
     ///
@@ -182,32 +206,47 @@ impl Dirs {
     /// Create a new [`Dirs`] instance from the given file.
     /// The file should contain a list of directories, one per line.
     /// The first line can optionally specify the parent directory in the format `parent:/path/to`.
+    /// The first character of the line is `#`, it is treated as a comment and ignored.
+    /// If the current directory is not found in the list, the current index is set to 0.
+    /// If `all_target` parameter is false, non-existent directories are skipped and
+    /// the resultant list does not include them.
     ///
     /// # Returns
-    /// A [`Result`]<[`Dirs`]> instance.
+    /// A [`Result`]<[`Dirs`], [`Error`]> instance.
     ///
     /// # Errors
     ///
     /// - Returns [`Error::Io`] if an I/O error occurs.
     /// - Returns [`Error::NotFile`] if the given path is not a file.
     /// - Returns [`Error::NotFound`] if the given path does not exist.
-    pub fn new_from_file<S: AsRef<str>>(file: S) -> Result<Self> {
+    pub fn new_from_file_with<S: AsRef<str>>(file: S, all_target: bool) -> Result<Self> {
         log::debug!("Dirs::new_from_file(file={})", file.as_ref());
         let file = file.as_ref();
         if file == "-" {
             log::info!("Reading directories from stdin");
-            return Ok(build_from_reader(Box::new(std::io::stdin().lock())));
+            return Ok(build_from_reader(
+                Box::new(std::io::stdin().lock()),
+                all_target,
+            ));
         }
         let path = PathBuf::from(file);
         if !path.exists() {
-            log::error!("Dirs::new_from_file: Not found: {}", path.display());
+            log::error!(
+                "Dirs::new_from_file: Not found: {}, pwd: {}",
+                path.display(),
+                std::env::current_dir().unwrap().display()
+            );
             Err(Error::NotFound(path))
         } else if path.is_dir() {
             log::error!("Dirs::new_from_file: Not a file: {}", path.display());
             Err(Error::NotFile(path))
         } else {
-            build_from_list(&path)
+            build_from_list_file(&path, all_target)
         }
+    }
+
+    pub fn new_from_file<S: AsRef<str>>(file: S) -> Result<Self> {
+        Dirs::new_from_file_with(file, false)
     }
 
     /// Get the parent directory path.
@@ -228,6 +267,10 @@ impl Dirs {
         self.entries.is_empty()
     }
 
+    pub fn on_dirs(&self) -> bool {
+        self.on_dirs
+    }
+
     /// Get the number of directories in the list.
     #[must_use]
     pub fn len(&self) -> usize {
@@ -241,13 +284,8 @@ impl Dirs {
     }
 
     /// Get the next directory using the given [`Nexter`] and step.
-    /// 
-    /// ## Panics
-    /// 
-    /// This function will panic if the step exceeds `i32::MAX`.
-    #[must_use]
-    pub fn next_with(&self, nexter: &dyn Nexter, step: usize) -> Option<Dir<'_>> {
-        nexter.next_with(self, i32::try_from(step).unwrap())
+    pub fn next_with(&self, nexter: &dyn Nexter, step: i32) -> Option<Dir<'_>> {
+        nexter.next_with(self, step)
     }
 
     /// Get an iterator over the directories.
@@ -258,28 +296,23 @@ impl Dirs {
 
 /// Collect sibling directories under parent and compute the index of current.
 fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
-    log::trace!("build_dirs(parent={parent:?}, current={})", current.display());
-    let Some(parent) =  parent else {
+    log::trace!(
+        "build_dirs(parent={parent:?}, current={})",
+        current.display()
+    );
+    let Some(parent) = parent else {
         log::error!("build_dirs: No parent for current={}", current.display());
         return Err(Error::NoParent(current));
     };
     let mut errs = vec![];
     let dirs = collect_dirs(parent, &mut errs);
     if errs.is_empty() {
-        let current_index = find_current(&dirs, &current);
-        let index = if current_index == -1 {
-            log::warn!(
-                "build_dirs: current directory not found in siblings: {}",
-                current.display()
-            );
-            0
-        } else {
-            usize::try_from(current_index).unwrap()
-        };
+        let (index, on_dirs) = find_current(&dirs, &current);
         log::info!("build_dirs: siblings={}, current_index={index}", dirs.len());
         Ok(Dirs {
             entries: dirs,
             parent: parent.to_path_buf(),
+            on_dirs,
             current: index,
         })
     } else {
@@ -315,44 +348,74 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
 }
 
 /// Return the index of current in dirs, or 0 if not found.
-fn find_current(dirs: &[PathBuf], current: &PathBuf) -> i32 {
-    let idx = dirs
-        .iter()
-        .position(|dir| dir == current)
-        .map_or(-1, |i| i32::try_from(i).unwrap());
-    log::trace!("find_current: index={} for {}", idx, current.display());
-    idx
+fn find_current(dirs: &[PathBuf], current: &PathBuf) -> (usize, bool) {
+    let idx = dirs.iter().position(|dir| dir == current);
+    if let Some(index) = idx {
+        log::trace!("find_current: found current at index {index}");
+        (index, true)
+    } else {
+        log::warn!("find_current: current directory not found in siblings");
+        (0, false)
+    }
 }
 
 /// Parse lines from a reader; parent: sets base, remaining lines are directory entries.
-fn build_from_reader(reader: Box<dyn BufRead>) -> Dirs {
-    let lines = reader
-        .lines()
-        .filter_map(|line| line.map(|n| n.trim().to_string()).ok())
-        .collect::<Vec<String>>();
-    let base = if let Some(base) = lines.iter().find(|l| l.starts_with("parent:")) {
-        base.chars().skip(7).collect::<String>().trim().to_string()
-    } else {
-        ".".to_string()
-    };
-    let dirs = lines
-        .iter()
-        .filter(|l| !l.starts_with("parent:"))
-        .map(PathBuf::from)
-        .collect::<Vec<PathBuf>>();
-    log::debug!("build_from_reader: base='{}', entries={}", base, dirs.len());
-    let current = find_current_dir_index(&dirs);
-    if current == 0 {
-        log::warn!("build_from_reader: current directory not found in siblings");
+fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
+    let mut parent = None;
+    let mut lines = vec![];
+    for line in reader.lines().map_while(|r| r.ok()) {
+        if line.starts_with("parent:") {
+            parent = Some(
+                line.chars()
+                    .skip("parent:".len())
+                    .collect::<String>()
+                    .trim()
+                    .to_string(),
+            );
+        } else if line.starts_with("#") {
+            continue;
+        } else {
+            let p = Path::new(line.trim());
+            if !all_target && not_exists(p) {
+                continue;
+            } else {
+                lines.push(p.to_path_buf());
+            }
+        }
+    }
+    log::debug!(
+        "build_from_reader: base='{}', entries={}",
+        parent.as_deref().unwrap_or(""),
+        lines.len()
+    );
+    let (current, on_dirs) = find_current_dir_index(&lines);
+    if !on_dirs {
+        log::debug!("build_from_reader: current directory not found in siblings");
     }
     Dirs {
-        entries: dirs,
-        parent: PathBuf::from(base),
+        entries: lines,
+        parent: PathBuf::from(parent.unwrap_or_else(|| {
+            if on_dirs {
+                "..".to_string()
+            } else {
+                ".".to_string()
+            }
+        })),
+        on_dirs,
         current,
     }
 }
 
-fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
+fn not_exists(path: &Path) -> bool {
+    if path.exists() {
+        false
+    } else {
+        let sibling_p = Path::new("..").join(path);
+        !sibling_p.exists()
+    }
+}
+
+fn find_current_dir_index(dirs: &[PathBuf]) -> (usize, bool) {
     log::trace!("find_current_dir_index(dirs.len={})", dirs.len());
     if let Ok(pwd) = std::env::current_dir() {
         let cwd = PathBuf::from(".");
@@ -360,18 +423,18 @@ fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
             .iter()
             .position(|dir| dir == &cwd || pwd.ends_with(dir))
         {
-            return pos;
+            return (pos, true);
         }
     }
-    0
+    (0, false)
 }
 
-fn build_from_list(filename: &Path) -> Result<Dirs> {
+fn build_from_list_file(filename: &Path, all_target: bool) -> Result<Dirs> {
     if let Ok(f) = std::fs::File::open(filename) {
         let reader = BufReader::new(f);
-        Ok(build_from_reader(Box::new(reader)))
+        Ok(build_from_reader(Box::new(reader), all_target))
     } else {
-        log::error!("build_from_list: I/O error: {}", filename.display());
+        log::error!("build_from_list_file: I/O error: {}", filename.display());
         Err(Error::Io(std::io::Error::last_os_error()))
     }
 }
@@ -450,9 +513,7 @@ impl Nexter for Next {
 
 impl Nexter for Random {
     fn next_with<'a>(&self, dirs: &'a Dirs, _step: i32) -> Option<Dir<'a>> {
-        use rand::Rng;
-        let mut rng = rand::rng();
-        let next = rng.random_range(0..dirs.len());
+        let next = rand::random_range(0..dirs.len());
         log::trace!("Random::next_with -> index {next}");
         Some(Dir::new(dirs, next))
     }
@@ -472,14 +533,15 @@ fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
         dirs.current
     );
     if next < 0 || next >= length {
-        log::warn!(
-            "next_impl: out of range (next={next}, len={length})",
-        );
+        log::warn!("next_impl: out of range (next={next}, len={length})",);
         None
     } else if next == 0 {
         Some(Dir::new_of_last_item(dirs, 0))
     } else if next == length - 1 {
-        Some(Dir::new_of_last_item(dirs, usize::try_from(length - 1).unwrap()))
+        Some(Dir::new_of_last_item(
+            dirs,
+            usize::try_from(length - 1).unwrap(),
+        ))
     } else {
         Some(Dir::new(dirs, usize::try_from(next).unwrap()))
     }
@@ -488,6 +550,51 @@ fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_error_display_not_dir() {
+        let err = Error::NotDir(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: Not a directory".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_not_file() {
+        let err = Error::NotFile(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: Not a file".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_no_parent() {
+        let err = Error::NoParent(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: No parent directory".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_fatal() {
+        let err = Error::Fatal("Some fatal error".into());
+        assert_eq!(
+            format!("{}", err),
+            "Fatal error: Some fatal error".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_unknown_nexter_type() {
+        let err = Error::UnknownNexterType("unknown".into());
+        assert_eq!(
+            format!("{}", err),
+            "Unknown nexter type: unknown".to_string()
+        );
+    }
 
     #[test]
     fn test_dirs_new() {
@@ -530,12 +637,13 @@ mod tests {
 
     #[test]
     fn test_dir_from_file() {
-        let dirs = Dirs::new_from_file("../testdata/basic/dirlist.txt");
+        let dirs = Dirs::new_from_file_with("../testdata/basic/dirlist.txt", true);
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.len(), 4);
-        assert_eq!(dirs.current, 1);
-        assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
+        assert_eq!(dirs.len(), 3);
+        assert_eq!(dirs.current, 0);
+        assert!(!dirs.on_dirs());
+        assert_eq!(dirs.parent, PathBuf::from("."));
     }
 
     #[test]

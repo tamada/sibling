@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
 
-use crate::LogLevel;
+use crate::{LogLevel, minisib};
 
 #[derive(Debug, Parser)]
 #[clap(version, author, about, arg_required_else_help = true)]
@@ -10,15 +10,59 @@ pub struct CliOpts {
     #[clap(flatten)]
     pub(crate) p_opts: PrintingOpts,
 
-    #[arg(
-        short,
-        long,
-        help = "specify the number of times to execute sibling",
-        value_name = "COUNT",
-        default_value_t = 1
-    )]
-    pub step: usize,
+    #[clap(flatten)]
+    pub(crate) nexter_opts: NexterOpts,
 
+    #[clap(flatten)]
+    pub(crate) init_script: InitOpts,
+
+    #[clap(flatten)]
+    pub(crate) log_opts: LogOpts,
+
+    #[arg(
+        short = 'w',
+        long = "working-dir",
+        help = "set the current working directory.",
+        hide = true,
+        value_name = "DIR",
+        long_help = "This option is applied before any other processing. Therefore, other options that specify paths should use the relative path from this option value. If this option is not specified, the current directory is used."
+    )]
+    pub(crate) cwd: Option<PathBuf>,
+
+    #[arg(index = 1, help = "the target directory", value_name = "DIR")]
+    pub dirs: Vec<PathBuf>,
+
+    #[cfg(debug_assertions)]
+    #[clap(flatten)]
+    pub(crate) compopts: CompletionOpts,
+
+    #[clap(subcommand)]
+    pub(crate) minisib: Option<minisib::MiniSibCommand>,
+}
+
+impl CliOpts {
+    pub fn init(&mut self) {
+        self.log_opts.init();
+        if let Some(cwd) = &self.cwd
+            && let Err(e) = std::env::set_current_dir(cwd)
+        {
+            log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
+        }
+        if self.dirs.is_empty() {
+            match std::env::current_dir() {
+                Ok(cwd) => self.dirs.push(cwd),
+                Err(e) => {
+                    log::error!("Failed to get current directory: {e}");
+                    eprintln!("Error: failed to determine current working directory: {e}");
+                    std::process::exit(1);
+                }
+            }
+        }
+    }
+}
+
+#[derive(Parser, Debug)]
+pub(crate) struct LogOpts {
     #[arg(
         long,
         help = "set the log level",
@@ -28,7 +72,29 @@ pub struct CliOpts {
         ignore_case = true
     )]
     pub log: LogLevel,
+}
 
+impl LogOpts {
+    pub fn init(&self) {
+        use LogLevel::{Debug, Error, Info, Trace, Warn};
+        if std::env::var_os("RUST_LOG").is_none() {
+            unsafe {
+                match self.log {
+                    Error => std::env::set_var("RUST_LOG", "error"),
+                    Warn => std::env::set_var("RUST_LOG", "warn"),
+                    Info => std::env::set_var("RUST_LOG", "info"),
+                    Debug => std::env::set_var("RUST_LOG", "debug"),
+                    Trace => std::env::set_var("RUST_LOG", "trace"),
+                };
+            }
+        }
+        env_logger::init();
+        log::info!("Log level set to {:?}", self.log);
+    }
+}
+
+#[derive(Parser, Debug)]
+pub(crate) struct InitOpts {
     #[arg(
         long,
         help = "generate the initialize script for the shell",
@@ -37,6 +103,18 @@ pub struct CliOpts {
         default_missing_value = "bash"
     )]
     pub init: Option<String>,
+}
+
+#[derive(Parser, Debug)]
+pub(crate) struct NexterOpts {
+    #[arg(
+        short,
+        long,
+        help = "specify the number of times to execute sibling",
+        value_name = "COUNT",
+        default_value_t = 1
+    )]
+    pub step: i32,
 
     #[arg(short = 't', long = "type", help = "specify the nexter type", value_enum, default_value_t = sibling::NexterType::Next, value_name = "TYPE", ignore_case = true)]
     pub nexter: sibling::NexterType,
@@ -49,12 +127,13 @@ pub struct CliOpts {
     )]
     pub input: Option<String>,
 
-    #[arg(index = 1, help = "the target directory", value_name = "DIR")]
-    pub dirs: Vec<PathBuf>,
-
-    #[cfg(debug_assertions)]
-    #[clap(flatten)]
-    pub(crate) compopts: CompletionOpts,
+    #[arg(
+        short = 'a',
+        long,
+        help = "Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.",
+        default_value_t = false
+    )]
+    pub all: bool,
 }
 
 #[cfg(debug_assertions)]
@@ -96,7 +175,7 @@ pub(crate) struct PrintingOpts {
     pub format: Format,
 
     #[arg(
-        short,
+        short = 'A',
         long,
         help = "print the directory name in the absolute path",
         default_value_t = false

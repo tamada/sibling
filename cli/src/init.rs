@@ -19,3 +19,18 @@ pub(crate) fn generate_init_script(shell_name: &str) -> Result<String> {
         None => Err(Error::NotFound(script_file.into())),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_generate_init_script_with_bash() {
+        let script = super::generate_init_script("bash");
+        assert!(script.is_ok());
+    }
+
+    #[test]
+    fn test_generate_init_script_with_unsupported_shell() {
+        let script = super::generate_init_script("fish");
+        assert!(script.is_err());
+    }
+}
