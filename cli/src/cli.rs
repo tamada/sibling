@@ -43,10 +43,8 @@ pub struct CliOpts {
 impl CliOpts {
     pub fn init(&mut self) {
         self.log_opts.init();
-        if let Some(cwd) = &self.cwd {
-            if let Err(e) = std::env::set_current_dir(cwd) {
-                log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
-            }
+        if let Some(cwd) = &self.cwd && let Err(e) = std::env::set_current_dir(cwd) {
+            log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
         }
         if self.dirs.is_empty() {
             self.dirs.push(std::env::current_dir().unwrap());
