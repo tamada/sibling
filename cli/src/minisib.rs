@@ -38,6 +38,8 @@ impl RawOpts {
     pub(crate) fn parse(&self) -> Result<MiniSibOpts> {
         if self.args.is_empty() {
             Err(Error::Fatal("NEXTER_TYPE is required".into()))
+        } else if self.args.len() > 3 {
+            Err(Error::Fatal("Too many arguments".into()))
         } else if self.args.len() == 1 {
             let nexter = self.args.first().unwrap().parse::<NexterType>()?;
             Ok(MiniSibOpts::new(nexter, 1, None))
