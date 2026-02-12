@@ -5,7 +5,8 @@ mod common;
 #[test]
 pub fn test_skip_non_existent_dir() {
     common::init();
-    let _ = std::env::set_current_dir(Path::new("../testdata/basic"));
+    std::env::set_current_dir(Path::new("../testdata/basic"))
+        .expect("Failed to change current directory");
     let dirs =
         sibling::Dirs::new_from_file("../skip.txt").expect("Failed to create Dirs from skip.txt");
     assert_eq!(dirs.len(), 2);
@@ -19,7 +20,8 @@ pub fn test_skip_non_existent_dir() {
 #[test]
 pub fn test_skip_non_existent_dir2() {
     common::init();
-    let _ = std::env::set_current_dir(Path::new("../testdata/basic"));
+    std::env::set_current_dir(Path::new("../testdata/basic"))
+        .expect("Failed to change current directory");
     let dirs = sibling::Dirs::new_from_file_with("../skip.txt", true)
         .expect("Failed to create Dirs from skip.txt");
     assert_eq!(dirs.len(), 4);

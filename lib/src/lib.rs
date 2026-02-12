@@ -97,6 +97,7 @@ impl Display for Error {
 }
 
 /// Stores a list of sibling directories, the parent directory path, and the index of the current directory.
+/// This struct manages the entries of sibling directories, parent directory, and the current directory index.
 #[derive(Debug, Clone)]
 pub struct Dirs {
     /// The list of sibling directories, sorted alphabetically.
@@ -104,7 +105,7 @@ pub struct Dirs {
     /// The parent directory that contains all the sibling directories.
     parent: PathBuf,
     /// Flag indicating whether the current directory is among the sibling directories.
-    pub on_dirs: bool,
+    on_dirs: bool,
     /// The index of the current directory in the `dirs` vector.
     current: usize,
 }
@@ -169,6 +170,8 @@ impl Dirs {
     /// # Returns
     ///
     /// A [`Result`]<[`Dirs`], [`Error`]> instance.
+    /// The resultant `Dirs` contains the list of sibling directories of the given path.
+    /// The parent directory is set to the parent of the given path.
     ///
     /// # Errors
     ///
@@ -203,6 +206,7 @@ impl Dirs {
     /// Create a new [`Dirs`] instance from the given file.
     /// The file should contain a list of directories, one per line.
     /// The first line can optionally specify the parent directory in the format `parent:/path/to`.
+    /// The first character of the line is `#`, it is treated as a comment and ignored.
     /// If the current directory is not found in the list, the current index is set to 0.
     /// If `all_target` parameter is false, non-existent directories are skipped and
     /// the resultant list does not include them.
@@ -237,7 +241,7 @@ impl Dirs {
             log::error!("Dirs::new_from_file: Not a file: {}", path.display());
             Err(Error::NotFile(path))
         } else {
-            build_from_list(&path, all_target)
+            build_from_list_file(&path, all_target)
         }
     }
 
@@ -261,6 +265,10 @@ impl Dirs {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
+    }
+
+    pub fn on_dirs(&self) -> bool {
+        self.on_dirs
     }
 
     /// Get the number of directories in the list.
@@ -353,16 +361,18 @@ fn find_current(dirs: &[PathBuf], current: &PathBuf) -> (usize, bool) {
 
 /// Parse lines from a reader; parent: sets base, remaining lines are directory entries.
 fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
-    let mut parent = String::from(".");
+    let mut parent = None;
     let mut lines = vec![];
     for line in reader.lines().map_while(|r| r.ok()) {
         if line.starts_with("parent:") {
-            parent = line
+            parent = Some(line
                 .chars()
                 .skip("parent:".len())
                 .collect::<String>()
                 .trim()
-                .to_string();
+                .to_string());
+        } else if line.starts_with("#") {
+            continue;
         } else {
             let p = Path::new(line.trim());
             if !all_target && not_exists(p) {
@@ -374,7 +384,7 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     }
     log::debug!(
         "build_from_reader: base='{}', entries={}",
-        parent,
+        parent.as_deref().unwrap_or(""),
         lines.len()
     );
     let (current, on_dirs) = find_current_dir_index(&lines);
@@ -383,7 +393,7 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     }
     Dirs {
         entries: lines,
-        parent: PathBuf::from(parent),
+        parent: PathBuf::from(parent.unwrap_or_else(|| if on_dirs { "..".to_string() } else { ".".to_string() })),
         on_dirs,
         current,
     }
@@ -412,12 +422,12 @@ fn find_current_dir_index(dirs: &[PathBuf]) -> (usize, bool) {
     (0, false)
 }
 
-fn build_from_list(filename: &Path, all_target: bool) -> Result<Dirs> {
+fn build_from_list_file(filename: &Path, all_target: bool) -> Result<Dirs> {
     if let Ok(f) = std::fs::File::open(filename) {
         let reader = BufReader::new(f);
         Ok(build_from_reader(Box::new(reader), all_target))
     } else {
-        log::error!("build_from_list: I/O error: {}", filename.display());
+        log::error!("build_from_list_file: I/O error: {}", filename.display());
         Err(Error::Io(std::io::Error::last_os_error()))
     }
 }

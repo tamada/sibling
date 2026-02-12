@@ -47,7 +47,14 @@ impl CliOpts {
             log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
         }
         if self.dirs.is_empty() {
-            self.dirs.push(std::env::current_dir().unwrap());
+            match std::env::current_dir() {
+                Ok(cwd) => self.dirs.push(cwd),
+                Err(e) => {
+                    log::error!("Failed to get current directory: {e}");
+                    eprintln!("Error: failed to determine current working directory: {e}");
+                    std::process::exit(1);
+                }
+            }
         }
     }
 }

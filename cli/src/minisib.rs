@@ -3,12 +3,12 @@
 //! This program is used for directory traversing in the shell scripts.
 //!
 //! Usage:
-//! minisib [OPTIONS] <NEXTER_TYPE> [INPUT_FILE]
-//! OPTIONS:
-//!     <NUM>: specify the number of times to execute sibling (default: 1)
-//!            -1 means minus one step, -2 means minus two steps, and +2 means plus two steps.
-//! NEXTER_TYPE: next, previous, first, last, random, keep
-//! INPUT_FILE: file containing the list of directories (if not provided, uses current directory
+//! minisib <NEXTER_TYPE> [NUM] [INPUT_FILE]
+//! NEXTER_TYPE: next, previous, first, last, random, keep.
+//! NUM:         specify the number of times to execute sibling (default: 1)
+//!              -1 means minus one step, -2 means minus two steps, and +2 means plus two steps.
+//! INPUT_FILE:  file containing the list of directories (if not provided, uses current directory.
+//! NUM and INPUT_FILE can be in any order.
 use clap::{Parser, Subcommand};
 use sibling::{Dirs, Error, NexterType, Result};
 
@@ -91,12 +91,13 @@ impl MiniSibOpts {
         let target_dirs = if let Some(file) = &self.file {
             Dirs::new_from_file(file)?
         } else {
-            Dirs::new(std::env::current_dir().unwrap())?
+            let cwd = std::env::current_dir().map_err(Error::Io)?;
+            Dirs::new(cwd)?
         };
         if let Some(dir) = target_dirs.next_with(nexter.as_ref(), self.step) {
             Ok(format!(
                 "{}\n{}\n{}\n{}",
-                crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs),
+                crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs()),
                 target_dirs.len(),
                 dir.index() + 1,
                 dir.is_last_item()
@@ -107,7 +108,7 @@ impl MiniSibOpts {
                 crate::printer::pathbuf_to_string(
                     Some(target_dirs.parent()),
                     false,
-                    target_dirs.on_dirs
+                    target_dirs.on_dirs()
                 ),
                 target_dirs.len(),
                 -1,
