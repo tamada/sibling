@@ -39,10 +39,10 @@ impl RawOpts {
         if self.args.is_empty() {
             Err(Error::Fatal("NEXTER_TYPE is required".into()))
         } else if self.args.len() == 1 {
-            let nexter = NexterType::from(self.args[0].as_str());
+            let nexter = self.args.first().unwrap().parse::<NexterType>()?;
             Ok(MiniSibOpts::new(nexter, 1, None))
         } else if self.args.len() == 2 {
-            let nexter = NexterType::from(self.args.first().unwrap().as_str());
+            let nexter = self.args.first().unwrap().parse::<NexterType>()?;
             if let Ok(n) = self.args[1].parse::<i32>() {
                 let step = n;
                 Ok(MiniSibOpts::new(nexter, step, None))
@@ -51,7 +51,7 @@ impl RawOpts {
                 Ok(MiniSibOpts::new(nexter, 1, Some(file)))
             }
         } else {
-            let nexter = NexterType::from(self.args.first().unwrap().as_str());
+            let nexter = self.args.first().unwrap().parse::<NexterType>()?;
             if let Ok(n) = self.args[1].parse::<i32>() {
                 let step = n;
                 let file = Some(self.args[2].as_str().to_string());
@@ -93,7 +93,7 @@ impl MiniSibOpts {
             Ok(format!("{}\n{}\n{}\n{}",
                 crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs),
                 target_dirs.len(),
-                dir.index(),
+                dir.index() + 1,
                 dir.is_last_item()))
         } else {
             Ok(format!("{}\n{}\n{}\n{}",

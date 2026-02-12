@@ -19,23 +19,6 @@ pub enum LogLevel {
     Trace,
 }
 
-fn init_log(level: &LogLevel) {
-    use LogLevel::{Error, Warn, Info, Debug, Trace};
-    if std::env::var_os("RUST_LOG").is_none() {
-        unsafe {
-            match level {
-                Error => std::env::set_var("RUST_LOG", "error"),
-                Warn => std::env::set_var("RUST_LOG", "warn"),
-                Info => std::env::set_var("RUST_LOG", "info"),
-                Debug => std::env::set_var("RUST_LOG", "debug"),
-                Trace => std::env::set_var("RUST_LOG", "trace"),
-            };
-        }
-    }
-    env_logger::init();
-    log::info!("Log level set to {level:?}");
-}
-
 fn perform_impl(
     dirs: &Dirs,
     nexter: &dyn Nexter,
@@ -91,7 +74,7 @@ fn perform_sibling(opts: CliOpts) -> Vec<Result<String>> {
 }
 
 fn perform(opts: CliOpts) -> Vec<Result<String>> {
-    if let Some(shell) = opts.init {
+    if let Some(shell) = opts.init_script.init {
         vec![init::generate_init_script(&shell)]
     } else if opts.nexter_opts.input.is_some() {
         perform_from_file(opts)
@@ -103,14 +86,8 @@ fn perform(opts: CliOpts) -> Vec<Result<String>> {
 }
 
 fn main() {
-    let mut args = std::env::args();
-    let args = if args.len() == 1 {
-        vec![args.next().unwrap(), ".".into()]
-    } else {
-        args.collect()
-    };
-    let opts = cli::CliOpts::parse_from(args);
-    init_log(&opts.log);
+    let mut opts = cli::CliOpts::parse();
+    opts.init();
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if opts.compopts.completion {

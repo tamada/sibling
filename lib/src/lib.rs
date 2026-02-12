@@ -16,6 +16,7 @@
 use std::fmt::Display;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use clap::ValueEnum;
 
@@ -39,29 +40,28 @@ pub enum NexterType {
     Keep,
 }
 
-impl From<&str> for NexterType {
-    fn from(s: &str) -> Self {
+impl FromStr for NexterType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
-            "first" => NexterType::First,
-            "last" => NexterType::Last,
-            "previous" => NexterType::Previous,
-            "next" => NexterType::Next,
-            "random" => NexterType::Random,
-            "keep" => NexterType::Keep,
-            _ => NexterType::Next,
+            "first" => Ok(NexterType::First),
+            "last" => Ok(NexterType::Last),
+            "previous" => Ok(NexterType::Previous),
+            "next" => Ok(NexterType::Next),
+            "random" => Ok(NexterType::Random),
+            "keep" => Ok(NexterType::Keep),
+            _ => Err(Error::UnknownNexterType(s.to_string())),
         }
-    }
-}
-
-impl From<String> for NexterType {
-    fn from(s: String) -> Self {
-        NexterType::from(s.as_str())
     }
 }
 
 /// The error type for sibling.
 #[derive(Debug)]
 pub enum Error {
+    /// Multiple errors occurred (array of errors).
+    Array(Vec<Error>),
+    /// A fatal error with a custom message.
+    Fatal(String),
     /// I/O error occurred while accessing the file system.
     Io(std::io::Error),
     /// The specified path was not found.
@@ -72,10 +72,8 @@ pub enum Error {
     NotDir(PathBuf),
     /// The specified path is not a file.
     NotFile(PathBuf),
-    /// A fatal error with a custom message.
-    Fatal(String),
-    /// Multiple errors occurred (array of errors).
-    Array(Vec<Error>),
+    /// The specified nexter type is unknown.
+    UnknownNexterType(String),
 }
 
 impl Display for Error {
@@ -93,6 +91,7 @@ impl Display for Error {
             Error::NotFile(path) => write!(f, "{}: Not a file", path.display()),
             Error::NotFound(path) => write!(f, "{}: Not found", path.display()),
             Error::Fatal(message) => write!(f, "Fatal error: {message}"),
+            Error::UnknownNexterType(s) => write!(f, "Unknown nexter type: {s}"),
         }
     }
 }
