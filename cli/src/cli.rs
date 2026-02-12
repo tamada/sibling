@@ -39,7 +39,7 @@ impl CliOpts {
         self.log_opts.init();
         if let Some(cwd) = &self.cwd {
             if let Err(e) = std::env::set_current_dir(cwd) {
-                log::error!("Failed to set current directory to {:?}: {}, use \".\"", cwd, e);
+                log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
             }
         }
         if self.dirs.is_empty() {

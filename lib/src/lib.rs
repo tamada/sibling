@@ -294,7 +294,7 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
         Ok(Dirs {
             entries: dirs,
             parent: parent.to_path_buf(),
-            on_dirs: on_dirs,
+            on_dirs,
             current: index,
         })
     } else {
@@ -347,17 +347,15 @@ fn find_current(dirs: &[PathBuf], current: &PathBuf) -> (usize, bool) {
 fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     let mut parent = String::from(".");
     let mut lines = vec![];
-    for line in reader.lines() {
-        if let Ok(line) = line {
-            if line.starts_with("parent:") {
-                parent = line.chars().skip("parent:".len()).collect::<String>().trim().to_string();
+    for line in reader.lines().map_while(|r| r.ok()) {
+        if line.starts_with("parent:") {
+            parent = line.chars().skip("parent:".len()).collect::<String>().trim().to_string();
+        } else {
+            let p = Path::new(line.trim());
+            if !all_target && not_exists(p) {
+                continue;
             } else {
-                let p = Path::new(line.trim());
-                if !all_target && not_exists(p) {
-                    continue;
-                } else {
-                    lines.push(p.to_path_buf());
-                }
+                lines.push(p.to_path_buf());
             }
         }
     }

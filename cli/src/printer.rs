@@ -98,12 +98,10 @@ pub(crate) fn pathbuf_to_string(path: Option<&Path>, absolute: bool, on_dirs: bo
                     .unwrap()
                     .to_string_lossy()
                     .to_string()
+            } else if on_dirs && !p.is_absolute() {
+                format!("../{}", p.to_string_lossy())
             } else {
-                if on_dirs && !p.is_absolute() {
-                    format!("../{}", p.to_string_lossy())
-                } else {
-                    p.to_string_lossy().to_string()
-                }
+                p.to_string_lossy().to_string()
             }
         }
         None => String::new(),
