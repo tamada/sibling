@@ -97,7 +97,7 @@ impl MiniSibOpts {
         if let Some(dir) = target_dirs.next_with(nexter.as_ref(), self.step) {
             Ok(format!(
                 "{}\n{}\n{}\n{}",
-                crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs()),
+                crate::printer::path_to_string(Some(dir.path()), false, target_dirs.on_dirs()),
                 target_dirs.len(),
                 dir.index() + 1,
                 dir.is_last_item()
@@ -105,7 +105,7 @@ impl MiniSibOpts {
         } else {
             Ok(format!(
                 "{}\n{}\n{}\n{}",
-                crate::printer::pathbuf_to_string(
+                crate::printer::path_to_string(
                     Some(target_dirs.parent()),
                     false,
                     target_dirs.on_dirs()
