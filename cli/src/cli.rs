@@ -19,8 +19,14 @@ pub struct CliOpts {
     #[clap(flatten)]
     pub(crate) log_opts: LogOpts,
 
-    #[arg(short = 'w', long = "working-dir", help = "set the current working directory.", hide = true, value_name = "DIR",
-          long_help = "This option is applied before any other processing. Therefore, other options that specify paths should use the relative path from this option value. If this option is not specified, the current directory is used.")]
+    #[arg(
+        short = 'w',
+        long = "working-dir",
+        help = "set the current working directory.",
+        hide = true,
+        value_name = "DIR",
+        long_help = "This option is applied before any other processing. Therefore, other options that specify paths should use the relative path from this option value. If this option is not specified, the current directory is used."
+    )]
     pub(crate) cwd: Option<PathBuf>,
 
     #[arg(index = 1, help = "the target directory", value_name = "DIR")]
@@ -63,7 +69,7 @@ pub(crate) struct LogOpts {
 
 impl LogOpts {
     pub fn init(&self) {
-        use LogLevel::{Error, Warn, Info, Debug, Trace};
+        use LogLevel::{Debug, Error, Info, Trace, Warn};
         if std::env::var_os("RUST_LOG").is_none() {
             unsafe {
                 match self.log {
@@ -114,7 +120,12 @@ pub(crate) struct NexterOpts {
     )]
     pub input: Option<String>,
 
-    #[arg(short = 'a', long, help = "Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.", default_value_t = false)]
+    #[arg(
+        short = 'a',
+        long,
+        help = "Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.",
+        default_value_t = false
+    )]
     pub all: bool,
 }
 

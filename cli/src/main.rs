@@ -7,8 +7,8 @@ use sibling::{Dirs, Error, Nexter, Result};
 mod cli;
 mod gencomp;
 mod init;
-pub(crate) mod printer;
 pub(crate) mod minisib;
+pub(crate) mod printer;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub enum LogLevel {
@@ -19,12 +19,7 @@ pub enum LogLevel {
     Trace,
 }
 
-fn perform_impl(
-    dirs: &Dirs,
-    nexter: &dyn Nexter,
-    step: i32,
-    opts: &PrintingOpts,
-) -> String {
+fn perform_impl(dirs: &Dirs, nexter: &dyn Nexter, step: i32, opts: &PrintingOpts) -> String {
     let next = dirs.next_with(nexter, step);
     printer::result_string(dirs, next, opts)
 }
@@ -35,7 +30,12 @@ fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
         None => Err(Error::Fatal("input is not specified".into())),
         Some(file) => match Dirs::new_from_file_with(file, opts.nexter_opts.all) {
             Err(e) => Err(e),
-            Ok(dirs) => Ok(perform_impl(&dirs, nexter.as_ref(), opts.nexter_opts.step, &opts.p_opts)),
+            Ok(dirs) => Ok(perform_impl(
+                &dirs,
+                nexter.as_ref(),
+                opts.nexter_opts.step,
+                &opts.p_opts,
+            )),
         },
     };
     vec![r]

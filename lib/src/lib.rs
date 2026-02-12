@@ -220,11 +220,18 @@ impl Dirs {
         let file = file.as_ref();
         if file == "-" {
             log::info!("Reading directories from stdin");
-            return Ok(build_from_reader(Box::new(std::io::stdin().lock()), all_target));
+            return Ok(build_from_reader(
+                Box::new(std::io::stdin().lock()),
+                all_target,
+            ));
         }
         let path = PathBuf::from(file);
         if !path.exists() {
-            log::error!("Dirs::new_from_file: Not found: {}, pwd: {}", path.display(), std::env::current_dir().unwrap().display());
+            log::error!(
+                "Dirs::new_from_file: Not found: {}, pwd: {}",
+                path.display(),
+                std::env::current_dir().unwrap().display()
+            );
             Err(Error::NotFound(path))
         } else if path.is_dir() {
             log::error!("Dirs::new_from_file: Not a file: {}", path.display());
@@ -281,8 +288,11 @@ impl Dirs {
 
 /// Collect sibling directories under parent and compute the index of current.
 fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
-    log::trace!("build_dirs(parent={parent:?}, current={})", current.display());
-    let Some(parent) =  parent else {
+    log::trace!(
+        "build_dirs(parent={parent:?}, current={})",
+        current.display()
+    );
+    let Some(parent) = parent else {
         log::error!("build_dirs: No parent for current={}", current.display());
         return Err(Error::NoParent(current));
     };
@@ -331,9 +341,7 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
 
 /// Return the index of current in dirs, or 0 if not found.
 fn find_current(dirs: &[PathBuf], current: &PathBuf) -> (usize, bool) {
-    let idx = dirs
-        .iter()
-        .position(|dir| dir == current);
+    let idx = dirs.iter().position(|dir| dir == current);
     if let Some(index) = idx {
         log::trace!("find_current: found current at index {index}");
         (index, true)
@@ -349,7 +357,12 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     let mut lines = vec![];
     for line in reader.lines().map_while(|r| r.ok()) {
         if line.starts_with("parent:") {
-            parent = line.chars().skip("parent:".len()).collect::<String>().trim().to_string();
+            parent = line
+                .chars()
+                .skip("parent:".len())
+                .collect::<String>()
+                .trim()
+                .to_string();
         } else {
             let p = Path::new(line.trim());
             if !all_target && not_exists(p) {
@@ -359,7 +372,11 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
             }
         }
     }
-    log::debug!("build_from_reader: base='{}', entries={}", parent, lines.len());
+    log::debug!(
+        "build_from_reader: base='{}', entries={}",
+        parent,
+        lines.len()
+    );
     let (current, on_dirs) = find_current_dir_index(&lines);
     if !on_dirs {
         log::debug!("build_from_reader: current directory not found in siblings");
@@ -499,14 +516,15 @@ fn next_impl(dirs: &Dirs, step: i32) -> Option<Dir<'_>> {
         dirs.current
     );
     if next < 0 || next >= length {
-        log::warn!(
-            "next_impl: out of range (next={next}, len={length})",
-        );
+        log::warn!("next_impl: out of range (next={next}, len={length})",);
         None
     } else if next == 0 {
         Some(Dir::new_of_last_item(dirs, 0))
     } else if next == length - 1 {
-        Some(Dir::new_of_last_item(dirs, usize::try_from(length - 1).unwrap()))
+        Some(Dir::new_of_last_item(
+            dirs,
+            usize::try_from(length - 1).unwrap(),
+        ))
     } else {
         Some(Dir::new(dirs, usize::try_from(next).unwrap()))
     }

@@ -1,7 +1,7 @@
 //! minisib: A minimal sibling command implementation
-//! 
+//!
 //! This program is used for directory traversing in the shell scripts.
-//! 
+//!
 //! Usage:
 //! minisib [OPTIONS] <NEXTER_TYPE> [INPUT_FILE]
 //! OPTIONS:
@@ -9,21 +9,23 @@
 //!            -1 means minus one step, -2 means minus two steps, and +2 means plus two steps.
 //! NEXTER_TYPE: next, previous, first, last, random, keep
 //! INPUT_FILE: file containing the list of directories (if not provided, uses current directory
+use clap::{Parser, Subcommand};
 use sibling::{Dirs, Error, NexterType, Result};
-use clap::{Subcommand, Parser};
 
 #[derive(Subcommand, Debug)]
 pub(crate) enum MiniSibCommand {
-    #[command(name = "minisib", about = "Great Finding! A minimal sibling command implementation. This command is a helper utility for the shell. It assumes the user will not use it.", hide = true)]
+    #[command(
+        name = "minisib",
+        about = "Great Finding! A minimal sibling command implementation. This command is a helper utility for the shell. It assumes the user will not use it.",
+        hide = true
+    )]
     MiniSib(RawOpts),
 }
 
 impl MiniSibCommand {
     pub(crate) fn perform(&self) -> Result<String> {
         match self {
-            MiniSibCommand::MiniSib(opts) => {
-                opts.parse().and_then(|item| item.perform())
-            }
+            MiniSibCommand::MiniSib(opts) => opts.parse().and_then(|item| item.perform()),
         }
     }
 }
@@ -92,19 +94,26 @@ impl MiniSibOpts {
             Dirs::new(std::env::current_dir().unwrap())?
         };
         if let Some(dir) = target_dirs.next_with(nexter.as_ref(), self.step) {
-            Ok(format!("{}\n{}\n{}\n{}",
+            Ok(format!(
+                "{}\n{}\n{}\n{}",
                 crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs),
                 target_dirs.len(),
                 dir.index() + 1,
-                dir.is_last_item()))
+                dir.is_last_item()
+            ))
         } else {
-            Ok(format!("{}\n{}\n{}\n{}",
-                crate::printer::pathbuf_to_string(Some(target_dirs.parent()), false, target_dirs.on_dirs),
+            Ok(format!(
+                "{}\n{}\n{}\n{}",
+                crate::printer::pathbuf_to_string(
+                    Some(target_dirs.parent()),
+                    false,
+                    target_dirs.on_dirs
+                ),
                 target_dirs.len(),
                 -1,
-                true))
+                true
+            ))
         }
-
     }
 }
 
@@ -117,8 +126,7 @@ mod tests {
     #[test]
     fn test_args_1() {
         let args = vec!["sibling", "minisib", "previous", "-2", "dirs.txt"];
-        let minisib = crate::cli::CliOpts::parse_from(&args)
-            .minisib;
+        let minisib = crate::cli::CliOpts::parse_from(&args).minisib;
         assert!(minisib.is_some());
         let opts = if let Some(MiniSibCommand::MiniSib(opts)) = minisib {
             opts.parse().unwrap()
@@ -134,8 +142,7 @@ mod tests {
     #[test]
     fn test_args_2() {
         let args = vec!["sibling", "minisib", "previous", "dirs.txt"];
-        let minisib = crate::cli::CliOpts::parse_from(&args)
-            .minisib;
+        let minisib = crate::cli::CliOpts::parse_from(&args).minisib;
         assert!(minisib.is_some());
         let opts = if let Some(MiniSibCommand::MiniSib(opts)) = minisib {
             opts.parse().unwrap()
@@ -150,8 +157,7 @@ mod tests {
     #[test]
     fn test_args_3() {
         let args = vec!["sibling", "minisib", "keep"];
-        let minisib = crate::cli::CliOpts::parse_from(&args)
-            .minisib;
+        let minisib = crate::cli::CliOpts::parse_from(&args).minisib;
         assert!(minisib.is_some());
         let opts = if let Some(MiniSibCommand::MiniSib(opts)) = minisib {
             opts.parse().unwrap()

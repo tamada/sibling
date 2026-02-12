@@ -3,11 +3,7 @@ use std::path::Path;
 use crate::cli::{Format, PrintingOpts};
 use sibling::{Dir, Dirs};
 
-pub(crate) fn result_string(
-    dirs: &Dirs,
-    next: Option<Dir<'_>>,
-    opts: &PrintingOpts,
-) -> String {
+pub(crate) fn result_string(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -> String {
     match opts.format {
         Format::Json => json_string(dirs, next, opts.absolute),
         Format::Csv => csv_string(dirs, next, opts.absolute),
@@ -18,13 +14,15 @@ pub(crate) fn result_string(
             } else {
                 result_string_impl(dirs, next, opts)
             }
-        },
+        }
     }
 }
 
 fn json_string(dirs: &Dirs, next: Option<Dir<'_>>, absolute: bool) -> String {
     let current = dirs.current();
-    let next_path = next.as_ref().map(|n| pathbuf_to_string(Some(n.path()), absolute, dirs.on_dirs));
+    let next_path = next
+        .as_ref()
+        .map(|n| pathbuf_to_string(Some(n.path()), absolute, dirs.on_dirs));
     format!(
         r#"{{"current":{{"path":"{}","index":{}}},"next":{{"path":"{}","index":{}}},"total":{}}}"#,
         pathbuf_to_string(Some(dirs.current().path()), absolute, dirs.on_dirs),
