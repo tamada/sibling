@@ -104,6 +104,8 @@ pub struct Dirs {
     entries: Vec<PathBuf>,
     /// The parent directory that contains all the sibling directories.
     parent: PathBuf,
+    /// Flag indicating whether the current directory is among the sibling directories.
+    pub on_dirs: bool,
     /// The index of the current directory in the `dirs` vector.
     current: usize,
 }
@@ -167,7 +169,7 @@ impl Dirs {
     ///
     /// # Returns
     ///
-    /// A [`Result`]<[`Dirs`]> instance.
+    /// A [`Result`]<[`Dirs`], [`Error`]> instance.
     ///
     /// # Errors
     ///
@@ -202,32 +204,39 @@ impl Dirs {
     /// Create a new [`Dirs`] instance from the given file.
     /// The file should contain a list of directories, one per line.
     /// The first line can optionally specify the parent directory in the format `parent:/path/to`.
+    /// If the current directory is not found in the list, the current index is set to 0.
+    /// If `all_target` parameter is false, non-existent directories are skipped and
+    /// the resultant list does not include them.
     ///
     /// # Returns
-    /// A [`Result`]<[`Dirs`]> instance.
+    /// A [`Result`]<[`Dirs`], [`Error`]> instance.
     ///
     /// # Errors
     ///
     /// - Returns [`Error::Io`] if an I/O error occurs.
     /// - Returns [`Error::NotFile`] if the given path is not a file.
     /// - Returns [`Error::NotFound`] if the given path does not exist.
-    pub fn new_from_file<S: AsRef<str>>(file: S) -> Result<Self> {
+    pub fn new_from_file_with<S: AsRef<str>>(file: S, all_target: bool) -> Result<Self> {
         log::debug!("Dirs::new_from_file(file={})", file.as_ref());
         let file = file.as_ref();
         if file == "-" {
             log::info!("Reading directories from stdin");
-            return Ok(build_from_reader(Box::new(std::io::stdin().lock())));
+            return Ok(build_from_reader(Box::new(std::io::stdin().lock()), all_target));
         }
         let path = PathBuf::from(file);
         if !path.exists() {
-            log::error!("Dirs::new_from_file: Not found: {}", path.display());
+            log::error!("Dirs::new_from_file: Not found: {}, pwd: {}", path.display(), std::env::current_dir().unwrap().display());
             Err(Error::NotFound(path))
         } else if path.is_dir() {
             log::error!("Dirs::new_from_file: Not a file: {}", path.display());
             Err(Error::NotFile(path))
         } else {
-            build_from_list(&path)
+            build_from_list(&path, all_target)
         }
+    }
+
+    pub fn new_from_file<S: AsRef<str>>(file: S) -> Result<Self> {
+        Dirs::new_from_file_with(file, false)
     }
 
     /// Get the parent directory path.
@@ -281,20 +290,12 @@ fn build_dirs(parent: Option<&Path>, current: PathBuf) -> Result<Dirs> {
     let mut errs = vec![];
     let dirs = collect_dirs(parent, &mut errs);
     if errs.is_empty() {
-        let current_index = find_current(&dirs, &current);
-        let index = if current_index == -1 {
-            log::warn!(
-                "build_dirs: current directory not found in siblings: {}",
-                current.display()
-            );
-            0
-        } else {
-            usize::try_from(current_index).unwrap()
-        };
+        let (index, on_dirs) = find_current(&dirs, &current);
         log::info!("build_dirs: siblings={}, current_index={index}", dirs.len());
         Ok(Dirs {
             entries: dirs,
             parent: parent.to_path_buf(),
+            on_dirs: on_dirs,
             current: index,
         })
     } else {
@@ -330,44 +331,60 @@ fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
 }
 
 /// Return the index of current in dirs, or 0 if not found.
-fn find_current(dirs: &[PathBuf], current: &PathBuf) -> i32 {
+fn find_current(dirs: &[PathBuf], current: &PathBuf) -> (usize, bool) {
     let idx = dirs
         .iter()
-        .position(|dir| dir == current)
-        .map_or(-1, |i| i32::try_from(i).unwrap());
-    log::trace!("find_current: index={} for {}", idx, current.display());
-    idx
+        .position(|dir| dir == current);
+    if let Some(index) = idx {
+        log::trace!("find_current: found current at index {index}");
+        (index, true)
+    } else {
+        log::warn!("find_current: current directory not found in siblings");
+        (0, false)
+    }
 }
 
 /// Parse lines from a reader; parent: sets base, remaining lines are directory entries.
-fn build_from_reader(reader: Box<dyn BufRead>) -> Dirs {
-    let lines = reader
-        .lines()
-        .filter_map(|line| line.map(|n| n.trim().to_string()).ok())
-        .collect::<Vec<String>>();
-    let base = if let Some(base) = lines.iter().find(|l| l.starts_with("parent:")) {
-        base.chars().skip(7).collect::<String>().trim().to_string()
-    } else {
-        ".".to_string()
-    };
-    let dirs = lines
-        .iter()
-        .filter(|l| !l.starts_with("parent:"))
-        .map(PathBuf::from)
-        .collect::<Vec<PathBuf>>();
-    log::debug!("build_from_reader: base='{}', entries={}", base, dirs.len());
-    let current = find_current_dir_index(&dirs);
-    if current == 0 {
-        log::warn!("build_from_reader: current directory not found in siblings");
+fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
+    let mut parent = String::from(".");
+    let mut lines = vec![];
+    for line in reader.lines() {
+        if let Ok(line) = line {
+            if line.starts_with("parent:") {
+                parent = line.chars().skip("parent:".len()).collect::<String>().trim().to_string();
+            } else {
+                let p = Path::new(line.trim());
+                if !all_target && not_exists(p) {
+                    continue;
+                } else {
+                    lines.push(p.to_path_buf());
+                }
+            }
+        }
+    }
+    log::debug!("build_from_reader: base='{}', entries={}", parent, lines.len());
+    let (current, on_dirs) = find_current_dir_index(&lines);
+    if !on_dirs {
+        log::debug!("build_from_reader: current directory not found in siblings");
     }
     Dirs {
-        entries: dirs,
-        parent: PathBuf::from(base),
+        entries: lines,
+        parent: PathBuf::from(parent),
+        on_dirs,
         current,
     }
 }
 
-fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
+fn not_exists(path: &Path) -> bool {
+    if path.exists() {
+        false
+    } else {
+        let sibling_p = Path::new("..").join(path);
+        !sibling_p.exists()
+    }
+}
+
+fn find_current_dir_index(dirs: &[PathBuf]) -> (usize, bool) {
     log::trace!("find_current_dir_index(dirs.len={})", dirs.len());
     if let Ok(pwd) = std::env::current_dir() {
         let cwd = PathBuf::from(".");
@@ -375,16 +392,16 @@ fn find_current_dir_index(dirs: &[PathBuf]) -> usize {
             .iter()
             .position(|dir| dir == &cwd || pwd.ends_with(dir))
         {
-            return pos;
+            return (pos, true);
         }
     }
-    0
+    (0, false)
 }
 
-fn build_from_list(filename: &Path) -> Result<Dirs> {
+fn build_from_list(filename: &Path, all_target: bool) -> Result<Dirs> {
     if let Ok(f) = std::fs::File::open(filename) {
         let reader = BufReader::new(f);
-        Ok(build_from_reader(Box::new(reader)))
+        Ok(build_from_reader(Box::new(reader), all_target))
     } else {
         log::error!("build_from_list: I/O error: {}", filename.display());
         Err(Error::Io(std::io::Error::last_os_error()))
@@ -548,7 +565,7 @@ mod tests {
         let dirs = dirs.unwrap();
         assert_eq!(dirs.len(), 4);
         assert_eq!(dirs.current, 1);
-        assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
+        assert_eq!(dirs.parent, PathBuf::from("../testdata/basic"));
     }
 
     #[test]

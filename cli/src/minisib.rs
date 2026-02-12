@@ -91,12 +91,16 @@ impl MiniSibOpts {
         };
         if let Some(dir) = target_dirs.next_with(nexter.as_ref(), self.step) {
             Ok(format!("{}\n{}\n{}\n{}",
-                dir.path().to_string_lossy(),
+                crate::printer::pathbuf_to_string(Some(dir.path()), false, target_dirs.on_dirs),
                 target_dirs.len(),
                 dir.index(),
                 dir.is_last_item()))
         } else {
-            Err(Error::Fatal("No sibling directory found".into()))
+            Ok(format!("{}\n{}\n{}\n{}",
+                crate::printer::pathbuf_to_string(Some(target_dirs.parent()), false, target_dirs.on_dirs),
+                target_dirs.len(),
+                -1,
+                true))
         }
 
     }

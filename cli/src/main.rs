@@ -7,7 +7,7 @@ use sibling::{Dirs, Error, Nexter, Result};
 mod cli;
 mod gencomp;
 mod init;
-mod printer;
+pub(crate) mod printer;
 pub(crate) mod minisib;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -50,7 +50,7 @@ fn perform_from_file(opts: CliOpts) -> Vec<Result<String>> {
     let nexter = sibling::NexterFactory::create(opts.nexter_opts.nexter);
     let r = match opts.nexter_opts.input {
         None => Err(Error::Fatal("input is not specified".into())),
-        Some(file) => match Dirs::new_from_file(file) {
+        Some(file) => match Dirs::new_from_file_with(file, opts.nexter_opts.all) {
             Err(e) => Err(e),
             Ok(dirs) => Ok(perform_impl(&dirs, nexter.as_ref(), opts.nexter_opts.step, &opts.p_opts)),
         },

@@ -1,5 +1,5 @@
-testdata/basic/a
+../testdata/basic/a
 .
-testdata/basic/b
-testdata/basic/c
-parent:testdata/basic
+../testdata/basic/b
+../testdata/basic/c
+parent:../testdata/basic

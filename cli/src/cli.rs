@@ -65,8 +65,8 @@ pub(crate) struct NexterOpts {
     )]
     pub input: Option<String>,
 
-    #[arg(short = 'S', long, help = "strictly check the directory traversing", default_value_t = false)]
-    pub strict: bool,
+    #[arg(short = 'a', long, help = "Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.", default_value_t = false)]
+    pub all: bool,
 }
 
 #[cfg(debug_assertions)]
@@ -108,7 +108,7 @@ pub(crate) struct PrintingOpts {
     pub format: Format,
 
     #[arg(
-        short,
+        short = 'A',
         long,
         help = "print the directory name in the absolute path",
         default_value_t = false
