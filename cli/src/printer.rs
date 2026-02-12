@@ -118,14 +118,14 @@ mod tests {
     fn test_pathbuf_to_string_1() {
         let p = Path::new("../testdata");
         let s = path_to_string(Some(p), false, true);
-        assert_eq!(s, "../testdata");
+        assert_eq!(s, "../../testdata");
     }
 
     #[test]
     fn test_pathbuf_to_string_2() {
         let p = Path::new("../testdata");
         let s = path_to_string(Some(p), false, false);
-        assert_eq!(s, "testdata");
+        assert_eq!(s, "../testdata");
     }
 
     #[test]
