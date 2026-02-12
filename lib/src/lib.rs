@@ -552,6 +552,51 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_error_display_not_dir() {
+        let err = Error::NotDir(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: Not a directory".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_not_file() {
+        let err = Error::NotFile(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: Not a file".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_no_parent() {
+        let err = Error::NoParent(PathBuf::from("/path/to/file"));
+        assert_eq!(
+            format!("{}", err),
+            "/path/to/file: No parent directory".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_fatal() {
+        let err = Error::Fatal("Some fatal error".into());
+        assert_eq!(
+            format!("{}", err),
+            "Fatal error: Some fatal error".to_string()
+        );
+    }
+
+    #[test]
+    fn test_error_display_unknown_nexter_type() {
+        let err = Error::UnknownNexterType("unknown".into());
+        assert_eq!(
+            format!("{}", err),
+            "Unknown nexter type: unknown".to_string()
+        );
+    }
+
+    #[test]
     fn test_dirs_new() {
         let dirs = Dirs::new(PathBuf::from("../testdata/basic/d"));
         assert!(dirs.is_ok());
