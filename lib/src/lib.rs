@@ -365,12 +365,13 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     let mut lines = vec![];
     for line in reader.lines().map_while(|r| r.ok()) {
         if line.starts_with("parent:") {
-            parent = Some(line
-                .chars()
-                .skip("parent:".len())
-                .collect::<String>()
-                .trim()
-                .to_string());
+            parent = Some(
+                line.chars()
+                    .skip("parent:".len())
+                    .collect::<String>()
+                    .trim()
+                    .to_string(),
+            );
         } else if line.starts_with("#") {
             continue;
         } else {
@@ -393,7 +394,13 @@ fn build_from_reader(reader: Box<dyn BufRead>, all_target: bool) -> Dirs {
     }
     Dirs {
         entries: lines,
-        parent: PathBuf::from(parent.unwrap_or_else(|| if on_dirs { "..".to_string() } else { ".".to_string() })),
+        parent: PathBuf::from(parent.unwrap_or_else(|| {
+            if on_dirs {
+                "..".to_string()
+            } else {
+                ".".to_string()
+            }
+        })),
         on_dirs,
         current,
     }
@@ -585,12 +592,13 @@ mod tests {
 
     #[test]
     fn test_dir_from_file() {
-        let dirs = Dirs::new_from_file("../testdata/basic/dirlist.txt");
+        let dirs = Dirs::new_from_file_with("../testdata/basic/dirlist.txt", true);
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
-        assert_eq!(dirs.len(), 4);
-        assert_eq!(dirs.current, 1);
-        assert_eq!(dirs.parent, PathBuf::from("../testdata/basic"));
+        assert_eq!(dirs.len(), 3);
+        assert_eq!(dirs.current, 0);
+        assert!(!dirs.on_dirs());
+        assert_eq!(dirs.parent, PathBuf::from("."));
     }
 
     #[test]

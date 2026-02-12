@@ -97,7 +97,7 @@ pub(crate) fn path_to_string(path: Option<&Path>, absolute: bool, on_dirs: bool)
                     Err(e) => {
                         log::error!("Failed to get canonical path for {p:?}: {e}");
                         p.to_string_lossy().to_string()
-                    },
+                    }
                 }
             } else if on_dirs && !p.is_absolute() {
                 Path::new("..").join(p).to_string_lossy().to_string()

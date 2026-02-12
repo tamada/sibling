@@ -2,13 +2,27 @@
 //!
 //! This program is used for directory traversing in the shell scripts.
 //!
-//! Usage:
+//! ### Usage:
+//!
+//! ```text
 //! minisib <NEXTER_TYPE> [NUM] [INPUT_FILE]
 //! NEXTER_TYPE: next, previous, first, last, random, keep.
 //! NUM:         specify the number of times to execute sibling (default: 1)
 //!              -1 means minus one step, -2 means minus two steps, and +2 means plus two steps.
 //! INPUT_FILE:  file containing the list of directories (if not provided, uses current directory.
 //! NUM and INPUT_FILE can be in any order.
+//! ```
+//!
+//! ### Output:
+//!
+//! The output of this subcommand consists of four lines:
+//!
+//! ```text
+//! [NEXT_DIR_PATH or PARENT_DIR_PATH]
+//! [TOTAL_NUMBER_OF_DIRECTORIES]
+//! [INDEX_OF_NEXT_DIRECTORY (1-based, -1 if no next directory)]
+//! [IS_LAST_ITEM (true/false)]
+//! ```
 use clap::{Parser, Subcommand};
 use sibling::{Dirs, Error, NexterType, Result};
 
@@ -168,5 +182,28 @@ mod tests {
         assert_eq!(opts.step, 1);
         assert_eq!(opts.nexter_type, super::NexterType::Keep);
         assert!(opts.file.is_none());
+    }
+
+    #[test]
+    fn test_sibling() {
+        let args = vec![
+            "sibling",
+            "--working-dir",
+            "../testdata/basic",
+            "minisib",
+            "first",
+            "1",
+            "dirlist.txt",
+        ];
+        let mut cliopts = crate::cli::CliOpts::parse_from(&args);
+        cliopts.init();
+        let result = cliopts.minisib.as_ref().unwrap().perform();
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        let lines: Vec<&str> = output.lines().collect();
+        assert_eq!(lines[0], "a");
+        assert_eq!(lines[1], "3");
+        assert_eq!(lines[2], "1");
+        assert_eq!(lines[3], "true");
     }
 }
