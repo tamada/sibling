@@ -92,12 +92,15 @@ pub(crate) fn pathbuf_to_string(path: Option<&Path>, absolute: bool, on_dirs: bo
     match path {
         Some(p) => {
             if absolute {
-                std::fs::canonicalize(p)
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string()
+                match std::fs::canonicalize(p) {
+                    Ok(path) => path.to_string_lossy().to_string(),
+                    Err(e) => {
+                        log::error!("Failed to get canonical path for {p:?}: {e}");
+                        p.to_string_lossy().to_string()
+                    },
+                }
             } else if on_dirs && !p.is_absolute() {
-                format!("../{}", p.to_string_lossy())
+                Path::new("..").join(p).to_string_lossy().to_string()
             } else {
                 p.to_string_lossy().to_string()
             }

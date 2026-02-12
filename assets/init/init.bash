@@ -15,7 +15,7 @@ __change_directory_with_sibling() {
     # echo "Current: $current, Next: $next, ci: $ci, ni: $ni, total: $total"
     if [[ $sibling_status -eq 0 ]] ; then
         # strip the first and last double quotes
-        cd $next
+        cd -- "$next"
         echo "$PWD (${current}/${length})"
     else
         echo "Done (${current}/${length})"
