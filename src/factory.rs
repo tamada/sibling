@@ -203,20 +203,26 @@ pub(super) fn find_current(base_dir: &Path, dirs: &[PathBuf], current: &Option<P
 fn collect_dirs(parent: &Path, errs: &mut Vec<Error>) -> Vec<PathBuf> {
     log::trace!("collect_dirs(parent={})", parent.display());
     let mut dirs = vec![];
-    if let Ok(entries) = parent.read_dir() {
-        for entry in entries {
-            match entry {
-                Ok(entry) => {
-                    let path = entry.path();
-                    if path.is_dir() {
-                        dirs.push(path);
+    match parent.read_dir() {
+        Ok(entries) => {
+            for entry in entries {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+                        if path.is_dir() {
+                            dirs.push(path);
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("collect_dirs: I/O error: {e}");
+                        errs.push(Error::Io(e));
                     }
                 }
-                Err(e) => {
-                    log::error!("collect_dirs: I/O error: {e}");
-                    errs.push(Error::Io(e));
-                }
             }
+        }
+        Err(e) => {
+            log::error!("collect_dirs: {}: {e}", parent.display());
+            errs.push(Error::Io(e));
         }
     }
     if log::log_enabled!(log::Level::Warn) && dirs.is_empty() {
@@ -247,7 +253,7 @@ mod tests {
         assert_eq!(dirs.len(), 26);
         assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
         assert!(dirs.on_dirs());
-        let wd = dirs.current();
+        let wd = dirs.current().expect("no current directory");
         assert_eq!(wd.path(), Path::new("testdata/basic/c"));
         assert_eq!(wd.index(), 2);
     }

@@ -73,6 +73,10 @@ impl Nexter for Next {
 
 impl Nexter for Random {
     fn next_with<'a>(&self, dirs: &'a impl Nextable, _step: i32) -> Option<Dir<'a>> {
+        if dirs.dirs().is_empty() {
+            log::warn!("Random::next_with: no directory to choose");
+            return None;
+        }
         let next = rand::random_range(0..dirs.dirs().len());
         log::trace!("Random::next_with -> index {next}");
         Some(Dir::new(dirs.dirs(), next))
@@ -81,6 +85,10 @@ impl Nexter for Random {
 
 impl Nexter for Keep {
     fn next_with<'a>(&self, dirs: &'a impl Nextable, _step: i32) -> Option<Dir<'a>> {
+        if dirs.dirs().is_empty() {
+            log::warn!("Keep::next_with: no directory to keep");
+            return None;
+        }
         Some(Dir::new(dirs.dirs(), dirs.index()))
     }
 }

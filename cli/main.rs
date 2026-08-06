@@ -191,6 +191,42 @@ mod tests {
         assert_eq!(r.status, Status::NoMoreSibling);
     }
 
+    /// Every directory in the list file is skipped since none of them exists.
+    /// The resultant list is empty, and it must not panic with any format and type.
+    #[test]
+    fn test_empty_list() {
+        for nexter in ["first", "last", "previous", "next", "random", "keep"] {
+            let r = perform_ok(&["sibling", "--type", nexter, "testdata/no_exist_list.txt"]);
+            assert_eq!(r.text, "", "--type {nexter}");
+            assert_eq!(r.status, Status::NoMoreSibling, "--type {nexter}");
+        }
+    }
+
+    #[test]
+    fn test_empty_list_in_json() {
+        let r = perform_ok(&["sibling", "--format", "json", "testdata/no_exist_list.txt"]);
+        assert_eq!(
+            r.text,
+            r#"{"current":{"path":"","index":-1},"next":{"path":"","index":-1},"total":0}"#
+        );
+        assert_eq!(r.status, Status::NoMoreSibling);
+    }
+
+    #[test]
+    fn test_empty_list_in_csv() {
+        let r = perform_ok(&["sibling", "--format", "csv", "testdata/no_exist_list.txt"]);
+        assert_eq!(r.text, r#""","",-1,-1,0"#);
+        assert_eq!(r.status, Status::NoMoreSibling);
+    }
+
+    /// The `--all` option makes the non-existent directories the targets.
+    #[test]
+    fn test_no_exist_list_with_all() {
+        let r = perform_ok(&["sibling", "--all", "testdata/no_exist_list.txt"]);
+        assert_eq!(r.text, "testdata/no_such_dir_b");
+        assert_eq!(r.status, Status::Success);
+    }
+
     #[test]
     fn test_not_found() {
         let r = perform_from(&["sibling", "testdata/basic/not_exist_dir"]);

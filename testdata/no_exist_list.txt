@@ -1,0 +1,4 @@
+# none of the directories in this list exists.
+# therefore, the resultant Dirs has no entry, unless --all is given.
+no_such_dir_a
+no_such_dir_b

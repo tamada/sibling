@@ -23,17 +23,19 @@ pub(crate) fn result_string(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingO
     }
 }
 
+/// Return the 1-origin index of the given directory, or -1 if it is [`None`].
+fn index_of(dir: Option<&Dir<'_>>) -> i32 {
+    dir.map_or(-1, |d| i32::try_from(d.index()).unwrap() + 1)
+}
+
 fn json_string(dirs: &Dirs, next: Option<Dir<'_>>, absolute: bool) -> String {
     let current = dirs.current();
-    let next_path = next
-        .as_ref()
-        .map(|n| path_to_string(Some(n.path()), absolute));
     format!(
         r#"{{"current":{{"path":"{}","index":{}}},"next":{{"path":"{}","index":{}}},"total":{}}}"#,
-        path_to_string(Some(dirs.current().path()), absolute),
-        current.index() + 1,
-        next_path.unwrap_or_default(),
-        next.map_or(-1, |n| i32::try_from(n.index()).unwrap() + 1),
+        path_to_string(current.as_ref().map(Dir::path), absolute),
+        index_of(current.as_ref()),
+        path_to_string(next.as_ref().map(Dir::path), absolute),
+        index_of(next.as_ref()),
         dirs.len()
     )
 }
@@ -42,30 +44,29 @@ fn csv_string(dirs: &Dirs, next: Option<Dir<'_>>, absolute: bool) -> String {
     let current = dirs.current();
     format!(
         r#""{}","{}",{},{},{}"#,
-        path_to_string(Some(dirs.current().path()), absolute),
+        path_to_string(current.as_ref().map(Dir::path), absolute),
         path_to_string(next.as_ref().map(Dir::path), absolute),
-        current.index() + 1,
-        next.map_or(-1, |n| i32::try_from(n.index()).unwrap() + 1),
+        index_of(current.as_ref()),
+        index_of(next.as_ref()),
         dirs.len()
     )
 }
 
 fn list_string(dirs: &Dirs, next: Option<&Dir<'_>>, opts: &PrintingOpts) -> String {
     let mut result = vec![];
-    let current = dirs.current();
-    let next_index = next.map_or(-1, |n| i32::try_from(n.index()).unwrap());
+    let current_index = index_of(dirs.current().as_ref());
+    let next_index = index_of(next);
     for (i, dir) in dirs.directories().enumerate() {
-        let prefix = if i32::try_from(i) == Ok(next_index) {
+        let index = i32::try_from(i).unwrap() + 1;
+        let prefix = if index == next_index {
             "> "
-        } else if i == current.index() {
+        } else if index == current_index {
             "* "
         } else {
             "  "
         };
         result.push(format!(
-            "{:>4} {}{}",
-            i + 1,
-            prefix,
+            "{index:>4} {prefix}{}",
             path_to_string(Some(dir), opts.absolute)
         ));
     }
@@ -77,7 +78,7 @@ fn result_string_impl(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -
         format!(
             "{} ({}/{})",
             path_to_string(next.as_ref().map(Dir::path), opts.absolute),
-            next.map_or(-1, |n| i32::try_from(n.index()).unwrap()) + 1,
+            index_of(next.as_ref()),
             dirs.len()
         )
     } else {

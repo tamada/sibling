@@ -259,8 +259,14 @@ impl Dirs {
     }
 
     /// Get the current directory as a [`Dir`] instance.
-    pub fn current(&self) -> Dir<'_> {
-        Dir::new(self, self.current)
+    /// Returns [`None`] if no directory is in the list.
+    pub fn current(&self) -> Option<Dir<'_>> {
+        if self.entries.is_empty() {
+            log::debug!("Dirs::current: no directory in the list");
+            None
+        } else {
+            Some(Dir::new(self, self.current))
+        }
     }
 
     /// Check if the directory list is empty.
@@ -334,6 +340,29 @@ mod tests {
         );
     }
 
+    /// No directory is found from the empty [`Dirs`], with any [`NexterType`].
+    #[test]
+    fn test_empty_dirs() {
+        let dirs = Dirs::new(PathBuf::from("testdata"), vec![]);
+        assert!(dirs.is_empty());
+        assert_eq!(dirs.len(), 0);
+        assert!(dirs.current().is_none());
+
+        for nexter in [
+            NexterType::First,
+            NexterType::Last,
+            NexterType::Previous,
+            NexterType::Next,
+            NexterType::Random,
+            NexterType::Keep,
+        ] {
+            assert!(
+                dirs.next(nexter.clone()).is_none(),
+                "{nexter:?}: should find no directory"
+            );
+        }
+    }
+
     #[test]
     fn test_dirs_new() {
         let dirs = DirsFactory::create(PathBuf::from("testdata/basic"))
@@ -361,7 +390,7 @@ mod tests {
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(
-            dirs.current().path().file_name().map(|s| s.to_str()),
+            dirs.current().unwrap().path().file_name().map(|s| s.to_str()),
             Some(".bin".into())
         );
     }
@@ -372,7 +401,7 @@ mod tests {
         let dirs = DirsFactory::create_with(config)
             .expect("Failed to create Dirs");
         assert_eq!(dirs.parent(), Path::new("testdata/basic"));
-        assert_eq!(dirs.current().index(), 3);
+        assert_eq!(dirs.current().unwrap().index(), 3);
         assert!(!dirs.is_empty());
         assert_eq!(dirs.len(), 26);
     }
