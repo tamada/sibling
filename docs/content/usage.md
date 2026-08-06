@@ -28,7 +28,7 @@ A negative count traverses in the opposite direction.
 The count is ignored by the `first`, `last`, and `random` ones.
 
 To install the above utility commands into your environment, write the snippet of your shell into your shell profile, and restart the session.
-See the [installation](../install) page for the snippets; `bash`, `zsh`, `fish`, and `powershell` are available as the argument of the `--init` option.
+See the [installation](../install) page for the snippets; `bash`, `zsh`, `fish`, `powershell`, and `elvish` are available as the argument of the `--init` option.
 
 ## :runner: Usage
 

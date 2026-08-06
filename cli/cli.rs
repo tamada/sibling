@@ -86,7 +86,7 @@ impl LogOpts {
 pub(crate) struct InitOpts {
     #[arg(
         long,
-        help = "generate the initialize script for the shell [possible values: bash, zsh, fish, powershell]",
+        help = "generate the initialize script for the shell [possible values: bash, zsh, fish, powershell, elvish]",
         value_name = "SHELL",
         hide = true,
         default_missing_value = "bash"

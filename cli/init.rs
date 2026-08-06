@@ -8,13 +8,14 @@ struct Assets;
 
 /// The shells which the initialize script is available for.
 /// The `bash` script works on zsh, too.
-const SUPPORTED_SHELLS: &str = "bash, zsh, fish, powershell";
+const SUPPORTED_SHELLS: &str = "bash, zsh, fish, powershell, elvish";
 
 pub(crate) fn generate_init_script(shell_name: &str) -> Result<String> {
     let script_file = match shell_name.to_lowercase().as_str() {
         "bash" | "zsh" => "init.bash",
         "fish" => "init.fish",
         "powershell" | "pwsh" => "init.ps1",
+        "elvish" | "elv" => "init.elv",
         _ => {
             return Err(Error::Fatal(format!(
                 "{shell_name}: Unsupported shell (supported: {SUPPORTED_SHELLS})"
@@ -37,7 +38,7 @@ mod tests {
     /// Every supported shell gets the script which defines the utility commands.
     #[test]
     fn test_generate_init_script() {
-        for shell in ["bash", "zsh", "Bash", "fish", "powershell", "pwsh"] {
+        for shell in ["bash", "zsh", "Bash", "fish", "powershell", "pwsh", "elvish", "elv"] {
             let script = generate_init_script(shell)
                 .unwrap_or_else(|e| panic!("{shell}: failed to generate the script: {e}"));
             for command in ["cdnext", "cdprev", "cdfirst", "cdlast", "cdrand"] {
@@ -55,8 +56,13 @@ mod tests {
             generate_init_script("powershell").unwrap(),
             generate_init_script("pwsh").unwrap()
         );
-        assert_ne!(generate_init_script("fish").unwrap(), bash);
-        assert_ne!(generate_init_script("powershell").unwrap(), bash);
+        assert_eq!(
+            generate_init_script("elvish").unwrap(),
+            generate_init_script("elv").unwrap()
+        );
+        for shell in ["fish", "powershell", "elvish"] {
+            assert_ne!(generate_init_script(shell).unwrap(), bash, "{shell}");
+        }
     }
 
     #[test]

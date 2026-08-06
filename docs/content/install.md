@@ -12,7 +12,7 @@ brew install tamada/tap/sibling
 ```
 
 And put the snippet of your shell into your shell profile.
-The `--init` option accepts `bash`, `zsh`, `fish`, and `powershell`;
+The `--init` option accepts `bash`, `zsh`, `fish`, `powershell`, and `elvish`;
 other shells are not supported, yet.
 
 | Shell | Profile | Snippet |
@@ -21,6 +21,22 @@ other shells are not supported, yet.
 | zsh | `.zshrc` | `eval "$(sibling --init zsh)"` |
 | fish | `config.fish` | `sibling --init fish \| source` |
 | PowerShell | `$PROFILE` | `sibling --init powershell \| Out-String \| Invoke-Expression` |
+| Elvish | `rc.elv` | `use sibling` (see the note below) |
+
+Elvish loads the functions as a module, not by evaluating them.
+Save the script into the lib directory, which is usually `~/.config/elvish/lib`,
+and use it in your `rc.elv`; the commands are namespaced, such as `sibling:cdnext`.
+
+```console
+$ sibling --init elvish > ~/.config/elvish/lib/sibling.elv
+```
+
+```elvish
+use sibling
+# to call them by the bare names
+var cdnext~ = $sibling:cdnext~
+var cdprev~ = $sibling:cdprev~
+```
 
 
 ## :muscle: Compiling yourself
