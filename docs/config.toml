@@ -2,8 +2,8 @@ baseURL = "https://tamada.github.io/sibling"
 languageCode = "en-us"
 defaultContentLanguage = "en"
 title = "Sibling"
-googleAnalytics = ""
 theme = ["github.com/tamada/hugo_theme_mod", "github.com/nunocoracao/blowfish/v2"]
+googleAnalytics = "G-JG3HPV69B1"
 
 [params]
 logo = "images/logo.svg"
