@@ -50,6 +50,12 @@ Every command allows the integer argument to repeat the traversing, such as `cdn
 A negative count traverses in the opposite direction.
 The count is ignored by the `first`, `last`, and `random` ones.
 
+### :apple: Finder
+
+The AppleScripts in [`assets/applescripts`](assets/applescripts) move the front
+Finder window to the next/previous sibling folder, as `cdnext` and `cdprev` do
+in the shell. See [its README](assets/applescripts/README.md) for the installation.
+
 ## :runner: Usage
 
 `sibling` receives the target directory, and prints the name of its sibling directory with 0 status code.

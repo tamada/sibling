@@ -30,6 +30,13 @@ The count is ignored by the `first`, `last`, and `random` ones.
 To install the above utility commands into your environment, write the snippet of your shell into your shell profile, and restart the session.
 See the [installation](../install) page for the snippets; `bash`, `zsh`, `fish`, `powershell`, and `elvish` are available as the argument of the `--init` option.
 
+## :apple: Finder
+
+The AppleScripts move the front Finder window to the next/previous sibling folder,
+as `cdnext` and `cdprev` do in the shell.
+Get them from [`assets/applescripts`](https://github.com/tamada/sibling/tree/main/assets/applescripts)
+in the repository, and see its README for the installation.
+
 ## :runner: Usage
 
 ```sh

@@ -1,15 +1,15 @@
--- Open the next sibling folder of the folder shown in the front Finder window.
+-- Open the previous sibling folder of the folder shown in the front Finder window.
 --
 -- The siblings of the folder are the child folders of its parent folder,
--- sorted by name; this script moves the front window to the next one of them.
+-- sorted by name; this script moves the front window to the previous one of them.
 --
 -- Requirements: the sibling command; see https://github.com/tamada/sibling
 -- Installation: see the README.md in this directory.
 --
--- Set the traversingType property to "previous", "first", "last", or "random"
+-- Set the traversingType property to "next", "first", "last", or "random"
 -- to traverse in another way.
 
-property traversingType : "next"
+property traversingType : "previous"
 
 -- The sibling command is looked up in these directories, since "do shell
 -- script" gives a minimal PATH which has no directory of Homebrew.
