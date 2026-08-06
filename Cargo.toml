@@ -1,9 +1,6 @@
-[workspace]
-members = [ "lib", "cli" ]
-
-resolver = "3"
-
-[workspace.package]
+[package]
+name = "sibling"
+description = "get next/previous sibling directory name."
 version = "2.0.5"
 repository = "https://github.com/tamada/sibling"
 homepage = "https://tamada.github.io/sibling"
@@ -12,5 +9,22 @@ authors = [
     "Haruaki Tamada <tamada_f@ke_cafebabe.jp>"
 ]
 license-file = "LICENSE"
-categories = ["command-line-utilities"]
+categories = ["command-line-utilities", "filesystem"]
+keywords = ["directory-traversal", "sibling-directories", "filesystem", "cli"]
 edition = "2024"
+
+[lib]
+name = "sibling"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sibling"
+path = "cli/main.rs"
+
+[dependencies]
+clap = { version = "4.5.23", features = ["derive"] }
+clap_complete = "4.5.38"
+env_logger = "0.11.8"
+log = "0.4.29"
+rand = "0.10.0"
+rust-embed = "8.5.0"

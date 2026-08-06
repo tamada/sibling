@@ -6,7 +6,7 @@ Command-line tool for traversing sibling directories (directories under the same
 
 When a directory has many subdirectories, moving between them can be tedious. Instead of typing full directory names like `cd ../next_directory`, you can use `sibling` commands like `cdnext` or `cdprev` to quickly switch to the next or previous sibling directory.
 
-This CLI is built on top of the `sibling` library in `../lib`.
+This CLI is built on top of the `sibling` library in `../src`.
 
 ## Features
 
@@ -133,10 +133,10 @@ The optional `parent:` line sets the base directory.
 
 ```bash
 # Build the CLI
-cargo build --release -p sibling
+cargo build --release
 
 # Run tests
-cargo test -p sibling
+cargo test
 
 # Generate shell completions (debug mode only)
 cargo run -- --generate-completions bash > completions/sibling.bash

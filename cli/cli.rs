@@ -1,17 +1,15 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{Parser, ValueEnum};
+use sibling::{Error, Result};
 
-use crate::{LogLevel, minisib};
+use crate::LogLevel;
 
 #[derive(Debug, Parser)]
 #[clap(version, author, about, arg_required_else_help = true)]
-pub struct CliOpts {
+pub struct SiblingOpts {
     #[clap(flatten)]
-    pub(crate) p_opts: PrintingOpts,
-
-    #[clap(flatten)]
-    pub(crate) nexter_opts: NexterOpts,
+    pub(crate) cli_opts: CliOpts,
 
     #[clap(flatten)]
     pub(crate) init_script: InitOpts,
@@ -19,45 +17,29 @@ pub struct CliOpts {
     #[clap(flatten)]
     pub(crate) log_opts: LogOpts,
 
-    #[arg(
-        short = 'w',
-        long = "working-dir",
-        help = "set the current working directory.",
-        hide = true,
-        value_name = "DIR",
-        long_help = "This option is applied before any other processing. Therefore, other options that specify paths should use the relative path from this option value. If this option is not specified, the current directory is used."
-    )]
-    pub(crate) cwd: Option<PathBuf>,
-
-    #[arg(index = 1, help = "the target directory", value_name = "DIR")]
-    pub dirs: Vec<PathBuf>,
-
     #[cfg(debug_assertions)]
     #[clap(flatten)]
     pub(crate) compopts: CompletionOpts,
 
-    #[clap(subcommand)]
-    pub(crate) minisib: Option<minisib::MiniSibCommand>,
+    // #[clap(subcommand)]
+    // pub(crate) minisib: Option<minisib::MiniSibCommand>,
 }
 
-impl CliOpts {
+#[derive(Debug, Parser)]
+pub(crate) struct CliOpts {
+    #[clap(flatten)]
+    pub(crate) p_opts: PrintingOpts,
+
+    #[clap(flatten)]
+    pub(crate) nexter_opts: NexterOpts,
+
+    #[clap(flatten)]
+    pub(crate) base_opts: BaseOpts,
+}
+
+impl SiblingOpts {
     pub fn init(&mut self) {
         self.log_opts.init();
-        if let Some(cwd) = &self.cwd
-            && let Err(e) = std::env::set_current_dir(cwd)
-        {
-            log::error!("Failed to set current directory to {cwd:?}: {e}, use \".\"");
-        }
-        if self.dirs.is_empty() {
-            match std::env::current_dir() {
-                Ok(cwd) => self.dirs.push(cwd),
-                Err(e) => {
-                    log::error!("Failed to get current directory: {e}");
-                    eprintln!("Error: failed to determine current working directory: {e}");
-                    std::process::exit(1);
-                }
-            }
-        }
     }
 }
 
@@ -118,15 +100,10 @@ pub(crate) struct NexterOpts {
 
     #[arg(short = 't', long = "type", help = "specify the nexter type", value_enum, default_value_t = sibling::NexterType::Next, value_name = "TYPE", ignore_case = true)]
     pub nexter: sibling::NexterType,
+}
 
-    #[arg(
-        short,
-        long,
-        help = "directory list from file, if FILE is \"-\", reads from stdin.",
-        value_name = "FILE"
-    )]
-    pub input: Option<String>,
-
+#[derive(Parser, Debug)]
+pub(crate) struct BaseOpts {
     #[arg(
         short = 'a',
         long,
@@ -134,7 +111,73 @@ pub(crate) struct NexterOpts {
         default_value_t = false
     )]
     pub all: bool,
+
+    #[arg(
+        short = 'b',
+        alias = "parent",
+        long,
+        help = "specify the parent directory of DIR (default: the parent directory of DIR)",
+        value_name = "DIR"
+    )]
+    pub base_path: Option<PathBuf>,
+
+    #[arg(index = 1, help = "the directory to find its siblings, or the file of directory list", value_name = "DIR|FILE", default_value = ".")]
+    pub input: String,
 }
+
+impl BaseOpts {
+    /// Build the [`Config`](sibling::factory::Config) from the command line arguments.
+    ///
+    /// The `DIR` argument means the directory itself, not its parent;
+    /// the siblings of `DIR` are the child directories of the parent of `DIR`.
+    /// Therefore, the parent directory is the value of `--base-path`, if it is given,
+    /// otherwise the parent directory of `DIR`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NoParent`] if `DIR` has no parent directory (e.g., the root directory).
+    pub fn config(&self) -> Result<sibling::factory::Config> {
+        let target = self.target_path();
+        let base = match &self.base_path {
+            Some(base) => base.clone(),
+            None => match target.parent() {
+                Some(parent) => parent.to_path_buf(),
+                None => return Err(Error::NoParent(target)),
+            },
+        };
+        log::debug!("target: {}, base: {}", target.display(), base.display());
+        if target.is_dir() {
+            Ok(sibling::factory::Config::new_with_wd(base, self.all, target))
+        } else {
+            Ok(sibling::factory::Config::new(base, self.all))
+        }
+    }
+
+    /// Return the path of the `DIR` argument.
+    ///
+    /// The path is resolved to the absolute path if its parent directory is not
+    /// obvious from the given string; that is, the path is `.`, `..`, or a name
+    /// without any separator (their parent is the current working directory).
+    /// Otherwise, the given path is used as is, for printing the resultant paths
+    /// in the same style as the given one.
+    fn target_path(&self) -> PathBuf {
+        let path = PathBuf::from(&self.input);
+        if is_parent_obvious(&path) {
+            path
+        } else {
+            std::fs::canonicalize(&path).unwrap_or(path)
+        }
+    }
+}
+
+/// Return true if the parent directory is derivable from the given path by [`Path::parent`].
+fn is_parent_obvious(path: &Path) -> bool {
+    use std::path::Component::{CurDir, ParentDir};
+
+    let has_parent = path.parent().is_some_and(|p| !p.as_os_str().is_empty());
+    has_parent && !path.components().any(|c| c == CurDir || c == ParentDir)
+}
+
 
 #[cfg(debug_assertions)]
 #[derive(Parser, Debug)]
@@ -189,12 +232,4 @@ pub(crate) struct PrintingOpts {
         default_value_t = false
     )]
     pub progress: bool,
-
-    #[arg(
-        short = 'P',
-        long,
-        help = "print parent directory, when no more sibling directories are found",
-        default_value_t = false
-    )]
-    pub parent: bool,
 }

@@ -3,7 +3,7 @@ use rust_embed::Embed;
 use sibling::{Error, Result};
 
 #[derive(Embed)]
-#[folder = "../assets/init"]
+#[folder = "assets/init"]
 struct Assets;
 
 pub(crate) fn generate_init_script(shell_name: &str) -> Result<String> {

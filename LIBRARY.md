@@ -3,7 +3,8 @@
 A small Rust library for traversing sibling directories (directories that share the same parent) in alphabetical order.
 From a current directory, you can get the “next” directory using several strategies: first, last, next, previous, random, and keep.
 
-The CLI command (`cli`) consumes this library, see the [GitHub repository](https://github.com/tamada/sibling).
+This library and the `sibling` command are in the same crate: the library sources are in `src`, and the command sources are in `cli`.
+See the [GitHub repository](https://github.com/tamada/sibling) for the command line usage.
 
 ## Features
 

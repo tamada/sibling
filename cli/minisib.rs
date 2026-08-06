@@ -110,11 +110,10 @@ impl MiniSibOpts {
         };
         if let Some(dir) = target_dirs.next_with(nexter.as_ref(), self.step) {
             Ok(format!(
-                "{}\n{}\n{}\n{}",
+                "{}\n{}\n{}",
                 crate::printer::path_to_string(Some(dir.path()), false, target_dirs.on_dirs()),
                 target_dirs.len(),
                 dir.index() + 1,
-                dir.is_last_item()
             ))
         } else {
             Ok(format!(
@@ -189,7 +188,7 @@ mod tests {
         let args = vec![
             "sibling",
             "--working-dir",
-            "../testdata/basic",
+            "testdata/basic",
             "minisib",
             "first",
             "1",
