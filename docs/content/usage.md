@@ -29,24 +29,38 @@ To install the above utility commands into your environment, write the snippet (
 ```sh
 get next/previous sibling directory name.
 
-Usage: sibling [OPTIONS] [DIR]
+Usage: sibling [OPTIONS] [DIR|FILE]
 
 Arguments:
-  [DIR]  the directory for listing the siblings [default: .]
+  [DIR|FILE]  the directory to find its siblings, or the file of directory list [default: .]
 
 Options:
-  -a, --absolute      print the directory name in the absolute path
-  -l, --list          list the sibling directories
-  -p, --progress      print the progress of traversing directories
-  -P, --parent        print parent directory, when no more sibling directories
-  -s, --step <COUNT>  specify the number of times to execute sibling [default: 1]
-  -t, --type <TYPE>   specify the nexter type [default: next]
-                      [possible values: first, last, previous, next, random, keep]
-  -h, --help          Print help
-  -V, --version       Print version
+  -f, --format <FORMAT>  print the result in the specified format [default: default]
+                         [possible values: json, csv, list, default]
+  -A, --absolute         print the directory name in the absolute path
+  -p, --progress         print the progress of traversing directories
+  -s, --step <COUNT>     specify the number of times to execute sibling [default: 1]
+  -t, --type <TYPE>      specify the nexter type [default: next]
+                         [possible values: first, last, previous, next, random, keep]
+  -a, --all              Set the targets to all directories from the given list.
+                         By default, the sibling skips non-existent directories.
+  -b, --base-path <DIR>  specify the parent directory of DIR
+                         (default: the parent directory of DIR)
+      --log <LEVEL>      set the log level [default: warn]
+                         [possible values: error, warn, info, debug, trace]
+  -h, --help             Print help
+  -V, --version          Print version
+
+Exit status:
+  0  the next directory was found (printed to stdout),
+  1  no more sibling directory was found,
+  2  the given command line arguments were wrong, and
+  3  the command failed (the reason is printed to stderr).
 ```
 
-`sibling` prints the next directory name with 0 status code.
-The next directory is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
+`sibling` receives the target directory, and prints the name of its sibling directory with 0 status code.
+The siblings are the child directories of the parent directory of the given one, and the given directory itself is included in them.
+Which sibling is printed is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
 
-After visiting the final directory, the `sibling` prints nothing and exits with a non zero status code.
+After visiting the final directory, the `sibling` prints nothing and exits with 1.
+Note that the `json`, `csv`, and `list` formats print their result even in that case, since the list of the siblings and the total count are still meaningful.

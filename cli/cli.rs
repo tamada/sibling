@@ -6,7 +6,17 @@ use sibling::{Error, Result};
 use crate::LogLevel;
 
 #[derive(Debug, Parser)]
-#[clap(version, author, about, arg_required_else_help = true)]
+#[clap(
+    version,
+    author,
+    about,
+    arg_required_else_help = true,
+    after_help = "Exit status:
+  0  the next directory was found (printed to stdout),
+  1  no more sibling directory was found,
+  2  the given command line arguments were wrong, and
+  3  the command failed (the reason is printed to stderr)."
+)]
 pub struct SiblingOpts {
     #[clap(flatten)]
     pub(crate) cli_opts: CliOpts,

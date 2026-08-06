@@ -3,6 +3,11 @@ use std::path::Path;
 use crate::cli::{Format, PrintingOpts};
 use sibling::{Dir, Dirs};
 
+/// Build the string to print for the found directory.
+///
+/// The `default` format prints nothing when no more sibling directory was found;
+/// the caller tells it by the exit status. The other formats always print the
+/// result, since the list of the siblings and the total count are still meaningful.
 pub(crate) fn result_string(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingOpts) -> String {
     match opts.format {
         Format::Json => json_string(dirs, next, opts.absolute),
@@ -10,7 +15,7 @@ pub(crate) fn result_string(dirs: &Dirs, next: Option<Dir<'_>>, opts: &PrintingO
         Format::List => list_string(dirs, next.as_ref(), opts),
         Format::Default => {
             if next.is_none() {
-                String::from("no more sibling directory")
+                String::new()
             } else {
                 result_string_impl(dirs, next, opts)
             }

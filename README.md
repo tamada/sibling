@@ -47,10 +47,22 @@ The `cdnext` and the `cdprev` allow the integer argument to repeat the traversin
 
 ## :runner: Usage
 
-`sibling` prints the next directory name with 0 status code.
-The next directory is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
+`sibling` receives the target directory, and prints the name of its sibling directory with 0 status code.
+The siblings are the child directories of the parent directory of the given one, and the given directory itself is included in them.
+Which sibling is printed is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
 
-After visiting the final directory, the `sibling` prints nothing and exits with a non-zero status code.
+After visiting the final directory, the `sibling` prints nothing and exits with 1.
+
+### :vertical_traffic_light: Exit status
+
+| Status | Description |
+|:------:|:------------|
+| 0 | the next directory was found, and it was printed to stdout. |
+| 1 | no more sibling directory was found. |
+| 2 | the given command line arguments were wrong. |
+| 3 | the command failed; the reason is printed to stderr. |
+
+Note that the `json`, `csv`, and `list` formats print their result even if no more sibling directory was found, since the list of the siblings and the total count are still meaningful. Only the status code tells it.
 
 ## :anchor: Installation
 

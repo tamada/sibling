@@ -46,25 +46,56 @@ The binary will be at `target/release/sibling`.
 ```shell
 get next/previous sibling directory name.
 
-Usage: sibling [OPTIONS] [DIR]...
+Usage: sibling [OPTIONS] [DIR|FILE]
 
 Arguments:
-  [DIR]...  the target directory
+  [DIR|FILE]  the directory to find its siblings, or the file of directory list [default: .]
 
 Options:
-  -a, --absolute      print the directory name in the absolute path
-  -l, --list          list the sibling directories
-  -p, --progress      print the progress of traversing directories
-  -P, --parent        print parent directory, when no more sibling directories are found
-  -s, --step <COUNT>  specify the number of times to execute sibling [default: 1]
-      --log <LEVEL>   set the log level [default: warn]
-                      [possible values: error, warn, info, debug, trace]
-  -t, --type <TYPE>   specify the nexter type [default: next]
-                      [possible values: first, last, previous, next, random, keep]
-  -i, --input <FILE>  directory list from file, if FILE is "-", reads from stdin.
-  -h, --help          Print help (see more with '--help')
-  -V, --version       Print version
+  -f, --format <FORMAT>  print the result in the specified format [default: default]
+                         [possible values: json, csv, list, default]
+  -A, --absolute         print the directory name in the absolute path
+  -p, --progress         print the progress of traversing directories
+  -s, --step <COUNT>     specify the number of times to execute sibling [default: 1]
+  -t, --type <TYPE>      specify the nexter type [default: next]
+                         [possible values: first, last, previous, next, random, keep]
+  -a, --all              Set the targets to all directories from the given list.
+                         By default, the sibling skips non-existent directories.
+  -b, --base-path <DIR>  specify the parent directory of DIR
+                         (default: the parent directory of DIR)
+      --log <LEVEL>      set the log level [default: warn]
+                         [possible values: error, warn, info, debug, trace]
+  -h, --help             Print help
+  -V, --version          Print version
+
+Exit status:
+  0  the next directory was found (printed to stdout),
+  1  no more sibling directory was found,
+  2  the given command line arguments were wrong, and
+  3  the command failed (the reason is printed to stderr).
 ```
+
+The `DIR` argument is the target directory itself; its siblings are the child directories
+of its parent directory, and `DIR` itself is included in them.
+
+### Exit status
+
+The command is designed to be used from a shell function, hence, the caller can tell
+the result from the status code.
+
+```bash
+if next=$(sibling "$PWD"); then
+    cd "$next"
+else
+    case $? in
+        1) echo "no more sibling directory" ;;
+        *) echo "sibling: failed" ;;
+    esac
+fi
+```
+
+Note that the `json`, `csv`, and `list` formats print their result even if no more sibling
+directory was found; only the status code tells it.
 
 ### Examples
 
