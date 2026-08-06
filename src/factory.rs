@@ -83,6 +83,28 @@ impl DirsFactory {
         }
     }
 
+    /// Create a new [`Dirs`] instance from the file which lists the directories.
+    /// Give `-` as the file name to read the list from stdin.
+    /// See [`DirsFactory::create_from_reader`] for the format of the list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sibling::factory::{Config, DirsFactory};
+    ///
+    /// // the entries of the list are resolved on the base directory of the config,
+    /// // until the list gives its own one by the "parent:" line.
+    /// let config = Config::new("testdata/basic", false);
+    /// let dirs = DirsFactory::create_from_file("testdata/basic/dirlist.txt", &config)
+    ///     .expect("Failed to create Dirs");
+    /// assert_eq!(dirs.len(), 3); // testdata/basic/{a,b,c}
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// - Returns [`Error::NotFound`] if the given file does not exist.
+    /// - Returns [`Error::NotFile`] if the given path is a directory.
+    /// - Returns [`Error::Io`] if reading the file failed.
     pub fn create_from_file<P: AsRef<Path>>(file: P, config: &Config) -> Result<Dirs> {
         let file = file.as_ref();
         if file == Path::new("-") {

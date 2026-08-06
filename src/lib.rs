@@ -124,6 +124,21 @@ pub trait Nextable {
     /// list. Such a position is treated as the one before the first directory,
     /// hence, [`NexterType::Next`] finds the first directory from it, and
     /// [`NexterType::Previous`] and [`NexterType::Keep`] find nothing.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sibling::factory::DirsFactory;
+    /// use sibling::{NexterType, Nextable};
+    ///
+    /// // no directory is given as the current one.
+    /// let dirs = DirsFactory::create("testdata/basic").expect("Failed to create Dirs");
+    ///
+    /// assert!(dirs.current_index().is_none());
+    /// assert!(dirs.next(NexterType::Next).is_some());     // the first directory
+    /// assert!(dirs.next(NexterType::Previous).is_none()); // nothing is before it
+    /// assert!(dirs.next(NexterType::Keep).is_none());     // nothing to keep
+    /// ```
     fn current_index(&self) -> Option<usize>;
 
     fn dirs(&self) -> &Dirs;
@@ -198,7 +213,7 @@ impl Nextable for Dir<'_> {
         self.siblings
     }
 
-    /// Get the next directory using the given [`Nexter`] and step.
+    /// Get the next directory using the given [`NexterType`] and step.
     fn next_with(&self, nexter: NexterType, step: i32) -> Option<Dir<'_>> {
         match nexter.build() {
             strategy::Strategy::First(strategy) => strategy.next_with(self, step),
@@ -220,7 +235,7 @@ impl Nextable for Dirs {
         self
     }
 
-    /// Get the next directory using the given [`Nexter`] and step.
+    /// Get the next directory using the given [`NexterType`] and step.
     fn next_with(&self, nexter: NexterType, step: i32) -> Option<Dir<'_>> {
         match nexter.build() {
             strategy::Strategy::First(strategy) => strategy.next_with(self, step),
@@ -270,6 +285,20 @@ impl Dirs {
 
     /// Get the current directory as a [`Dir`] instance.
     /// Returns [`None`] if the current directory is not in the list.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sibling::factory::{Config, DirsFactory};
+    ///
+    /// let config = Config::new_with_wd("testdata", false, "testdata/basic");
+    /// let dirs = DirsFactory::create_with(&config).expect("Failed to create Dirs");
+    /// assert_eq!(dirs.current().map(|d| d.index()), Some(0));
+    ///
+    /// // no directory is given as the current one.
+    /// let dirs = DirsFactory::create("testdata").expect("Failed to create Dirs");
+    /// assert!(dirs.current().is_none());
+    /// ```
     pub fn current(&self) -> Option<Dir<'_>> {
         self.current.map(|index| Dir::new(self, index))
     }
