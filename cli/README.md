@@ -106,10 +106,13 @@ directory was found; only the status code tells it.
 cdnext
 
 # Move 3 directories forward
-cdnext -s 3
+cdnext 3
 
 # Move to the previous sibling
 cdprev
+
+# Move 3 directories forward, again; a negative count reverses the direction
+cdprev -3
 
 # Jump to the first sibling
 cdfirst
@@ -120,23 +123,33 @@ cdlast
 # Random sibling
 cdrand
 
-# List the next sibling (without changing directory)
+# List the entries of the next sibling (without changing directory)
 lsnext
 
-# List all siblings with progress indicator
-sibling -l -p /path/to/dir
+# List all siblings of the given directory, with the current and the next markers
+sibling --format list /path/to/dir
 ```
 
 ## Utility Commands
 
-Once initialized with `sibling --init bash`, the following shell functions are available:
+Once initialized with `sibling --init bash` (`zsh` is also available), the
+following shell functions are available:
 
 - **`cdnext`** / **`cdprev`**: Change to the next/previous sibling directory
 - **`cdfirst`** / **`cdlast`**: Change to the first/last sibling directory
 - **`cdrand`**: Change to a random sibling directory
-- **`lsnext`** / **`lsprev`**: List the next/previous sibling without changing directory
-- **`lsfirst`** / **`lslast`**: List the first/last sibling
-- **`lsrand`**: List a random sibling
+- **`lsnext`** / **`lsprev`**: List the entries of the next/previous sibling, without changing directory
+- **`lsfirst`** / **`lslast`**: List the entries of the first/last sibling
+- **`lsrand`**: List the entries of a random sibling
+- **`sibling_peco`** / **`sibling_fzf`**: Choose a sibling directory with [peco](https://github.com/peco/peco) or [fzf](https://github.com/junegunn/fzf), and change to it
+
+Every function receives the optional count of the traversing, such as `cdnext 3`;
+a negative count traverses in the opposite direction. The count is ignored by the
+`first`, `last`, and `random` ones.
+
+The `cd` functions print the directory with its position, such as
+`/path/to/c (3/26)`. They keep the working directory and return 1 when no more
+sibling directory is found; the message is printed to stderr.
 
 ## Input from File or stdin
 

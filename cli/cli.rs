@@ -30,9 +30,6 @@ pub struct SiblingOpts {
     #[cfg(debug_assertions)]
     #[clap(flatten)]
     pub(crate) compopts: CompletionOpts,
-
-    // #[clap(subcommand)]
-    // pub(crate) minisib: Option<minisib::MiniSibCommand>,
 }
 
 #[derive(Debug, Parser)]

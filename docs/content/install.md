@@ -12,8 +12,8 @@ brew install tamada/tap/sibling
 ```
 
 And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
-The `--init` option accepts only `bash`.
-Other shell scripts are not supported, yet.
+The `--init` option accepts `bash` and `zsh`; the generated script works on both of them.
+Other shells are not supported, yet.
 
 ```shell
 eval "$(sibling --init bash)"

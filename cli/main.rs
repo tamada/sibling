@@ -8,7 +8,6 @@ use sibling::factory::{DirsFactory};
 mod cli;
 mod gencomp;
 mod init;
-// pub(crate) mod minisib;
 pub(crate) mod printer;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -49,11 +48,25 @@ impl Outcome {
     }
 
     /// Print the text to stdout unless it is empty, and return the exit status.
+    ///
+    /// A broken pipe is not an error of this command; the reader, such as `head`
+    /// and the filter command of the shell functions, has just gone away.
+    /// Note that printing by the `println!` macro panics in that case.
     fn print(&self) -> Status {
-        if !self.text.is_empty() {
-            println!("{}", self.text);
+        use std::io::Write;
+
+        if self.text.is_empty() {
+            return self.status;
         }
-        self.status
+        let mut out = std::io::stdout().lock();
+        match writeln!(out, "{}", self.text) {
+            Ok(()) => self.status,
+            Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => {
+                log::debug!("stdout: {e}");
+                self.status
+            }
+            Err(e) => print_error(&Error::Io(e)),
+        }
     }
 }
 
@@ -100,8 +113,6 @@ fn perform(opts: CliOpts) -> Result<Outcome> {
     let path = PathBuf::from(&target);
     if target == "." || path.is_dir() {
         perform_sibling(opts)
-    // } else if let Some(minisib) = opts.minisib {
-    //     vec![minisib.perform()]
     } else if target == "-" || path.is_file() {
         perform_from_file(opts)
     } else {

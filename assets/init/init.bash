@@ -1,104 +1,126 @@
-__change_directory_with_sibling() {
-    traversing_type="$1"
-    if [[ "$traversing_type" == "" ]]; then
-        traversing_type="next"
-    else
-        shift
+# The shell functions for traversing the sibling directories.
+# Install them by putting the following line into your shell profile,
+# such as .bash_profile and .zshrc.
+#
+#     eval "$(sibling --init bash)"
+#
+# Each function receives the optional count of the traversing, such as
+# "cdnext 3". A negative count traverses in the opposite direction.
+# The count is ignored by cdfirst, cdlast, cdrand, lsfirst, lslast, and lsrand.
+
+# __sibling_find <TYPE> <COUNT>
+# Print the found sibling directory of the working directory.
+# The exit status is the one of the sibling command; 0 means the directory was
+# found, 1 means no more sibling directory, and the others mean an error.
+__sibling_find() {
+    sibling --absolute --type "$1" --step "$2" -- "$PWD"
+}
+
+# __sibling_position
+# Print the working directory with its position, such as "/path/to/c (3/26)".
+__sibling_position() {
+    sibling --absolute --progress --type keep -- "$PWD"
+}
+
+# __sibling_report <CODE>
+# Tell the user why no directory was found, and return the given status.
+__sibling_report() {
+    if [ "$1" -eq 1 ]; then
+        echo "sibling: no more sibling directory" >&2
     fi
-    eval "$(sibling minisib $traversing_type $@ | {
-        read -r next;      echo "next='$next';"
-        read -r length;    echo "length='$length';"
-        read -r current;   echo "current='$current';"
-        read -r last_flag; echo "last_flag='$last_flag';"
-    })"
-    sibling_status=$?
-    # echo "Current: $current, Next: $next, ci: $ci, ni: $ni, total: $total"
-    if [[ $sibling_status -eq 0 ]] ; then
-        # strip the first and last double quotes
-        cd -- "$next"
-        echo "$PWD (${current}/${length})"
-    else
-        echo "Done (${current}/${length})"
-        cd ..
+    return "$1"
+}
+
+# __sibling_cd <TYPE> [COUNT]
+# Change the working directory to the found sibling directory.
+__sibling_cd() {
+    local next code
+    next=$(__sibling_find "$1" "${2:-1}")
+    code=$?
+    if [ $code -ne 0 ]; then
+        __sibling_report $code
+        return $code
     fi
-    return $sibling_status
+    cd -- "$next" || return $?
+    __sibling_position
 }
 
-__cd_sibling_filtering() {
-    result="$(./sibling --list | $1)"
-    if [[ $(echo $result | wc -l) -ne 1 ]]; then
-        echo "Error: multiple paths are given"
-        return 1
+# __sibling_ls <TYPE> [COUNT]
+# List the entries of the found sibling directory, without changing the
+# working directory.
+__sibling_ls() {
+    local next code
+    next=$(__sibling_find "$1" "${2:-1}")
+    code=$?
+    if [ $code -ne 0 ]; then
+        __sibling_report $code
+        return $code
     fi
-    cd ${result:2}
-    pwd
+    echo "$next"
+    ls -- "$next"
 }
 
-__ls_sibling() {
-    traversing_type="$1"
-    if [[ "$1" == "" ]]; then
-        traversing_type="next"
+# __sibling_cd_with_filter <FILTER>
+# Choose a sibling directory with the filter command, such as peco and fzf,
+# and change the working directory to it.
+__sibling_cd_with_filter() {
+    local selected code
+    selected=$(sibling --absolute --format list --type keep -- "$PWD" | "$1")
+    code=$?
+    if [ $code -ne 0 ] || [ -z "$selected" ]; then
+        return $code
     fi
-    step=1
-    if [[ $# -eq 2 ]]; then
-        step=$2
-    fi
-    next=$(sibling --absolute --type $traversing_type --csv --step $step)
-    sibling_status=$?
-    result=($(echo $next | tr -s ',' ' '))
-    if [[ $sibling_status -eq 0 ]]; then
-        r=$(echo ${result[2]} | xargs)
-        echo "$r (${result[4]}/${result[5]})"
-        ls "$r"
-    else
-        echo "no more siblings"
-    fi
-}
-
-lsnext() {
-    __ls_sibling next $@
-}
-
-lsprev() {
-    __ls_sibling previous $@
-}
-
-lsrand() {
-    __ls_sibling random
-}
-
-lsfirst() {
-    __ls_sibling first
-}
-
-lslast() {
-    __ls_sibling last
-}
-
-sibling_peco() {
-    __cd_sibling_filtering peco
-}
-
-sibling_fzf() {
-    __cd_sibling_filtering fzf
-}
-
-cdfirst() {
-    __change_directory_with_sibling first $@
-}
-
-cdlast() {
-    __change_directory_with_sibling last $@
+    # Each line of the list format consists of the index, the marker of the
+    # current and the next directories, and the path; drop all but the path.
+    selected=$(printf '%s\n' "$selected" | sed -E 's/^ *[0-9]+ (\* |> |  )//')
+    cd -- "$selected" || return $?
+    __sibling_position
 }
 
 cdnext() {
-    __change_directory_with_sibling next $@
+    __sibling_cd next "$@"
 }
 
 cdprev() {
-    __change_directory_with_sibling previous $@
+    __sibling_cd previous "$@"
+}
+
+cdfirst() {
+    __sibling_cd first "$@"
+}
+
+cdlast() {
+    __sibling_cd last "$@"
 }
 
 cdrand() {
-    __change_directory_with_sibling random $@
+    __sibling_cd random "$@"
+}
+
+lsnext() {
+    __sibling_ls next "$@"
+}
+
+lsprev() {
+    __sibling_ls previous "$@"
+}
+
+lsfirst() {
+    __sibling_ls first "$@"
+}
+
+lslast() {
+    __sibling_ls last "$@"
+}
+
+lsrand() {
+    __sibling_ls random "$@"
+}
+
+sibling_peco() {
+    __sibling_cd_with_filter peco
+}
+
+sibling_fzf() {
+    __sibling_cd_with_filter fzf
 }

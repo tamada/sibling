@@ -36,14 +36,19 @@ The `sibling` introduces the following utility commands.
   - `cdfirst`,
   - `cdlast`, and
   - `cdrand`
-- list the sibling directory:
+- list the entries of the sibling directory:
   - `lsnext`,
   - `lsprev`,
   - `lsfirst`,
   - `lslast`, and
   - `lsrand`
+- choose the sibling directory with the filter command:
+  - `sibling_peco`, and
+  - `sibling_fzf`
 
-The `cdnext` and the `cdprev` allow the integer argument to repeat the traversing.
+Every command allows the integer argument to repeat the traversing, such as `cdnext 3`.
+A negative count traverses in the opposite direction.
+The count is ignored by the `first`, `last`, and `random` ones.
 
 ## :runner: Usage
 
@@ -81,8 +86,8 @@ brew install sibling
 ```
 
 And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
-The `--init` option accepts only `bash`.
-Other shell scripts are not supported, yet.
+The `--init` option accepts `bash` and `zsh`; the generated script works on both of them.
+Other shells are not supported, yet.
 
 ```bash
 eval "$(sibling --init bash)"

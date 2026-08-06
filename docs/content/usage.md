@@ -13,16 +13,22 @@ The `sibling` introduce the following utility commands.
   - `cdlast`
   - `cdfirst`
   - `cdrand`
-- list the sibling directory.
+- list the entries of the sibling directory.
   - `lsnext`
   - `lsprev`
   - `lsfirst`
   - `lslast`
   - `lsrand`
+- choose the sibling directory with the filter command.
+  - `sibling_peco`
+  - `sibling_fzf`
 
-`cdnext` and `cdprev` allow the integer argument to repeat the traversing.
+Every command allows the integer argument to repeat the traversing, such as `cdnext 3`.
+A negative count traverses in the opposite direction.
+The count is ignored by the `first`, `last`, and `random` ones.
 
 To install the above utility commands into your environment, write the snippet (`eval "$(sibling --init bash)"`) into your `.bash_profile`, and restart the bash session.
+The `zsh` is also available as the argument of the `--init` option.
 
 ## :runner: Usage
 
