@@ -118,7 +118,13 @@ impl Display for Error {
 }
 
 pub trait Nextable {
-    fn index(&self) -> usize;
+    /// The index of the current directory in the list.
+    ///
+    /// [`None`] means that the current directory is unknown; it is not in the
+    /// list. Such a position is treated as the one before the first directory,
+    /// hence, [`NexterType::Next`] finds the first directory from it, and
+    /// [`NexterType::Previous`] and [`NexterType::Keep`] find nothing.
+    fn current_index(&self) -> Option<usize>;
 
     fn dirs(&self) -> &Dirs;
 
@@ -139,10 +145,9 @@ pub struct Dirs {
     entries: Vec<PathBuf>,
     /// The parent directory that contains all the sibling directories.
     parent: PathBuf,
-    /// Flag indicating whether the current directory is among the sibling directories.
-    on_dirs: bool,
-    /// The index of the current directory in the `dirs` vector.
-    current: usize,
+    /// The index of the current directory in the `entries` vector, or [`None`]
+    /// if the current directory is not in them. See [`Nextable::current_index`].
+    current: Option<usize>,
 }
 
 /// The struct represents a directory in the traversal target set.
@@ -174,19 +179,19 @@ impl Dir<'_> {
         self.index
     }
 
+    /// Build the [`Dirs`] instance whose current directory is this one.
     pub fn dirs(self) -> Dirs {
         Dirs {
             entries: self.siblings.entries.clone(),
             parent: self.siblings.parent.clone(),
-            on_dirs: self.siblings.on_dirs,
-            current: self.index,
+            current: Some(self.index),
         }
     }
 }
 
 impl Nextable for Dir<'_> {
-    fn index(&self) -> usize {
-        self.index
+    fn current_index(&self) -> Option<usize> {
+        Some(self.index)
     }
 
     fn dirs(&self) -> &Dirs {
@@ -207,7 +212,7 @@ impl Nextable for Dir<'_> {
 }
 
 impl Nextable for Dirs {
-    fn index(&self) -> usize {
+    fn current_index(&self) -> Option<usize> {
         self.current
     }
 
@@ -229,27 +234,32 @@ impl Nextable for Dirs {
 }
 
 impl Dirs {
+    /// Build the [`Dirs`] instance whose current directory is unknown.
+    /// See [`Nextable::current_index`] for the traversing from such a position.
     pub fn new(base_dir: PathBuf, entries: Vec<PathBuf>) -> Self {
         Dirs {
             entries,
             parent: base_dir,
-            on_dirs: false,
-            current: 0,
+            current: None,
         }
     }
 
+    /// Build the [`Dirs`] instance whose current directory is `cwd`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::NotFound`] if `cwd` is not in `entries`.
     pub fn new_with_wd(base_dir: PathBuf, entries: Vec<PathBuf>, cwd: PathBuf) -> Result<Self> {
-        let (current, on_dirs) = factory::find_current(&base_dir, &entries, &Some(cwd.clone()));
-        if !on_dirs {
-            log::debug!("Dirs::new_with_wd: current directory not found in siblings");
-            Err(Error::NotFound(cwd))
-        } else {
-            Ok(Dirs {
+        match factory::find_current(&base_dir, &entries, &Some(cwd.clone())) {
+            None => {
+                log::debug!("Dirs::new_with_wd: current directory not found in siblings");
+                Err(Error::NotFound(cwd))
+            }
+            current => Ok(Dirs {
                 entries,
                 parent: base_dir,
-                on_dirs,
                 current,
-            })
+            }),
         }
     }
 
@@ -259,23 +269,14 @@ impl Dirs {
     }
 
     /// Get the current directory as a [`Dir`] instance.
-    /// Returns [`None`] if no directory is in the list.
+    /// Returns [`None`] if the current directory is not in the list.
     pub fn current(&self) -> Option<Dir<'_>> {
-        if self.entries.is_empty() {
-            log::debug!("Dirs::current: no directory in the list");
-            None
-        } else {
-            Some(Dir::new(self, self.current))
-        }
+        self.current.map(|index| Dir::new(self, index))
     }
 
     /// Check if the directory list is empty.
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
-    }
-
-    pub fn on_dirs(&self) -> bool {
-        self.on_dirs
     }
 
     /// Get the number of directories in the list.
@@ -364,14 +365,25 @@ mod tests {
     }
 
     #[test]
+    /// The current directory is unknown, hence, it is the position before the
+    /// first one; three steps from it point the third directory.
     fn test_dirs_new() {
         let dirs = DirsFactory::create(PathBuf::from("testdata/basic"))
             .expect("Failed to create Dirs");
+        assert!(dirs.current().is_none());
         let dir = dirs.next_with(NexterType::Next, 3)
             .expect("Failed to get next directory");
-        assert_eq!(dir.path().file_name().unwrap(), "d");
+        assert_eq!(dir.path().file_name().unwrap(), "c");
         assert_eq!(dirs.len(), 26);
-        assert_eq!(dir.index(), 3);
+        assert_eq!(dir.index(), 2);
+
+        assert!(dirs.next(NexterType::Previous).is_none());
+        assert!(dirs.next(NexterType::Keep).is_none());
+        assert_eq!(
+            dirs.next(NexterType::Next).map(|d| d.index()),
+            Some(0),
+            "the next of the unknown position is the first directory"
+        );
     }
 
     #[test]
@@ -381,17 +393,20 @@ mod tests {
         assert!(dirs.is_ok());
         let dirs = dirs.unwrap();
         assert_eq!(dirs.len(), 2);
-        assert_eq!(dirs.current, 0);
+        assert_eq!(dirs.current, Some(0));
     }
 
+    /// No current directory is given, hence, the next directory of the unknown
+    /// position is the first one.
     #[test]
     fn test_dir_dot() {
-        let dirs = DirsFactory::create(PathBuf::from("."));
-        assert!(dirs.is_ok());
-        let dirs = dirs.unwrap();
+        let dirs = DirsFactory::create(PathBuf::from("."))
+            .expect("Failed to create Dirs");
+        assert!(dirs.current().is_none());
         assert_eq!(
-            dirs.current().unwrap().path().file_name().map(|s| s.to_str()),
-            Some(".bin".into())
+            dirs.next(NexterType::Next)
+                .map(|d| d.path().file_name().unwrap().to_string_lossy().to_string()),
+            Some(String::from(".bin"))
         );
     }
 
@@ -412,8 +427,7 @@ mod tests {
             &Config::new("testdata/basic", true))
             .expect("Failed to create Dirs from file");
         assert_eq!(dirs.len(), 3);
-        assert_eq!(dirs.current, 0);
-        assert!(!dirs.on_dirs());
+        assert!(dirs.current().is_none());
         assert_eq!(dirs.parent, Path::new("testdata/basic"));
     }
 

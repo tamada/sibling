@@ -40,7 +40,9 @@ impl DirsFactory {
     /// the `base_dir` becoms the parent directory, and
     /// the child directories of `base_dir` are listed as sibling directories.
     /// 
-    /// The resultant `Dirs` instance will have `on_dirs` set to false, and the current directory will be set to the first item.
+    /// The resultant `Dirs` instance has no current directory, since no directory
+    /// is given as the current one. See [`Nextable::current_index`](crate::Nextable::current_index)
+    /// for the traversing from such a position.
     pub fn create<P: AsRef<Path>>(base_dir: P) -> Result<Dirs> {
         Self::create_with(&Config {
             base_dir: base_dir.as_ref().to_path_buf(),
@@ -105,6 +107,24 @@ impl DirsFactory {
         }
     }
 
+    /// Create a new [`Dirs`] instance from the list of the directories.
+    ///
+    /// Each line of the list is an entry, which is resolved on the base directory.
+    /// The `parent:` (or `base_dir:`) line gives the base directory of the following
+    /// entries, and the `current:` line gives the current directory; the path of it
+    /// is used as is, and it is also added to the list. The empty lines and the lines
+    /// starting with `#` are ignored.
+    ///
+    /// The current directory is decided by the following order.
+    ///
+    /// 1. the `current:` line, or `config.current`, if it is given,
+    /// 2. the working directory, if it is in the list, or
+    /// 3. unknown; see [`Nextable::current_index`](crate::Nextable::current_index).
+    ///
+    /// # Errors
+    ///
+    /// - Returns [`Error::Io`] if reading the list failed.
+    /// - Returns [`Error::NotFound`] if the given current directory is not in the list.
     pub fn create_from_reader(reader: Box<dyn std::io::Read>, config: &Config) -> Result<Dirs> {
         let mut base_dir = config.base_dir.clone();
         let mut dirs = vec![];
@@ -132,7 +152,15 @@ impl DirsFactory {
         if let Some(current) = current {
             Dirs::new_with_wd(base_dir, dirs, current)
         } else {
-            Ok(Dirs::new(base_dir, dirs))
+            // No current directory was given by the `current:` line nor the config.
+            // Then, the working directory becomes the current one if it is in the
+            // list; otherwise the current directory is left unknown.
+            let current = find_cwd(&dirs);
+            Ok(Dirs {
+                entries: dirs,
+                parent: base_dir,
+                current,
+            })
         }
     }
 }
@@ -164,39 +192,54 @@ fn create_dirs_from_base_path(parent: &Path, config: &Config) -> Result<Dirs> {
     let mut errs = vec![];
     let entries = collect_dirs(parent, &mut errs);
     if errs.is_empty() {
-        let (index, on_dirs) = find_current(parent, &entries, &config.current);
-        log::info!("build_dirs: siblings={}, current_index={index}", entries.len());
+        let current = find_current(parent, &entries, &config.current);
+        log::info!("build_dirs: siblings={}, current={current:?}", entries.len());
         Ok(Dirs {
             entries,
             parent: parent.to_path_buf(),
-            on_dirs,
-            current: index,
+            current,
         })
     } else {
         Err(Error::Array(errs))
     }
 }
 
-/// Return the index of current in dirs, or 0 if not found.
-pub(super) fn find_current(base_dir: &Path, dirs: &[PathBuf], current: &Option<PathBuf>) -> (usize, bool) {
-    if let Some(current) = current {
-        let wd = current.strip_prefix(base_dir)
-            .unwrap_or(current);
-        let idx = dirs.iter().position(|dir|{
-            let td = dir.strip_prefix(base_dir);
-            td.map(|d| wd == d).unwrap_or(false)
-        });
-        if let Some(index) = idx {
-            log::debug!("find_current: found current at index {index}");
-            (index, true)
-        } else {
-            log::warn!("find_current: current directory not found in siblings");
-            (0, false)
-        }
-    } else {
-        log::debug!("not current directory was given.");
-        (0, false)
+/// Return the index of `current` in `dirs`, or [`None`] if it is not in them.
+pub(super) fn find_current(base_dir: &Path, dirs: &[PathBuf], current: &Option<PathBuf>) -> Option<usize> {
+    let Some(current) = current else {
+        log::debug!("find_current: no current directory was given");
+        return None;
+    };
+    let wd = current.strip_prefix(base_dir)
+        .unwrap_or(current);
+    let index = dirs.iter().position(|dir|{
+        let td = dir.strip_prefix(base_dir);
+        td.map(|d| wd == d).unwrap_or(false)
+    });
+    if index.is_none() {
+        log::warn!("find_current: current directory not found in siblings");
     }
+    index
+}
+
+/// Return the index of the current working directory in `dirs`, or [`None`] if
+/// it is not in them.
+///
+/// Unlike [`find_current`], the paths are compared as the canonicalized ones,
+/// since the entries of the list are given by the user, and they may be relative
+/// to the working directory.
+fn find_cwd(dirs: &[PathBuf]) -> Option<usize> {
+    let cwd = std::env::current_dir()
+        .and_then(std::fs::canonicalize)
+        .ok()?;
+    let index = dirs
+        .iter()
+        .position(|dir| std::fs::canonicalize(dir).is_ok_and(|d| d == cwd));
+    match index {
+        Some(index) => log::debug!("find_cwd: the current directory is at {index}"),
+        None => log::debug!("find_cwd: the current directory is not in the list"),
+    }
+    index
 }
 
 /// Read child directories under parent, push IO errors to errs, and return a sorted list.
@@ -242,7 +285,7 @@ mod tests {
             .expect("Failed to create Dirs from testdata/basic");
         assert_eq!(dirs.len(), 26);
         assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
-        assert!(!dirs.on_dirs());
+        assert!(dirs.current().is_none());
     }
 
     #[test]
@@ -252,7 +295,6 @@ mod tests {
             .expect("Failed to create Dirs from testdata/basic");
         assert_eq!(dirs.len(), 26);
         assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
-        assert!(dirs.on_dirs());
         let wd = dirs.current().expect("no current directory");
         assert_eq!(wd.path(), Path::new("testdata/basic/c"));
         assert_eq!(wd.index(), 2);
@@ -265,7 +307,60 @@ mod tests {
             .expect("Failed to create Dirs from testdata/basic/dirlist.txt");
         assert_eq!(dirs.len(), 3);
         assert_eq!(dirs.parent, PathBuf::from("testdata/basic"));
-        assert!(!dirs.on_dirs());
+        assert!(dirs.current().is_none());
+    }
+
+    /// The `current:` line in the list gives the current directory.
+    #[test]
+    fn test_create_dirs_from_reader_with_current() {
+        let list = "parent: testdata/basic\na\ncurrent: testdata/basic/b\nc\n";
+        let dirs = DirsFactory::create_from_reader(
+            Box::new(std::io::Cursor::new(list)),
+            &Config::new(".", false),
+        )
+        .expect("Failed to create Dirs from the reader");
+
+        assert_eq!(dirs.len(), 3);
+        let current = dirs.current().expect("no current directory");
+        assert_eq!(current.path(), Path::new("testdata/basic/b"));
+        assert_eq!(current.index(), 1);
+    }
+
+    /// The working directory becomes the current one if it is in the list, even
+    /// though the list has no `current:` line.
+    #[test]
+    fn test_create_dirs_from_reader_on_cwd() {
+        use crate::Nextable;
+
+        let cwd = std::env::current_dir().unwrap();
+        let name = cwd.file_name().unwrap().to_string_lossy().to_string();
+        let list = format!("parent: ..\n{name}\nzzz_no_such_dir\n");
+        let dirs = DirsFactory::create_from_reader(
+            Box::new(std::io::Cursor::new(list)),
+            &Config::new(".", true), // --all, for the non-existent directory
+        )
+        .expect("Failed to create Dirs from the reader");
+
+        assert_eq!(dirs.len(), 2);
+        assert_eq!(dirs.current().map(|d| d.index()), Some(0));
+        assert_eq!(
+            dirs.next(crate::NexterType::Next).map(|d| d.path().to_path_buf()),
+            Some(PathBuf::from("../zzz_no_such_dir"))
+        );
+    }
+
+    /// The current directory is left unknown if it is not in the list.
+    #[test]
+    fn test_create_dirs_from_reader_without_current() {
+        let list = "parent: testdata/basic\na\nb\n";
+        let dirs = DirsFactory::create_from_reader(
+            Box::new(std::io::Cursor::new(list)),
+            &Config::new(".", false),
+        )
+        .expect("Failed to create Dirs from the reader");
+
+        assert_eq!(dirs.len(), 2);
+        assert!(dirs.current().is_none());
     }
 
     #[test]

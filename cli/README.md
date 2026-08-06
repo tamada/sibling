@@ -138,27 +138,58 @@ Once initialized with `sibling --init bash`, the following shell functions are a
 
 ## Input from File or stdin
 
-You can provide a directory list from a file:
+Instead of a directory, you can give a file which lists the directories to traverse.
+Give `-` as the file name to read the list from stdin.
 
 ```bash
-sibling -i dirlist.txt -t next
+sibling dirlist.txt -t next
+printf 'parent: /projects\na\nb\nc\n' | sibling - -t next
 ```
 
-Or from stdin:
+### Format of the list
 
-```bash
-echo -e "parent:/projects\na\nb\nc" | sibling -i - -t next
 ```
-
-Format:
-```
-parent:/path/to/parent
+# lines starting with '#', and empty lines, are ignored.
+parent: /path/to/parent    # or "base_dir:"; the following names are resolved on it.
 dir1
-dir2
+current: /path/to/parent/dir2   # the current directory (optional).
 dir3
 ```
 
-The optional `parent:` line sets the base directory.
+| Line | Meaning |
+|---|---|
+| `parent:` / `base_dir:` | the parent directory; the following entries are resolved on it. It affects only the entries after this line. |
+| `current:` | the current directory. Unlike the other entries, the path is used as is, and it is also added to the list. |
+| `#`, empty | ignored. |
+| otherwise | an entry of the list. |
+
+By default, the entries which do not exist are skipped; `--all` makes them the
+targets, too.
+
+### The current directory in the list
+
+Which directory is the current one is decided by the following order.
+
+1. the `current:` line in the list, if it is given,
+2. the working directory, if it is in the list (the paths are compared as the
+   canonicalized ones), or
+3. unknown.
+
+The unknown current position means "before the first entry"; `next` finds the
+first entry from it (`--step 3` finds the third one), while `previous` and `keep`
+find nothing and exit with 1. `first`, `last`, and `random` are not affected.
+
+```console
+$ cat dirlist.txt
+parent: /projects
+a
+b
+c
+$ sibling dirlist.txt          # not in /projects/*, hence, the first entry
+/projects/a
+$ cd /projects/b && sibling ~/dirlist.txt   # the working directory is in the list
+/projects/c
+```
 
 ## Build & Test
 

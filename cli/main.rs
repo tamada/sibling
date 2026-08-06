@@ -223,7 +223,7 @@ mod tests {
     #[test]
     fn test_no_exist_list_with_all() {
         let r = perform_ok(&["sibling", "--all", "testdata/no_exist_list.txt"]);
-        assert_eq!(r.text, "testdata/no_such_dir_b");
+        assert_eq!(r.text, "testdata/no_such_dir_a");
         assert_eq!(r.status, Status::Success);
     }
 
@@ -240,10 +240,24 @@ mod tests {
         assert!(matches!(r, Err(Error::NoParent(_))));
     }
 
+    /// The list file has no `current:` line, and the working directory is not in
+    /// the list, hence, the current position is the one before the first entry.
+    /// Therefore, the next directory of it is the first entry of the list.
     #[test]
     fn test_from_file() {
         let r = perform_ok(&["sibling", "--type", "next", "testdata/basic/dirlist.txt"]);
-        assert_eq!(r.text, "testdata/basic/b");
+        assert_eq!(r.text, "testdata/basic/a");
         assert_eq!(r.status, Status::Success);
+
+        let r = perform_ok(&["sibling", "--type", "next", "--step", "3", "testdata/basic/dirlist.txt"]);
+        assert_eq!(r.text, "testdata/basic/c");
+
+        let r = perform_ok(&["sibling", "--type", "previous", "testdata/basic/dirlist.txt"]);
+        assert_eq!(r.text, "");
+        assert_eq!(r.status, Status::NoMoreSibling);
+
+        let r = perform_ok(&["sibling", "--type", "keep", "testdata/basic/dirlist.txt"]);
+        assert_eq!(r.text, "");
+        assert_eq!(r.status, Status::NoMoreSibling);
     }
 }

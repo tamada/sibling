@@ -85,21 +85,28 @@ impl Nexter for Random {
 
 impl Nexter for Keep {
     fn next_with<'a>(&self, dirs: &'a impl Nextable, _step: i32) -> Option<Dir<'a>> {
-        if dirs.dirs().is_empty() {
-            log::warn!("Keep::next_with: no directory to keep");
-            return None;
+        match dirs.current_index() {
+            Some(index) => Some(Dir::new(dirs.dirs(), index)),
+            None => {
+                log::warn!("Keep::next_with: no current directory to keep");
+                None
+            }
         }
-        Some(Dir::new(dirs.dirs(), dirs.index()))
     }
 }
 
+/// Find the directory of the `step` distance from the current one.
+///
+/// The unknown current directory ([`Nextable::current_index`] is [`None`]) is
+/// treated as the position before the first directory. Therefore, the next
+/// directory of it is the first one, and it has no previous directory.
 fn next_impl<'a>(dirs: &'a impl Nextable, step: i32) -> Option<Dir<'a>> {
-    let next = i32::try_from(dirs.index()).unwrap() + step;
+    let current = dirs
+        .current_index()
+        .map_or(-1, |index| i32::try_from(index).unwrap());
+    let next = current + step;
     let length = i32::try_from(dirs.dirs().len()).unwrap();
-    log::trace!(
-        "next_impl(step={step}, current={}, next={next})",
-        dirs.index()
-    );
+    log::trace!("next_impl(step={step}, current={current}, next={next})");
     if next < 0 || next >= length {
         log::warn!("next_impl: out of range (next={next}, len={length})",);
         None
