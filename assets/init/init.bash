@@ -13,13 +13,13 @@
 # The exit status is the one of the sibling command; 0 means the directory was
 # found, 1 means no more sibling directory, and the others mean an error.
 __sibling_find() {
-    sibling --absolute --type "$1" --step "$2" -- "$PWD"
+    sibling --type "$1" --step "$2" -- "$PWD"
 }
 
 # __sibling_position
 # Print the working directory with its position, such as "/path/to/c (3/26)".
 __sibling_position() {
-    sibling --absolute --progress --type keep -- "$PWD"
+    sibling --progress --type keep -- "$PWD"
 }
 
 # __sibling_report <CODE>
@@ -65,7 +65,7 @@ __sibling_ls() {
 # and change the working directory to it.
 __sibling_cd_with_filter() {
     local selected code
-    selected=$(sibling --absolute --format list --type keep -- "$PWD" | "$1")
+    selected=$(sibling --format list --type keep -- "$PWD" | "$1")
     code=$?
     if [ $code -ne 0 ] || [ -z "$selected" ]; then
         return $code

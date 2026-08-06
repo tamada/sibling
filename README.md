@@ -85,13 +85,17 @@ brew tap tamada/brew
 brew install sibling
 ```
 
-And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
-The `--init` option accepts `bash` and `zsh`; the generated script works on both of them.
-Other shells are not supported, yet.
+And put the snippet of your shell into your shell profile.
+The `--init` option accepts `bash`, `zsh`, `fish`, and `powershell`;
+other shells are not supported, yet.
 
-```bash
-eval "$(sibling --init bash)"
-```
+| Shell | Profile | Snippet |
+|---|---|---|
+| bash | `.bash_profile` | `eval "$(sibling --init bash)"` |
+| zsh | `.zshrc` | `eval "$(sibling --init zsh)"` |
+| fish | `config.fish` | `sibling --init fish \| source` |
+| PowerShell | `$PROFILE` | `sibling --init powershell \| Out-String \| Invoke-Expression` |
+
 
 ### :muscle: Compiling yourself
 

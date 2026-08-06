@@ -27,8 +27,8 @@ Every command allows the integer argument to repeat the traversing, such as `cdn
 A negative count traverses in the opposite direction.
 The count is ignored by the `first`, `last`, and `random` ones.
 
-To install the above utility commands into your environment, write the snippet (`eval "$(sibling --init bash)"`) into your `.bash_profile`, and restart the bash session.
-The `zsh` is also available as the argument of the `--init` option.
+To install the above utility commands into your environment, write the snippet of your shell into your shell profile, and restart the session.
+See the [installation](../install) page for the snippets; `bash`, `zsh`, `fish`, and `powershell` are available as the argument of the `--init` option.
 
 ## :runner: Usage
 

@@ -25,11 +25,15 @@ brew tap tamada/brew
 brew install sibling
 ```
 
-Then add the initialization script to your shell profile (`.bash_profile`, `.zshrc`, etc.):
+Then add the initialization script of your shell to your shell profile.
 
-```bash
-eval "$(sibling --init bash)"
-```
+| Shell | Profile | Snippet |
+|---|---|---|
+| bash | `.bash_profile` | `eval "$(sibling --init bash)"` |
+| zsh | `.zshrc` | `eval "$(sibling --init zsh)"` |
+| fish | `config.fish` | `sibling --init fish \| source` |
+| PowerShell | `$PROFILE` | `sibling --init powershell \| Out-String \| Invoke-Expression` |
+
 
 ### From Source
 
@@ -132,8 +136,8 @@ sibling --format list /path/to/dir
 
 ## Utility Commands
 
-Once initialized with `sibling --init bash` (`zsh` is also available), the
-following shell functions are available:
+Once initialized with `sibling --init <SHELL>` (`bash`, `zsh`, `fish`, and
+`powershell` are available), the following functions are available:
 
 - **`cdnext`** / **`cdprev`**: Change to the next/previous sibling directory
 - **`cdfirst`** / **`cdlast`**: Change to the first/last sibling directory
