@@ -102,9 +102,10 @@ pub(crate) struct NexterOpts {
     #[arg(
         short,
         long,
-        help = "specify the number of times to execute sibling",
+        help = "specify the number of times to execute sibling. The negative count traverses in the opposite direction, and 0 means the current directory",
         value_name = "COUNT",
-        default_value_t = 1
+        default_value_t = 1,
+        allow_negative_numbers = true
     )]
     pub step: i32,
 

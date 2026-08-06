@@ -57,6 +57,8 @@ Options:
   -A, --absolute         print the directory name in the absolute path
   -p, --progress         print the progress of traversing directories
   -s, --step <COUNT>     specify the number of times to execute sibling [default: 1]
+                         The negative count traverses in the opposite direction,
+                         and 0 means the current directory.
   -t, --type <TYPE>      specify the nexter type [default: next]
                          [possible values: first, last, previous, next, random, keep]
   -a, --all              Set the targets to all directories from the given list.

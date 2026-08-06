@@ -40,6 +40,8 @@ Options:
   -A, --absolute         print the directory name in the absolute path
   -p, --progress         print the progress of traversing directories
   -s, --step <COUNT>     specify the number of times to execute sibling [default: 1]
+                         The negative count traverses in the opposite direction,
+                         and 0 means the current directory.
   -t, --type <TYPE>      specify the nexter type [default: next]
                          [possible values: first, last, previous, next, random, keep]
   -a, --all              Set the targets to all directories from the given list.
@@ -63,4 +65,10 @@ The siblings are the child directories of the parent directory of the given one,
 Which sibling is printed is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
 
 After visiting the final directory, the `sibling` prints nothing and exits with 1.
+The `--step` option repeats the traversing; `--step 3` finds the third directory
+from the current one. The negative count traverses in the opposite direction
+(`--type next --step -1` is the same as `--type previous`), and 0 points the
+current directory itself. The step is ignored by the `first`, `last`, `random`,
+and `keep` types.
+
 Note that the `json`, `csv`, and `list` formats print their result even in that case, since the list of the siblings and the total count are still meaningful.

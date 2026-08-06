@@ -487,6 +487,28 @@ mod tests {
         }
     }
 
+    /// The negative step traverses in the opposite direction of the nexter type,
+    /// and the step 0 points the current directory itself.
+    #[test]
+    fn test_nexter_with_negative_step() {
+        let config = &Config::new_with_wd("testdata/basic", false, "k");
+        let dirs = DirsFactory::create_with(config)
+            .expect("Failed to create Dirs");
+        match dirs.next_with(NexterType::Next, -3) {
+            Some(p) => assert!(p.path().ends_with("testdata/basic/h")),
+            None => panic!("unexpected None"),
+        }
+        match dirs.next_with(NexterType::Previous, -3) {
+            Some(p) => assert!(p.path().ends_with("testdata/basic/n")),
+            None => panic!("unexpected None"),
+        }
+        match dirs.next_with(NexterType::Next, 0) {
+            Some(p) => assert!(p.path().ends_with("testdata/basic/k")),
+            None => panic!("unexpected None"),
+        }
+        assert!(dirs.next_with(NexterType::Next, -11).is_none());
+    }
+
     #[test]
     fn test_nexter_prev() {
         let config = &Config::new_with_wd("testdata/basic", false, "k");

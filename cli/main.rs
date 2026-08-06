@@ -167,6 +167,34 @@ mod tests {
         assert_eq!(r.status, Status::Success);
     }
 
+    /// The negative step traverses in the opposite direction.
+    #[test]
+    fn test_negative_step() {
+        let r = perform_ok(&["sibling", "-s", "-3", "testdata/basic/d"]);
+        assert_eq!(r.text, "testdata/basic/a");
+        assert_eq!(r.status, Status::Success);
+
+        let r = perform_ok(&["sibling", "--type", "previous", "--step", "-2", "testdata/basic/d"]);
+        assert_eq!(r.text, "testdata/basic/f");
+        assert_eq!(r.status, Status::Success);
+    }
+
+    /// The step 0 means the current directory itself.
+    #[test]
+    fn test_zero_step() {
+        for nexter in ["next", "previous"] {
+            let r = perform_ok(&["sibling", "--type", nexter, "-s", "0", "testdata/basic/d"]);
+            assert_eq!(r.text, "testdata/basic/d", "--type {nexter}");
+        }
+    }
+
+    #[test]
+    fn test_negative_step_out_of_range() {
+        let r = perform_ok(&["sibling", "-s", "-30", "testdata/basic/d"]);
+        assert_eq!(r.text, "");
+        assert_eq!(r.status, Status::NoMoreSibling);
+    }
+
     /// The `--base-path` option overrides the parent directory of the `DIR` argument.
     #[test]
     fn test_base_path() {

@@ -52,6 +52,11 @@ The siblings are the child directories of the parent directory of the given one,
 Which sibling is printed is decided by the traversing type. Available values are: `next`, `previous`, `first`, `last`, `keep` and `random`, default is `next`.
 
 After visiting the final directory, the `sibling` prints nothing and exits with 1.
+The `--step` option repeats the traversing; `--step 3` finds the third directory
+from the current one. The negative count traverses in the opposite direction
+(`--type next --step -1` is the same as `--type previous`), and 0 points the
+current directory itself. The step is ignored by the `first`, `last`, `random`,
+and `keep` types.
 
 ### :vertical_traffic_light: Exit status
 
