@@ -1,0 +1,29 @@
+== cdnext ==
+/work/testdata/basic/d (4/26)
+== cdnext 3 ==
+/work/testdata/basic/g (7/26)
+== cdprev 2 ==
+/work/testdata/basic/e (5/26)
+== cdprev -1 ==
+/work/testdata/basic/f (6/26)
+== cdfirst ==
+/work/testdata/basic/a (1/26)
+== cdprev at the first ==
+pwd=/work/testdata/basic/a
+== cdlast ==
+/work/testdata/basic/z (26/26)
+== cdnext at the last ==
+pwd=/work/testdata/basic/z
+== lsfirst ==
+/work/testdata/basic/a
+== cdrand then cdfirst ==
+/work/testdata/basic/a (1/26)
+== spaces and multibyte ==
+/work/testdata/worried/multibyte_chars_👍 (2/2)
+/work/testdata/worried/dir with spaces (1/2)
+== filter ==
+/work/testdata/basic/e (5/26)
+== filter without selection ==
+pwd=/work/testdata/basic/e
+== no parent ==
+pwd=/
