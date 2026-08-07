@@ -7,11 +7,13 @@ on:
     types: [closed]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     outputs:
       appname: sibling
@@ -36,6 +38,8 @@ jobs:
   documents:
     runs-on: ubuntu-latest
     needs: setup
+    permissions:
+      contents: write # deploy the site to the gh-pages branch
     outputs:
       appname: ${{ needs.setup.outputs.appname }}
       tag: ${{ needs.setup.outputs.tag }}
@@ -67,6 +71,8 @@ jobs:
   publish:
     runs-on: ${{ matrix.os }}
     needs: documents
+    permissions:
+      contents: write # upload the assets to the release
     outputs:
       appname: ${{ needs.documents.outputs.appname }}
       tag: ${{ needs.documents.outputs.tag }}
@@ -166,6 +172,9 @@ jobs:
   publish_to_crates_io:
     runs-on: ubuntu-latest
     needs: publish
+    permissions:
+      contents: read
+      id-token: write # the trusted publishing of crates.io uses OIDC
     outputs:
       appname: ${{ needs.publish.outputs.appname }}
       tag: ${{ needs.publish.outputs.tag }}

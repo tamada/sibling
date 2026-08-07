@@ -10,6 +10,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+# This workflow uses the token of the GitHub App, not the GITHUB_TOKEN.
+permissions: {}
+
 jobs:
   notify:
     runs-on: ubuntu-latest
