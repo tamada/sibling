@@ -5,6 +5,12 @@ on:
     branches:
       - main
     types: [closed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "the version to publish, such as 3.0.0"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -14,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release
-    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || (startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true)
     outputs:
       appname: sibling
       tag: ${{ steps.vars.outputs.tag }}
@@ -23,7 +29,11 @@ jobs:
       - name: Git Tag Name
         id: vars
         run: |
-          echo "tag=${GITHUB_HEAD_REF##*/v}" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_HEAD_REF##*/v}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create release
         id: create_release
@@ -48,7 +58,7 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.129.0'
+          hugo-version: '0.154.5'
           extended: true
 
       - name: Checkout
