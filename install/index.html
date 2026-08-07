@@ -35,22 +35,22 @@
 
   
   <meta property="og:url" content="https://tamada.github.io/sibling/install/">
-	<meta property="og:site_name" content="Sibling">
-	<meta property="og:title" content=":anchor: Installation">
-	<meta property="og:description" content=":beer: Homebrew # Install sibling via Homebrew, simply run:
-brew install tamada/tap/sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.
-eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source codes by git clone or download from GitHub, then run cargo to build sibling">
-	<meta property="og:locale" content="en_us">
-	<meta property="og:type" content="article">
-		<meta property="article:published_time" content="2024-07-09T00:00:00+00:00">
-		<meta property="article:modified_time" content="2024-07-09T00:00:00+00:00">
+  <meta property="og:site_name" content="Sibling">
+  <meta property="og:title" content=":anchor: Installation">
+  <meta property="og:description" content=":beer: Homebrew # Install sibling via Homebrew, simply run:
+brew install tamada/tap/sibling And put the snippet of your shell into your shell profile. The --init option accepts bash, zsh, fish, powershell, and elvish; other shells are not supported, yet.
+Shell Profile Snippet bash .bash_profile eval &#34;$(sibling --init bash)&#34; zsh .zshrc eval &#34;$(sibling --init zsh)&#34; fish config.fish sibling --init fish | source PowerShell $PROFILE sibling --init powershell | Out-String | Invoke-Expression Elvish rc.elv use sibling (see the note below) Elvish loads the functions as a module, not by evaluating them. Save the script into the lib directory, which is usually ~/.config/elvish/lib, and use it in your rc.elv; the commands are namespaced, such as sibling:cdnext.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:published_time" content="2024-07-09T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-07-09T00:00:00+00:00">
 
   
-	<meta name="twitter:card" content="summary">
-	<meta name="twitter:title" content=":anchor: Installation">
-	<meta name="twitter:description" content=":beer: Homebrew # Install sibling via Homebrew, simply run:
-brew install tamada/tap/sibling And put the following snipeets into your shell profile (e.g., .bash_profile, or .zshrc) The --init option accepts only bash. Other shell scripts are not supported, yet.
-eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source codes by git clone or download from GitHub, then run cargo to build sibling">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content=":anchor: Installation">
+  <meta name="twitter:description" content=":beer: Homebrew # Install sibling via Homebrew, simply run:
+brew install tamada/tap/sibling And put the snippet of your shell into your shell profile. The --init option accepts bash, zsh, fish, powershell, and elvish; other shells are not supported, yet.
+Shell Profile Snippet bash .bash_profile eval &#34;$(sibling --init bash)&#34; zsh .zshrc eval &#34;$(sibling --init zsh)&#34; fish config.fish sibling --init fish | source PowerShell $PROFILE sibling --init powershell | Out-String | Invoke-Expression Elvish rc.elv use sibling (see the note below) Elvish loads the functions as a module, not by evaluating them. Save the script into the lib directory, which is usually ~/.config/elvish/lib, and use it in your rc.elv; the commands are namespaced, such as sibling:cdnext.">
 
   
   
@@ -95,8 +95,8 @@ eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source c
   <link
     type="text/css"
     rel="stylesheet"
-    href="/sibling/css/main.bundle.min.4143590d55e2cff147b2e5e6bff6722356687209b938660c74d609ac6e56283394436455ec07da6a121dc5fa85b59acadfe8d389d056abf93a4aa73923afba28.css"
-    integrity="sha512-QUNZDVXiz/FHsuXmv/ZyI1Zocgm5OGYMdNYJrG5WKDOUQ2RV7AfaahIdxfqFtZrK3&#43;jTidBWq/k6Sqc5I6&#43;6KA==">
+    href="/sibling/css/main.bundle.min.51badf77742b40eb5f547f41ca097babc8d614bf699fea5b2758df056b8eb9f9da9e93b6e3bab7d774c53845a031f27658f116a4e807b165095e7e0cc179cd9e.css"
+    integrity="sha512-Ubrfd3QrQOtfVH9Bygl7q8jWFL9pn&#43;pbJ1jfBWuOufnanpO247q313TFOEWgMfJ2WPEWpOgHsWUJXn4MwXnNng==">
 
   
   
@@ -220,7 +220,7 @@ eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source c
     
     
     "mainEntityOfPage": "true",
-    "wordCount": "95"
+    "wordCount": "190"
   },
   {
     "@context": "https://schema.org",
@@ -678,7 +678,7 @@ eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source c
   <div class="flex flex-row flex-wrap items-center">
     
     
-      <time datetime="2024-07-09T00:00:00&#43;00:00">2024-07-09</time><span class="px-2 text-primary-500">&middot;</span><span>95 words</span>
+      <time datetime="2024-07-09T00:00:00&#43;00:00">2024-07-09</time><span class="px-2 text-primary-500">&middot;</span><span>190 words</span>
     
 
     
@@ -752,11 +752,55 @@ eval &#34;$(sibling --init bash)&#34; :muscle: Compiling yourself # Get source c
     
 </h2>
 <p>Install <code>sibling</code> via <a href="https://brew.sh"  target="_blank" rel="noreferrer">Homebrew</a>, simply run:</p>
-<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>brew install tamada/tap/sibling</span></span></code></pre></div></div>
-<p>And put the following snipeets into your shell profile (e.g., <code>.bash_profile</code>, or <code>.zshrc</code>)
-The <code>--init</code> option accepts only <code>bash</code>.
-Other shell scripts are not supported, yet.</p>
-<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>eval <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>sibling --init bash<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span></span></span></code></pre></div></div>
+<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>brew install tamada/tap/sibling</span></span></code></pre></div></div>
+<p>And put the snippet of your shell into your shell profile.
+The <code>--init</code> option accepts <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>powershell</code>, and <code>elvish</code>;
+other shells are not supported, yet.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Shell</th>
+          <th>Profile</th>
+          <th>Snippet</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>bash</td>
+          <td><code>.bash_profile</code></td>
+          <td><code>eval &quot;$(sibling --init bash)&quot;</code></td>
+      </tr>
+      <tr>
+          <td>zsh</td>
+          <td><code>.zshrc</code></td>
+          <td><code>eval &quot;$(sibling --init zsh)&quot;</code></td>
+      </tr>
+      <tr>
+          <td>fish</td>
+          <td><code>config.fish</code></td>
+          <td><code>sibling --init fish | source</code></td>
+      </tr>
+      <tr>
+          <td>PowerShell</td>
+          <td><code>$PROFILE</code></td>
+          <td><code>sibling --init powershell | Out-String | Invoke-Expression</code></td>
+      </tr>
+      <tr>
+          <td>Elvish</td>
+          <td><code>rc.elv</code></td>
+          <td><code>use sibling</code> (see the note below)</td>
+      </tr>
+  </tbody>
+</table>
+<p>Elvish loads the functions as a module, not by evaluating them.
+Save the script into the lib directory, which is usually <code>~/.config/elvish/lib</code>,
+and use it in your <code>rc.elv</code>; the commands are namespaced, such as <code>sibling:cdnext</code>.</p>
+<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>$ sibling --init elvish &gt; ~/.config/elvish/lib/sibling.elv
+</span></span></code></pre></div></div>
+<div class="highlight-wrapper"><pre tabindex="0"><code class="language-elvish" data-lang="elvish">use sibling
+# to call them by the bare names
+var cdnext~ = $sibling:cdnext~
+var cdprev~ = $sibling:cdprev~</code></pre></div>
 
 <h2 class="relative group">💪 Compiling yourself
     <div id="muscle-compiling-yourself" class="anchor"></div>
@@ -769,7 +813,7 @@ Other shell scripts are not supported, yet.</p>
 </h2>
 <p>Get source codes by <code>git clone</code> or download from <a href="https://github.com/tamada/sibling"  target="_blank" rel="noreferrer">GitHub</a>,
 then run <code>cargo</code> to build <code>sibling</code></p>
-<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ git clone https://github.com/tamada/sibling.git <span style="color:#75715e"># or download from https://github.com/tamada/sibling</span>
+<div class="highlight-wrapper"><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ git clone https://github.com/tamada/sibling.git <span style="color:#75715e"># or download from https://github.com/tamada/sibling</span>
 </span></span><span style="display:flex;"><span>$ cd sibling
 </span></span><span style="display:flex;"><span>$ cargo build</span></span></code></pre></div></div>
 
