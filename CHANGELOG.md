@@ -103,6 +103,8 @@ which no longer existed, hence, `cdnext` and every other one had not worked.
 - The current directory of the list file, which is decided by the `current:`
   line, or the working directory if it is in the list. The first entry was
   treated as the current one before, hence, `next` skipped it.
+- The `-f FILE` option of the utility commands, which traverses the directories
+  listed in the file, such as `cdnext -f ~/projects.txt` ([#43](https://github.com/tamada/sibling/issues/43)).
 
 ### Fixed
 

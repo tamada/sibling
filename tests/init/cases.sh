@@ -46,3 +46,12 @@ echo "== no parent =="
 cd / || exit 1
 cdnext
 echo "pwd=$PWD"
+echo "== cdnext -f list =="
+cdnext -f /work/testdata/basic/dirlist.txt
+echo "== cdnext -f list again =="
+cdnext -f /work/testdata/basic/dirlist.txt
+echo "== lsnext -f list =="
+lsnext -f /work/testdata/basic/dirlist.txt
+echo "== cdnext -f list at the last =="
+cdnext 5 -f /work/testdata/basic/dirlist.txt
+echo "pwd=$PWD"

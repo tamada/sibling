@@ -50,6 +50,12 @@ Every command allows the integer argument to repeat the traversing, such as `cdn
 A negative count traverses in the opposite direction.
 The count is ignored by the `first`, `last`, and `random` ones.
 
+They also accept `-f FILE`, which traverses the directories listed in the file,
+instead of the siblings of the working directory, such as `cdnext -f ~/projects.txt`.
+Give the file in an absolute path, since the working directory changes.
+The entry of the list where you are becomes the current position, hence, calling
+it again finds the next entry of the list.
+
 ### :apple: Finder
 
 The AppleScripts in [`assets/applescripts`](assets/applescripts) move the front

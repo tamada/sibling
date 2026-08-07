@@ -46,8 +46,8 @@ so that every shell prints the identical output.
 
 They traverse `testdata/basic` and `testdata/worried`, and cover the count of
 the traversing, the negative count, the directory names containing a space and
-a multibyte character, the filter commands, and the messages of the exhausted
-list (exit status 1) and the error (3).
+a multibyte character, the filter commands, the list file of `-f`, and the
+messages of the exhausted list (exit status 1) and the error (3).
 
 `cdrand` is called, but its result is not compared, since it is random; the
 cases run `cdfirst` after it to get back to a known directory.

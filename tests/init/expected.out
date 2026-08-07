@@ -27,3 +27,11 @@ pwd=/work/testdata/basic/z
 pwd=/work/testdata/basic/e
 == no parent ==
 pwd=/
+== cdnext -f list ==
+/work/testdata/basic/a (1/3)
+== cdnext -f list again ==
+/work/testdata/basic/b (2/3)
+== lsnext -f list ==
+/work/testdata/basic/c
+== cdnext -f list at the last ==
+pwd=/work/testdata/basic/b

@@ -45,3 +45,12 @@ Write-Output "== no parent =="
 Set-Location /
 cdnext
 Write-Output "pwd=$($PWD.Path)"
+Write-Output "== cdnext -f list =="
+cdnext -f /work/testdata/basic/dirlist.txt
+Write-Output "== cdnext -f list again =="
+cdnext -f /work/testdata/basic/dirlist.txt
+Write-Output "== lsnext -f list =="
+lsnext -f /work/testdata/basic/dirlist.txt
+Write-Output "== cdnext -f list at the last =="
+cdnext 5 -f /work/testdata/basic/dirlist.txt
+Write-Output "pwd=$($PWD.Path)"

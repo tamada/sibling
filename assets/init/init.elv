@@ -20,12 +20,43 @@
 # Each function receives the optional count of the traversing, such as
 # "cdnext 3". A negative count traverses in the opposite direction.
 # The count is ignored by cdfirst, cdlast, cdrand, lsfirst, lslast, and lsrand.
+#
+# They also receive "-f FILE", which traverses the directories listed in the
+# file, instead of the siblings of the working directory, such as
+# "cdnext -f ~/projects.txt". Give the file in an absolute path, since the
+# working directory changes.
 
 use re
 
+# Put the count of the traversing and the file of the given arguments;
+# the empty file means the working directory.
+fn -parse {|@rest|
+    var count = 1
+    var file = ''
+    while (> (count $rest) 0) {
+        if (or (eq $rest[0] -f) (eq $rest[0] --file)) {
+            if (< (count $rest) 2) {
+                echo "sibling: "$rest[0]": no file is given" >&2
+                fail 'no file is given'
+            }
+            set file = $rest[1]
+            set rest = $rest[2..]
+        } else {
+            set count = $rest[0]
+            set rest = $rest[1..]
+        }
+    }
+    put $count $file
+}
+
+# Put the target of the traversing; the given file, or the working directory.
+fn -target {|file|
+    if (eq $file '') { put $pwd } else { put $file }
+}
+
 # Print the working directory with its position, such as "/path/to/c (3/26)".
-fn -position {
-    sibling --progress --type keep -- $pwd
+fn -position {|file|
+    sibling --progress --type keep -- (-target $file)
 }
 
 # Tell the user why no directory was found. The sibling command itself prints
@@ -36,34 +67,27 @@ fn -report {|code|
     }
 }
 
-# Return the count of the traversing in the given arguments; 1 by default.
-fn -count {|@rest|
-    if (> (count $rest) 0) {
-        put $rest[0]
-    } else {
-        put 1
-    }
-}
-
 # Change the working directory to the found sibling directory.
 fn -cd {|type @rest|
+    var count file = (-parse $@rest)
     var found = []
     # A non-zero exit status of an external command raises an exception in
     # Elvish; capture it by ?(...) to tell the result from its exit status.
-    var err = ?(set found = [(sibling --type $type --step (-count $@rest) -- $pwd)])
+    var err = ?(set found = [(sibling --type $type --step $count -- (-target $file))])
     if (not (is $err $ok)) {
         -report $err[reason][exit-status]
         return
     }
     cd $found[0]
-    -position
+    -position $file
 }
 
 # List the entries of the found sibling directory, without changing the
 # working directory.
 fn -ls {|type @rest|
+    var count file = (-parse $@rest)
     var found = []
-    var err = ?(set found = [(sibling --type $type --step (-count $@rest) -- $pwd)])
+    var err = ?(set found = [(sibling --type $type --step $count -- (-target $file))])
     if (not (is $err $ok)) {
         -report $err[reason][exit-status]
         return
@@ -74,9 +98,10 @@ fn -ls {|type @rest|
 
 # Choose a sibling directory with the filter command, such as peco and fzf,
 # and change the working directory to it.
-fn -cd-with-filter {|filter|
+fn -cd-with-filter {|filter @rest|
+    var _ file = (-parse $@rest)
     var selected = []
-    var err = ?(set selected = [(sibling --format list --type keep -- $pwd | (external $filter))])
+    var err = ?(set selected = [(sibling --format list --type keep -- (-target $file) | (external $filter))])
     if (not (is $err $ok)) {
         return
     }
@@ -86,7 +111,7 @@ fn -cd-with-filter {|filter|
     # Each line of the list format consists of the index, the marker of the
     # current and the next directories, and the path; drop all but the path.
     cd (re:replace '^ *[0-9]+ (\* |> |  )' '' $selected[0])
-    -position
+    -position $file
 }
 
 fn cdnext {|@rest| -cd next $@rest }
@@ -109,6 +134,6 @@ fn lslast {|@rest| -ls last $@rest }
 
 fn lsrand {|@rest| -ls random $@rest }
 
-fn sibling_peco { -cd-with-filter peco }
+fn sibling_peco {|@rest| -cd-with-filter peco $@rest }
 
-fn sibling_fzf { -cd-with-filter fzf }
+fn sibling_fzf {|@rest| -cd-with-filter fzf $@rest }

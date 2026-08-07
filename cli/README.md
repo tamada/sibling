@@ -167,6 +167,23 @@ Every function receives the optional count of the traversing, such as `cdnext 3`
 a negative count traverses in the opposite direction. The count is ignored by the
 `first`, `last`, and `random` ones.
 
+They also receive `-f FILE` (`-File` on PowerShell, and `-f` is its short form),
+which traverses the directories listed in the file, instead of the siblings of
+the working directory. Give the file in an absolute path, since the working
+directory changes.
+
+```console
+$ cat ~/projects.txt
+parent: /projects
+alpha
+beta
+gamma
+$ cdnext -f ~/projects.txt
+/projects/alpha (1/3)
+$ cdnext -f ~/projects.txt   # the entry where you are becomes the current one
+/projects/beta (2/3)
+```
+
 The `cd` functions print the directory with its position, such as
 `/path/to/c (3/26)`. They keep the working directory and return 1 when no more
 sibling directory is found; the message is printed to stderr.

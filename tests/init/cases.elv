@@ -15,6 +15,7 @@ var cdfirst~ = $sibling:cdfirst~
 var cdlast~ = $sibling:cdlast~
 var cdrand~ = $sibling:cdrand~
 var lsfirst~ = $sibling:lsfirst~
+var lsnext~ = $sibling:lsnext~
 var sibling_peco~ = $sibling:sibling_peco~
 var sibling_fzf~ = $sibling:sibling_fzf~
 
@@ -56,4 +57,13 @@ echo "pwd="$pwd
 echo "== no parent =="
 cd /
 cdnext
+echo "pwd="$pwd
+echo "== cdnext -f list =="
+cdnext -f /work/testdata/basic/dirlist.txt
+echo "== cdnext -f list again =="
+cdnext -f /work/testdata/basic/dirlist.txt
+echo "== lsnext -f list =="
+lsnext -f /work/testdata/basic/dirlist.txt
+echo "== cdnext -f list at the last =="
+cdnext 5 -f /work/testdata/basic/dirlist.txt
 echo "pwd="$pwd

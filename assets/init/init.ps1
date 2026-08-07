@@ -6,19 +6,34 @@
 # Each function receives the optional count of the traversing, such as
 # "cdnext 3". A negative count traverses in the opposite direction.
 # The count is ignored by cdfirst, cdlast, cdrand, lsfirst, lslast, and lsrand.
+#
+# They also receive "-File FILE" ("-f" for short), which traverses the
+# directories listed in the file, instead of the siblings of the working
+# directory, such as "cdnext -f ~/projects.txt". Give the file in an absolute
+# path, since the working directory changes.
 
-# Print the found sibling directory of the working directory.
-# $LASTEXITCODE is the exit status of the sibling command; 0 means the directory
-# was found, 1 means no more sibling directory, and the others mean an error.
+# Return the target of the traversing; the given file, or the working directory.
+function Get-SiblingTarget {
+    param([string]$File)
+
+    if ([string]::IsNullOrEmpty($File)) { $PWD.Path } else { $File }
+}
+
+# Print the found sibling directory of the working directory, or of the given
+# list file. $LASTEXITCODE is the exit status of the sibling command; 0 means
+# the directory was found, 1 means no more sibling directory, and the others
+# mean an error.
 function Find-SiblingDirectory {
-    param([string]$Type, [int]$Count = 1)
+    param([string]$Type, [int]$Count = 1, [string]$File)
 
-    & sibling --type $Type --step $Count -- $($PWD.Path)
+    & sibling --type $Type --step $Count -- $(Get-SiblingTarget $File)
 }
 
 # Print the working directory with its position, such as "C:\path\to\c (3\26)".
 function Show-SiblingPosition {
-    & sibling --progress --type keep -- $($PWD.Path)
+    param([string]$File)
+
+    & sibling --progress --type keep -- $(Get-SiblingTarget $File)
 }
 
 # Tell the user why no directory was found.
@@ -32,24 +47,24 @@ function Write-SiblingReport {
 
 # Change the working directory to the found sibling directory.
 function Set-SiblingLocation {
-    param([string]$Type, [int]$Count = 1)
+    param([string]$Type, [int]$Count = 1, [string]$File)
 
-    $next = Find-SiblingDirectory $Type $Count
+    $next = Find-SiblingDirectory $Type $Count $File
     $code = $LASTEXITCODE
     if ($code -ne 0 -or [string]::IsNullOrEmpty($next)) {
         Write-SiblingReport $code
         return
     }
     Set-Location -LiteralPath $next
-    Show-SiblingPosition
+    Show-SiblingPosition $File
 }
 
 # List the entries of the found sibling directory, without changing the
 # working directory.
 function Get-SiblingChildItem {
-    param([string]$Type, [int]$Count = 1)
+    param([string]$Type, [int]$Count = 1, [string]$File)
 
-    $next = Find-SiblingDirectory $Type $Count
+    $next = Find-SiblingDirectory $Type $Count $File
     $code = $LASTEXITCODE
     if ($code -ne 0 -or [string]::IsNullOrEmpty($next)) {
         Write-SiblingReport $code
@@ -62,9 +77,9 @@ function Get-SiblingChildItem {
 # Choose a sibling directory with the filter command, such as peco and fzf,
 # and change the working directory to it.
 function Set-SiblingLocationWithFilter {
-    param([string]$Filter)
+    param([string]$Filter, [string]$File)
 
-    $selected = & sibling --format list --type keep -- $($PWD.Path) | & $Filter
+    $selected = & sibling --format list --type keep -- $(Get-SiblingTarget $File) | & $Filter
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($selected)) {
         return
     }
@@ -72,29 +87,29 @@ function Set-SiblingLocationWithFilter {
     # current and the next directories, and the path; drop all but the path.
     $selected = $selected -replace '^ *[0-9]+ (\* |> |  )', ''
     Set-Location -LiteralPath $selected
-    Show-SiblingPosition
+    Show-SiblingPosition $File
 }
 
-function cdnext { param([int]$Count = 1) Set-SiblingLocation next $Count }
+function cdnext { param([int]$Count = 1, [string]$File) Set-SiblingLocation next $Count $File }
 
-function cdprev { param([int]$Count = 1) Set-SiblingLocation previous $Count }
+function cdprev { param([int]$Count = 1, [string]$File) Set-SiblingLocation previous $Count $File }
 
-function cdfirst { param([int]$Count = 1) Set-SiblingLocation first $Count }
+function cdfirst { param([int]$Count = 1, [string]$File) Set-SiblingLocation first $Count $File }
 
-function cdlast { param([int]$Count = 1) Set-SiblingLocation last $Count }
+function cdlast { param([int]$Count = 1, [string]$File) Set-SiblingLocation last $Count $File }
 
-function cdrand { param([int]$Count = 1) Set-SiblingLocation random $Count }
+function cdrand { param([int]$Count = 1, [string]$File) Set-SiblingLocation random $Count $File }
 
-function lsnext { param([int]$Count = 1) Get-SiblingChildItem next $Count }
+function lsnext { param([int]$Count = 1, [string]$File) Get-SiblingChildItem next $Count $File }
 
-function lsprev { param([int]$Count = 1) Get-SiblingChildItem previous $Count }
+function lsprev { param([int]$Count = 1, [string]$File) Get-SiblingChildItem previous $Count $File }
 
-function lsfirst { param([int]$Count = 1) Get-SiblingChildItem first $Count }
+function lsfirst { param([int]$Count = 1, [string]$File) Get-SiblingChildItem first $Count $File }
 
-function lslast { param([int]$Count = 1) Get-SiblingChildItem last $Count }
+function lslast { param([int]$Count = 1, [string]$File) Get-SiblingChildItem last $Count $File }
 
-function lsrand { param([int]$Count = 1) Get-SiblingChildItem random $Count }
+function lsrand { param([int]$Count = 1, [string]$File) Get-SiblingChildItem random $Count $File }
 
-function sibling_peco { Set-SiblingLocationWithFilter peco }
+function sibling_peco { param([string]$File) Set-SiblingLocationWithFilter peco $File }
 
-function sibling_fzf { Set-SiblingLocationWithFilter fzf }
+function sibling_fzf { param([string]$File) Set-SiblingLocationWithFilter fzf $File }
