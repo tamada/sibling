@@ -105,6 +105,11 @@ which no longer existed, hence, `cdnext` and every other one had not worked.
   treated as the current one before, hence, `next` skipped it.
 - The `-f FILE` option of the utility commands, which traverses the directories
   listed in the file, such as `cdnext -f ~/projects.txt` ([#43](https://github.com/tamada/sibling/issues/43)).
+- The `--not-on-dirs <ACTION>` option, which tells what happens when the given
+  current directory is not in the target directories ([#45](https://github.com/tamada/sibling/issues/45)).
+  It fails by default, and `before-first` makes it the position before the first
+  directory. The two ways of building the targets did not agree with each other;
+  the list failed, while the directory of `--base-path` silently went on.
 
 ### Fixed
 

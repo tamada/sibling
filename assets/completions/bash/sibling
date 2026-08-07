@@ -23,7 +23,7 @@ _sibling() {
 
     case "${cmd}" in
         sibling)
-            opts="-f -A -p -s -t -a -b -h --format --absolute --progress --step --type --all --base-path --help [DIR|FILE]"
+            opts="-f -A -p -s -t -a -b -h --format --absolute --progress --step --type --all --base-path --not-on-dirs --help [DIR|FILE]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -59,6 +59,10 @@ _sibling() {
                     ;;
                 -b)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --not-on-dirs)
+                    COMPREPLY=($(compgen -W "error before-first" -- "${cur}"))
                     return 0
                     ;;
                 *)

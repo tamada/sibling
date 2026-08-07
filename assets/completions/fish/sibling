@@ -10,7 +10,9 @@ next\t''
 random\t''
 keep\t''"
 complete -c sibling -s b -l base-path -d 'specify the parent directory of DIR (default: the parent directory of DIR)' -r -F
+complete -c sibling -l not-on-dirs -d 'specify the action when the current directory is not in the target directories, such as DIR which is not in --base-path' -r -f -a "error\t'Fail with [`Error::NotFound`]; the given current directory and the target directories do not agree with each other'
+before-first\t'Traverse as if the current directory were before the first one, hence, the next directory of it is the first of the target directories'"
 complete -c sibling -s A -l absolute -d 'print the directory name in the absolute path'
 complete -c sibling -s p -l progress -d 'print the progress of traversing directories'
 complete -c sibling -s a -l all -d 'Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.'
-complete -c sibling -s h -l help -d 'Print help'
+complete -c sibling -s h -l help -d 'Print help (see more with \'--help\')'

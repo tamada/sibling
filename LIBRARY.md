@@ -20,7 +20,7 @@ To use this crate, add it as a dependency in your Cargo.toml:
 
 ```toml
 [dependencies]
-sibling = "2"
+sibling = "3"
 ```
 
 ## Concepts
@@ -137,6 +137,11 @@ Which directory is the current one is decided by the following order.
 2. the working directory, if it is in the list (the list input only; the paths are
    compared as the canonicalized ones), or
 3. unknown ([`Dirs::current`] returns `None`).
+
+The first one is the directory **given** by the caller; `Error::NotFound` tells
+that it is not in the target directories. `Config::not_on_dirs` takes
+`NotOnDirs::BeforeFirst` to make it the position before the first one, instead of
+the error.
 
 The unknown position means the one before the first directory, hence:
 

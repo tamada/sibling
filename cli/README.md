@@ -85,6 +85,10 @@ Options:
                          By default, the sibling skips non-existent directories.
   -b, --base-path <DIR>  specify the parent directory of DIR
                          (default: the parent directory of DIR)
+      --not-on-dirs <ACTION>
+                         specify the action when the current directory is not in
+                         the target directories [default: error]
+                         [possible values: error, before-first]
       --log <LEVEL>      set the log level [default: warn]
                          [possible values: error, warn, info, debug, trace]
   -h, --help             Print help
@@ -230,6 +234,12 @@ Which directory is the current one is decided by the following order.
 The unknown current position means "before the first entry"; `next` finds the
 first entry from it (`--step 3` finds the third one), while `previous` and `keep`
 find nothing and exit with 1. `first`, `last`, and `random` are not affected.
+
+Note that the first one is different from the others; it is the current directory
+**given** by you. When it is not in the target directories, such as the `current:`
+line which is not in the list, and `DIR` which is not in `--base-path`, the command
+fails with the status 3. `--not-on-dirs before-first` makes it the position before
+the first entry, instead of the failure.
 
 ```console
 $ cat dirlist.txt

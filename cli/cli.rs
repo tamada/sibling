@@ -129,6 +129,16 @@ pub(crate) struct BaseOpts {
     )]
     pub base_path: Option<PathBuf>,
 
+    #[arg(
+        long,
+        help = "specify the action when the current directory is not in the target directories, such as DIR which is not in --base-path",
+        value_enum,
+        default_value_t = sibling::factory::NotOnDirs::Error,
+        value_name = "ACTION",
+        ignore_case = true
+    )]
+    pub not_on_dirs: sibling::factory::NotOnDirs,
+
     #[arg(index = 1, help = "the directory to find its siblings, or the file of directory list", value_name = "DIR|FILE", default_value = ".")]
     pub input: String,
 }
@@ -155,9 +165,9 @@ impl BaseOpts {
         };
         log::debug!("target: {}, base: {}", target.display(), base.display());
         if target.is_dir() {
-            Ok(sibling::factory::Config::new_with_wd(base, self.all, target))
+            Ok(sibling::factory::Config::new_with_wd(base, self.all, target).not_on_dirs(self.not_on_dirs))
         } else {
-            Ok(sibling::factory::Config::new(base, self.all))
+            Ok(sibling::factory::Config::new(base, self.all).not_on_dirs(self.not_on_dirs))
         }
     }
 

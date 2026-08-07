@@ -23,14 +23,16 @@ _sibling() {
 '--type=[specify the nexter type]:TYPE:(first last previous next random keep)' \
 '-b+[specify the parent directory of DIR (default\: the parent directory of DIR)]:DIR:_files' \
 '--base-path=[specify the parent directory of DIR (default\: the parent directory of DIR)]:DIR:_files' \
+'--not-on-dirs=[specify the action when the current directory is not in the target directories, such as DIR which is not in --base-path]:ACTION:((error\:"Fail with \[\`Error\:\:NotFound\`\]; the given current directory and the target directories do not agree with each other"
+before-first\:"Traverse as if the current directory were before the first one, hence, the next directory of it is the first of the target directories"))' \
 '-A[print the directory name in the absolute path]' \
 '--absolute[print the directory name in the absolute path]' \
 '-p[print the progress of traversing directories]' \
 '--progress[print the progress of traversing directories]' \
 '-a[Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.]' \
 '--all[Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.]' \
-'-h[Print help]' \
-'--help[Print help]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '::input -- the directory to find its siblings, or the file of directory list:_default' \
 && ret=0
 }

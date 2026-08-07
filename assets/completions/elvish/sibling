@@ -26,14 +26,15 @@ set edit:completion:arg-completer[sibling] = {|@words|
             cand --type 'specify the nexter type'
             cand -b 'specify the parent directory of DIR (default: the parent directory of DIR)'
             cand --base-path 'specify the parent directory of DIR (default: the parent directory of DIR)'
+            cand --not-on-dirs 'specify the action when the current directory is not in the target directories, such as DIR which is not in --base-path'
             cand -A 'print the directory name in the absolute path'
             cand --absolute 'print the directory name in the absolute path'
             cand -p 'print the progress of traversing directories'
             cand --progress 'print the progress of traversing directories'
             cand -a 'Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.'
             cand --all 'Set the targets to all directories from the given list. By default, the sibling skips non-existent directories.'
-            cand -h 'Print help'
-            cand --help 'Print help'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
         }
     ]
     $completions[$command]

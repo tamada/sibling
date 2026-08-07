@@ -67,6 +67,10 @@ Options:
                          By default, the sibling skips non-existent directories.
   -b, --base-path <DIR>  specify the parent directory of DIR
                          (default: the parent directory of DIR)
+      --not-on-dirs <ACTION>
+                         specify the action when the current directory is not in
+                         the target directories [default: error]
+                         [possible values: error, before-first]
       --log <LEVEL>      set the log level [default: warn]
                          [possible values: error, warn, info, debug, trace]
   -h, --help             Print help

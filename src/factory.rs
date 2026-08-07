@@ -1,7 +1,27 @@
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
+use clap::ValueEnum;
+
 use crate::{Dirs, Error, Result};
+
+/// The action taken when the given current directory is not in the target
+/// directories, such as the directory given by `--base-path` which does not
+/// contain it, and the `current:` line of a list which is not in the list.
+///
+/// Note that this is not for the unknown current directory; the [`Dirs`] with
+/// no current directory means the position before the first one.
+/// See [`Nextable::current_index`](crate::Nextable::current_index).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
+pub enum NotOnDirs {
+    /// Fail with [`Error::NotFound`]; the given current directory and the
+    /// target directories do not agree with each other.
+    #[default]
+    Error,
+    /// Traverse as if the current directory were before the first one, hence,
+    /// the next directory of it is the first of the target directories.
+    BeforeFirst,
+}
 
 /// Configuration for creating `Dirs` instances.
 /// the `base_dir` becoms the parent directory, and
@@ -12,6 +32,8 @@ pub struct Config {
     pub base_dir: std::path::PathBuf,
     pub all_target: bool,
     pub current: Option<PathBuf>,
+    /// The action when `current` is not in the target directories.
+    pub not_on_dirs: NotOnDirs,
 }
 
 impl Config {
@@ -20,6 +42,7 @@ impl Config {
             base_dir: base_dir.as_ref().to_path_buf(),
             all_target,
             current: None,
+            not_on_dirs: NotOnDirs::default(),
         }
     }
 
@@ -28,7 +51,16 @@ impl Config {
             base_dir: base_dir.as_ref().to_path_buf(),
             all_target,
             current: Some(current.as_ref().to_path_buf()),
+            not_on_dirs: NotOnDirs::default(),
         }
+    }
+
+    /// Set the action taken when the current directory is not in the target
+    /// directories.
+    #[must_use]
+    pub fn not_on_dirs(mut self, action: NotOnDirs) -> Self {
+        self.not_on_dirs = action;
+        self
     }
 }
 
@@ -44,11 +76,7 @@ impl DirsFactory {
     /// is given as the current one. See [`Nextable::current_index`](crate::Nextable::current_index)
     /// for the traversing from such a position.
     pub fn create<P: AsRef<Path>>(base_dir: P) -> Result<Dirs> {
-        Self::create_with(&Config {
-            base_dir: base_dir.as_ref().to_path_buf(),
-            all_target: false,
-            current: None,
-        })
+        Self::create_with(&Config::new(base_dir, false))
     }
 
     /// Create a new [`Dirs`] instance from the given configuration.
@@ -171,19 +199,19 @@ impl DirsFactory {
                 append_dirs(&mut dirs, path, config);
             }
         }
-        if let Some(current) = current {
-            Dirs::new_with_wd(base_dir, dirs, current)
+        let current = if current.is_some() {
+            resolve_current(&base_dir, &dirs, &current, config.not_on_dirs)?
         } else {
             // No current directory was given by the `current:` line nor the config.
             // Then, the working directory becomes the current one if it is in the
             // list; otherwise the current directory is left unknown.
-            let current = find_cwd(&dirs);
-            Ok(Dirs {
-                entries: dirs,
-                parent: base_dir,
-                current,
-            })
-        }
+            find_cwd(&dirs)
+        };
+        Ok(Dirs {
+            entries: dirs,
+            parent: base_dir,
+            current,
+        })
     }
 }
 
@@ -214,7 +242,7 @@ fn create_dirs_from_base_path(parent: &Path, config: &Config) -> Result<Dirs> {
     let mut errs = vec![];
     let entries = collect_dirs(parent, &mut errs);
     if errs.is_empty() {
-        let current = find_current(parent, &entries, &config.current);
+        let current = resolve_current(parent, &entries, &config.current, config.not_on_dirs)?;
         log::info!("build_dirs: siblings={}, current={current:?}", entries.len());
         Ok(Dirs {
             entries,
@@ -223,6 +251,29 @@ fn create_dirs_from_base_path(parent: &Path, config: &Config) -> Result<Dirs> {
         })
     } else {
         Err(Error::Array(errs))
+    }
+}
+
+/// Find the index of the given current directory, and take the action of
+/// `not_on_dirs` if it is not in `dirs`.
+///
+/// # Errors
+///
+/// Returns [`Error::NotFound`] if the current directory is not in `dirs`, and
+/// `not_on_dirs` is [`NotOnDirs::Error`].
+fn resolve_current(
+    base_dir: &Path,
+    dirs: &[PathBuf],
+    current: &Option<PathBuf>,
+    not_on_dirs: NotOnDirs,
+) -> Result<Option<usize>> {
+    let index = find_current(base_dir, dirs, current);
+    match (index, current) {
+        (None, Some(current)) if not_on_dirs == NotOnDirs::Error => {
+            log::error!("{}: not in the target directories", current.display());
+            Err(Error::NotFound(current.clone()))
+        }
+        _ => Ok(index),
     }
 }
 
@@ -382,6 +433,35 @@ mod tests {
         .expect("Failed to create Dirs from the reader");
 
         assert_eq!(dirs.len(), 2);
+        assert!(dirs.current().is_none());
+    }
+
+    /// The given current directory is not in the target ones; the action of
+    /// the config decides what happens.
+    #[test]
+    fn test_not_on_dirs() {
+        let config = Config::new_with_wd("testdata/worried", false, "testdata/basic/c");
+        let e = DirsFactory::create_with(&config)
+            .expect_err("the current directory is not in testdata/worried");
+        assert!(matches!(e, Error::NotFound(_)), "{e}");
+
+        let config = config.not_on_dirs(NotOnDirs::BeforeFirst);
+        let dirs = DirsFactory::create_with(&config)
+            .expect("before-first accepts the current directory out of the targets");
+        assert!(dirs.current().is_none());
+        assert_eq!(dirs.len(), 2);
+    }
+
+    /// The working directory found by the list is not the given one, hence,
+    /// the action does not affect it.
+    #[test]
+    fn test_not_on_dirs_does_not_affect_the_unknown_current() {
+        let list = "parent: testdata/basic\na\nb\n";
+        let dirs = DirsFactory::create_from_reader(
+            Box::new(std::io::Cursor::new(list)),
+            &Config::new(".", false), // NotOnDirs::Error by default
+        )
+        .expect("the unknown current directory is not an error");
         assert!(dirs.current().is_none());
     }
 

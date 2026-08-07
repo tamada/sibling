@@ -266,6 +266,25 @@ mod tests {
         assert_eq!(r.status, Status::Success);
     }
 
+    /// The DIR which is not in the --base-path directory fails by default,
+    /// while --not-on-dirs makes it the position before the first directory.
+    #[test]
+    fn test_not_on_dirs() {
+        let r = perform_from(&["sibling", "--base-path", "testdata/worried", "testdata/basic/c"]);
+        assert!(matches!(r, Err(Error::NotFound(_))));
+
+        let r = perform_ok(&[
+            "sibling",
+            "--not-on-dirs",
+            "before-first",
+            "--base-path",
+            "testdata/worried",
+            "testdata/basic/c",
+        ]);
+        assert_eq!(r.text, "testdata/worried/dir with spaces");
+        assert_eq!(r.status, Status::Success);
+    }
+
     #[test]
     fn test_not_found() {
         let r = perform_from(&["sibling", "testdata/basic/not_exist_dir"]);
