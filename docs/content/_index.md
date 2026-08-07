@@ -5,7 +5,7 @@ title: ":house: Home"
 
 {{< keywordList markdownify="true" >}}
 [![crates.io](https://img.shields.io/badge/crates.io-v2.0.5-orange.svg?logo=rust)](https://crates.io/crates/sibling)
-[![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-v2.0.5-information.svg)](https://github.com/tamada/sibling/releases/tag/v2.0.5)
 
 [![build](https://github.com/tamada/sibling/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/sibling/actions/workflows/build.yaml)

@@ -1,7 +1,7 @@
 # sibling
 
 [![crates.io](https://img.shields.io/badge/crates.io-v2.0.5-orange.svg?logo=rust)](https://crates.io/crates/sibling)
-[![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-WTFPL-information.svg)](https://github.com/tamada/sibling/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-v2.0.5-information.svg)](https://github.com/tamada/sibling/releases/tag/v2.0.5)
 
 [![build](https://github.com/tamada/sibling/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/sibling/actions/workflows/build.yaml)
@@ -132,9 +132,15 @@ cargo build --release # the binary file is put on target/release/sibling.
 
 ## :smile: About the project
 
+### :memo: Changelog
+
+- [CHANGELOG.md](CHANGELOG.md)
+  - Note that v3.0.0 changed the meaning of the `DIR` argument, the exit status,
+    and the utility commands of the shell. See the migration in it.
+
 ### :scroll: License
 
-- [WTFPL](https://github.com/tamada/sibling/blob/master/LICENSE)
+- [WTFPL](https://github.com/tamada/sibling/blob/main/LICENSE)
   - :+1: Commercial use
   - :+1: Modification
   - :+1: Distribution

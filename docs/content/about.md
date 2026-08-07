@@ -3,9 +3,14 @@ title: ":smile: About"
 date: 2024-07-09
 ---
 
+## :memo: Changelog
+
+See [CHANGELOG.md](https://github.com/tamada/sibling/blob/main/CHANGELOG.md) in the repository.
+Note that v3.0.0 changed the meaning of the `DIR` argument, the exit status, and the utility commands of the shell.
+
 ## :scroll: License
 
-* [WTFPL](https://github.com/tamada/sibling/blob/master/LICNESE)
+* [WTFPL](https://github.com/tamada/sibling/blob/main/LICENSE)
   * :+1: Commercial use
   * :+1: Modification
   * :+1: Distribution

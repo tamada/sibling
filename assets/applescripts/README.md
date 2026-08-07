@@ -14,7 +14,7 @@ name. When the front window shows `~/Photos/2024-05`, `next_folder` moves it to
 
 ## Requirements
 
-- macOS, and the `sibling` command v2.0.5 or later.
+- macOS, and the `sibling` command v3.0.0 or later.
   - The scripts tell the result by the exit status of the command, which the
     older versions did not return. Check it by `sibling --version`.
 - The `sibling` command in `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`,

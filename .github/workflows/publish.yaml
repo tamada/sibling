@@ -135,6 +135,11 @@ jobs:
         run: |
           cargo build --release --target ${{ matrix.target }}
 
+      # Regenerate them so that the release never ships the stale ones; note
+      # that the option which generates them is available on the debug build.
+      - name: Generate completion files
+        run: cargo run -- --generate-completion-files --completion-out-dir assets/completions
+
       # publish release
       - name: Create release file
         shell: bash

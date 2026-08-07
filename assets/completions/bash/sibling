@@ -23,25 +23,25 @@ _sibling() {
 
     case "${cmd}" in
         sibling)
-            opts="-a -l -p -P -s -t -i -h -V --csv --absolute --list --progress --parent --step --log --init --type --input --generate-completion-files --completion-out-dir --help --version [DIR]..."
+            opts="-f -A -p -s -t -a -b -h --format --absolute --progress --step --type --all --base-path --help [DIR|FILE]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --format)
+                    COMPREPLY=($(compgen -W "json csv list default" -- "${cur}"))
+                    return 0
+                    ;;
+                -f)
+                    COMPREPLY=($(compgen -W "json csv list default" -- "${cur}"))
+                    return 0
+                    ;;
                 --step)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 -s)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --log)
-                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
-                    return 0
-                    ;;
-                --init)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -53,20 +53,16 @@ _sibling() {
                     COMPREPLY=($(compgen -W "first last previous next random keep" -- "${cur}"))
                     return 0
                     ;;
-                --input)
+                --base-path)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                -i)
+                -b)
                     COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --completion-out-dir)
-                    COMPREPLY=($(compgen -d "${cur}"))
                     return 0
                     ;;
                 *)
-                    COMPREPLY=($(compgen -d "${cur}"))
+                    COMPREPLY=()
                     ;;
             esac
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
