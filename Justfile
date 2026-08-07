@@ -35,7 +35,7 @@ prepare_site_build:
 
 # Generate the document site with Hugo
 site: prepare_site_build
-    hugo -s site
+    hugo -s docs
 
 # Build the docker image for gixor
 docker:
