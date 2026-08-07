@@ -6,7 +6,7 @@ Command-line tool for traversing sibling directories (directories under the same
 
 When a directory has many subdirectories, moving between them can be tedious. Instead of typing full directory names like `cd ../next_directory`, you can use `sibling` commands like `cdnext` or `cdprev` to quickly switch to the next or previous sibling directory.
 
-This CLI is built on top of the `sibling` library in `../lib`.
+This CLI is built on top of the `sibling` library in `../src`.
 
 ## Features
 
@@ -25,11 +25,31 @@ brew tap tamada/brew
 brew install sibling
 ```
 
-Then add the initialization script to your shell profile (`.bash_profile`, `.zshrc`, etc.):
+Then add the initialization script of your shell to your shell profile.
 
-```bash
-eval "$(sibling --init bash)"
+| Shell | Profile | Snippet |
+|---|---|---|
+| bash | `.bash_profile` | `eval "$(sibling --init bash)"` |
+| zsh | `.zshrc` | `eval "$(sibling --init zsh)"` |
+| fish | `config.fish` | `sibling --init fish \| source` |
+| PowerShell | `$PROFILE` | `sibling --init powershell \| Out-String \| Invoke-Expression` |
+| Elvish | `rc.elv` | `use sibling` (see the note below) |
+
+Elvish loads the functions as a module, not by evaluating them.
+Save the script into the lib directory, which is usually `~/.config/elvish/lib`,
+and use it in your `rc.elv`; the commands are namespaced, such as `sibling:cdnext`.
+
+```console
+$ sibling --init elvish > ~/.config/elvish/lib/sibling.elv
 ```
+
+```elvish
+use sibling
+# to call them by the bare names
+var cdnext~ = $sibling:cdnext~
+var cdprev~ = $sibling:cdprev~
+```
+
 
 ### From Source
 
@@ -46,25 +66,62 @@ The binary will be at `target/release/sibling`.
 ```shell
 get next/previous sibling directory name.
 
-Usage: sibling [OPTIONS] [DIR]...
+Usage: sibling [OPTIONS] [DIR|FILE]
 
 Arguments:
-  [DIR]...  the target directory
+  [DIR|FILE]  the directory to find its siblings, or the file of directory list [default: .]
 
 Options:
-  -a, --absolute      print the directory name in the absolute path
-  -l, --list          list the sibling directories
-  -p, --progress      print the progress of traversing directories
-  -P, --parent        print parent directory, when no more sibling directories are found
-  -s, --step <COUNT>  specify the number of times to execute sibling [default: 1]
-      --log <LEVEL>   set the log level [default: warn]
-                      [possible values: error, warn, info, debug, trace]
-  -t, --type <TYPE>   specify the nexter type [default: next]
-                      [possible values: first, last, previous, next, random, keep]
-  -i, --input <FILE>  directory list from file, if FILE is "-", reads from stdin.
-  -h, --help          Print help (see more with '--help')
-  -V, --version       Print version
+  -f, --format <FORMAT>  print the result in the specified format [default: default]
+                         [possible values: json, csv, list, default]
+  -A, --absolute         print the directory name in the absolute path
+  -p, --progress         print the progress of traversing directories
+  -s, --step <COUNT>     specify the number of times to execute sibling [default: 1]
+                         The negative count traverses in the opposite direction,
+                         and 0 means the current directory.
+  -t, --type <TYPE>      specify the nexter type [default: next]
+                         [possible values: first, last, previous, next, random, keep]
+  -a, --all              Set the targets to all directories from the given list.
+                         By default, the sibling skips non-existent directories.
+  -b, --base-path <DIR>  specify the parent directory of DIR
+                         (default: the parent directory of DIR)
+      --not-on-dirs <ACTION>
+                         specify the action when the current directory is not in
+                         the target directories [default: error]
+                         [possible values: error, before-first]
+      --log <LEVEL>      set the log level [default: warn]
+                         [possible values: error, warn, info, debug, trace]
+  -h, --help             Print help
+  -V, --version          Print version
+
+Exit status:
+  0  the next directory was found (printed to stdout),
+  1  no more sibling directory was found,
+  2  the given command line arguments were wrong, and
+  3  the command failed (the reason is printed to stderr).
 ```
+
+The `DIR` argument is the target directory itself; its siblings are the child directories
+of its parent directory, and `DIR` itself is included in them.
+
+### Exit status
+
+The command is designed to be used from a shell function, hence, the caller can tell
+the result from the status code.
+
+```bash
+if next=$(sibling "$PWD"); then
+    cd "$next"
+else
+    case $? in
+        1) echo "no more sibling directory" ;;
+        *) echo "sibling: failed" ;;
+    esac
+fi
+```
+
+Note that the `json`, `csv`, and `list` formats print their result even if no more sibling
+directory was found; only the status code tells it.
 
 ### Examples
 
@@ -73,10 +130,13 @@ Options:
 cdnext
 
 # Move 3 directories forward
-cdnext -s 3
+cdnext 3
 
 # Move to the previous sibling
 cdprev
+
+# Move 3 directories forward, again; a negative count reverses the direction
+cdprev -3
 
 # Jump to the first sibling
 cdfirst
@@ -87,56 +147,150 @@ cdlast
 # Random sibling
 cdrand
 
-# List the next sibling (without changing directory)
+# List the entries of the next sibling (without changing directory)
 lsnext
 
-# List all siblings with progress indicator
-sibling -l -p /path/to/dir
+# List all siblings of the given directory, with the current and the next markers
+sibling --format list /path/to/dir
 ```
 
 ## Utility Commands
 
-Once initialized with `sibling --init bash`, the following shell functions are available:
+Once initialized with `sibling --init <SHELL>` (`bash`, `zsh`, `fish`,
+`powershell`, and `elvish` are available), the following functions are available:
 
 - **`cdnext`** / **`cdprev`**: Change to the next/previous sibling directory
 - **`cdfirst`** / **`cdlast`**: Change to the first/last sibling directory
 - **`cdrand`**: Change to a random sibling directory
-- **`lsnext`** / **`lsprev`**: List the next/previous sibling without changing directory
-- **`lsfirst`** / **`lslast`**: List the first/last sibling
-- **`lsrand`**: List a random sibling
+- **`lsnext`** / **`lsprev`**: List the entries of the next/previous sibling, without changing directory
+- **`lsfirst`** / **`lslast`**: List the entries of the first/last sibling
+- **`lsrand`**: List the entries of a random sibling
+- **`sibling_peco`** / **`sibling_fzf`**: Choose a sibling directory with [peco](https://github.com/peco/peco) or [fzf](https://github.com/junegunn/fzf), and change to it
+- **`nextdir`** / **`prevdir`**: Print the next/previous sibling directory, without changing the working directory
+- **`sibling_hook_enable`** / **`sibling_hook_disable`**: Set `NEXTDIR` and `PREVDIR` on every change of the working directory
+
+Every function receives the optional count of the traversing, such as `cdnext 3`;
+a negative count traverses in the opposite direction. The count is ignored by the
+`first`, `last`, and `random` ones.
+
+They also receive `-f FILE` (`-File` on PowerShell, and `-f` is its short form),
+which traverses the directories listed in the file, instead of the siblings of
+the working directory. Give the file in an absolute path, since the working
+directory changes.
+
+```console
+$ cat ~/projects.txt
+parent: /projects
+alpha
+beta
+gamma
+$ cdnext -f ~/projects.txt
+/projects/alpha (1/3)
+$ cdnext -f ~/projects.txt   # the entry where you are becomes the current one
+/projects/beta (2/3)
+```
+
+The `cd` functions print the directory with its position, such as
+`/path/to/c (3/26)`. They keep the working directory and return 1 when no more
+sibling directory is found; the message is printed to stderr.
+
+### Referring to the sibling without moving
+
+`nextdir` and `prevdir` print the sibling directory, and change nothing.
+They print nothing and return 1 when no such directory is found, hence, they fit
+in the command substitution.
+
+```bash
+cp report.txt "$(nextdir)"
+diff -r . "$(prevdir)"
+```
+
+`sibling_hook_enable` sets `NEXTDIR` and `PREVDIR` on every change of the working
+directory, through the hook of your shell, such as `chpwd_functions` of zsh.
+They become empty when no such directory is found, and `sibling_hook_disable`
+stops it.
+
+```bash
+sibling_hook_enable
+cd ~/photos/2024-05
+echo "$NEXTDIR"        # ~/photos/2024-06
+```
+
+The hook is **not** registered by default, since it runs the command twice on
+every change of the working directory. It costs about 4 milliseconds in a
+directory of fifty entries, while about 30 milliseconds in a directory of ten
+thousand entries; the latter is felt by the hand. Enable it when the directories
+you walk through are not so large, or when the variables are worth the cost.
 
 ## Input from File or stdin
 
-You can provide a directory list from a file:
+Instead of a directory, you can give a file which lists the directories to traverse.
+Give `-` as the file name to read the list from stdin.
 
 ```bash
-sibling -i dirlist.txt -t next
+sibling dirlist.txt -t next
+printf 'parent: /projects\na\nb\nc\n' | sibling - -t next
 ```
 
-Or from stdin:
+### Format of the list
 
-```bash
-echo -e "parent:/projects\na\nb\nc" | sibling -i - -t next
 ```
-
-Format:
-```
-parent:/path/to/parent
+# lines starting with '#', and empty lines, are ignored.
+parent: /path/to/parent    # or "base_dir:"; the following names are resolved on it.
 dir1
-dir2
+current: /path/to/parent/dir2   # the current directory (optional).
 dir3
 ```
 
-The optional `parent:` line sets the base directory.
+| Line | Meaning |
+|---|---|
+| `parent:` / `base_dir:` | the parent directory; the following entries are resolved on it. It affects only the entries after this line. |
+| `current:` | the current directory. Unlike the other entries, the path is used as is, and it is also added to the list. |
+| `#`, empty | ignored. |
+| otherwise | an entry of the list. |
+
+By default, the entries which do not exist are skipped; `--all` makes them the
+targets, too.
+
+### The current directory in the list
+
+Which directory is the current one is decided by the following order.
+
+1. the `current:` line in the list, if it is given,
+2. the working directory, if it is in the list (the paths are compared as the
+   canonicalized ones), or
+3. unknown.
+
+The unknown current position means "before the first entry"; `next` finds the
+first entry from it (`--step 3` finds the third one), while `previous` and `keep`
+find nothing and exit with 1. `first`, `last`, and `random` are not affected.
+
+Note that the first one is different from the others; it is the current directory
+**given** by you. When it is not in the target directories, such as the `current:`
+line which is not in the list, and `DIR` which is not in `--base-path`, the command
+fails with the status 3. `--not-on-dirs before-first` makes it the position before
+the first entry, instead of the failure.
+
+```console
+$ cat dirlist.txt
+parent: /projects
+a
+b
+c
+$ sibling dirlist.txt          # not in /projects/*, hence, the first entry
+/projects/a
+$ cd /projects/b && sibling ~/dirlist.txt   # the working directory is in the list
+/projects/c
+```
 
 ## Build & Test
 
 ```bash
 # Build the CLI
-cargo build --release -p sibling
+cargo build --release
 
 # Run tests
-cargo test -p sibling
+cargo test
 
 # Generate shell completions (debug mode only)
 cargo run -- --generate-completions bash > completions/sibling.bash

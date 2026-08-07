@@ -2,36 +2,39 @@ baseURL = "https://tamada.github.io/sibling"
 languageCode = "en-us"
 defaultContentLanguage = "en"
 title = "Sibling"
-enableEmoji = true
-theme = "cayman-hugo-theme"
-googleAnalytics = ""
-
-pygmentsCodefences = true
-pygmentsStyle = "pygments"
+theme = ["github.com/tamada/hugo_theme_mod", "github.com/nunocoracao/blowfish/v2"]
+googleAnalytics = "G-JG3HPV69B1"
 
 [params]
-    project_name = "sibling"
-    project_logo = "images/folders.svg"
-    project_tagline = "get next/previous sibling directory name"
-    dateFormat = "2006-01-02"
-    katex = true
-    version = "2.0.4"
-    footer = "[![GitHub](https://img.shields.io/badge/GitHub-tamada/sibling-blueviolet.svg?logo=github)](https://github.com/tamada/sibling) Made with [Hugo](https://gohugo.io/). Theme by [Cayman](https://github.com/zwbetz-gh/cayman-hugo-theme). Deployed to [GitHub Pages](https://pages.github.com/)."
+logo = "images/logo.svg"
+description = "get next/previous sibling directory name."
+dateFormat = "2006-01-02"
+copyright = "Copyright &copy; 2024 by Haruaki Tamada. Made with [Hugo](https://gohugo.io/). Deployed to [GitHub Pages](https://pages.github.com/)."
 
-[menu]
-    [[menu.nav]]
-        name = ":house: Home"
-        url = "/"
-        weight = 10
-    [[menu.nav]]
-        name = ":anchor: Install"
-        url = "/install"
-        weight = 20
-    [[menu.nav]]
-        name = ":runner: Usage"
-        url = "/usage"
-        weight = 30
-    [[menu.nav]]
-        name = ":smile: About"
-        url = "/about"
-        weight = 50
+[menus]
+[[menus.main]]
+    name = "🏃 Usage"
+    pageRef = "/usage"
+    weight = 30
+[[menus.main]]
+    name = "⚓️ Install"
+    pageRef = "/install"
+    weight = 50
+[[menus.main]]
+    identifier = "haruaki-tamada"
+    pre = "haruaki-tamada"
+    url = "https://tamada.github.io"
+    weight = 100
+[[menus.main]]
+    identifier = "github"
+    pre = "github"
+    url = "https://github.com/tamada/sibling"
+    weight = 200
+[[menus.footer]]
+    name = ":smile: About"
+    pageRef = "/about"
+    weight = 50
+
+[module]
+[[module.imports]]
+path = "github.com/tamada/hugo_theme_mod"

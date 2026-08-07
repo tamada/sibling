@@ -6,9 +6,14 @@ on:
       - main
     types: [closed]
 
+permissions:
+  contents: read
+
 jobs:
   setup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     outputs:
       appname: sibling
@@ -33,6 +38,8 @@ jobs:
   documents:
     runs-on: ubuntu-latest
     needs: setup
+    permissions:
+      contents: write # deploy the site to the gh-pages branch
     outputs:
       appname: ${{ needs.setup.outputs.appname }}
       tag: ${{ needs.setup.outputs.tag }}
@@ -64,6 +71,8 @@ jobs:
   publish:
     runs-on: ${{ matrix.os }}
     needs: documents
+    permissions:
+      contents: write # upload the assets to the release
     outputs:
       appname: ${{ needs.documents.outputs.appname }}
       tag: ${{ needs.documents.outputs.tag }}
@@ -72,32 +81,32 @@ jobs:
         include:
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            artifact_name: ${{ needs.documents.outputs.appname }}-cli
+            artifact_name: ${{ needs.documents.outputs.appname }}
             asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_linux_arm64
             ext: ''
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            artifact_name: ${{ needs.documents.outputs.appname }}-cli
+            artifact_name: ${{ needs.documents.outputs.appname }}
             asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_linux_amd64
             ext: ''
           # - os: ubuntu-latest
           #   target: aarch64-pc-windows-gnullvm
-          #   artifact_name: ${{ needs.documents.outputs.appname }}-cli.exe
+          #   artifact_name: ${{ needs.documents.outputs.appname }}.exe
           #   asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_windows_arm64
           #   ext: '.exe'
           # - os: ubuntu-latest
           #   target: x86_64-pc-windows-gnu
-          #   artifact_name: ${{ needs.documents.outputs.appname }}-cli.exe
+          #   artifact_name: ${{ needs.documents.outputs.appname }}.exe
           #   asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_windows_amd64
           #   ext: '.exe'
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: ${{ needs.documents.outputs.appname }}-cli
+            artifact_name: ${{ needs.documents.outputs.appname }}
             asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_darwin_arm64
             ext: ''
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: ${{ needs.documents.outputs.appname }}-cli
+            artifact_name: ${{ needs.documents.outputs.appname }}
             asset_name: ${{ needs.documents.outputs.appname }}-${{ needs.documents.outputs.tag }}_darwin_amd64
             ext: ''
     steps:
@@ -132,6 +141,11 @@ jobs:
         run: |
           cargo build --release --target ${{ matrix.target }}
 
+      # Regenerate them so that the release never ships the stale ones; note
+      # that the option which generates them is available on the debug build.
+      - name: Generate completion files
+        run: cargo run -- --generate-completion-files --completion-out-dir assets/completions
+
       # publish release
       - name: Create release file
         shell: bash
@@ -158,6 +172,9 @@ jobs:
   publish_to_crates_io:
     runs-on: ubuntu-latest
     needs: publish
+    permissions:
+      contents: read
+      id-token: write # the trusted publishing of crates.io uses OIDC
     outputs:
       appname: ${{ needs.publish.outputs.appname }}
       tag: ${{ needs.publish.outputs.tag }}

@@ -1,8 +1,9 @@
 ---
 title: ":anchor: Installation"
+date: 2024-07-09
 ---
 
-### :beer: Homebrew
+## :beer: Homebrew
 
 Install `sibling` via [Homebrew](https://brew.sh), simply run:
 
@@ -10,15 +11,35 @@ Install `sibling` via [Homebrew](https://brew.sh), simply run:
 brew install tamada/tap/sibling
 ```
 
-And put the following snipeets into your shell profile (e.g., `.bash_profile`, or `.zshrc`)
-The `--init` option accepts only `bash`.
-Other shell scripts are not supported, yet.
+And put the snippet of your shell into your shell profile.
+The `--init` option accepts `bash`, `zsh`, `fish`, `powershell`, and `elvish`;
+other shells are not supported, yet.
 
-```shell
-eval "$(sibling --init bash)"
+| Shell | Profile | Snippet |
+|---|---|---|
+| bash | `.bash_profile` | `eval "$(sibling --init bash)"` |
+| zsh | `.zshrc` | `eval "$(sibling --init zsh)"` |
+| fish | `config.fish` | `sibling --init fish \| source` |
+| PowerShell | `$PROFILE` | `sibling --init powershell \| Out-String \| Invoke-Expression` |
+| Elvish | `rc.elv` | `use sibling` (see the note below) |
+
+Elvish loads the functions as a module, not by evaluating them.
+Save the script into the lib directory, which is usually `~/.config/elvish/lib`,
+and use it in your `rc.elv`; the commands are namespaced, such as `sibling:cdnext`.
+
+```console
+$ sibling --init elvish > ~/.config/elvish/lib/sibling.elv
 ```
 
-### :muscle: Compiling yourself
+```elvish
+use sibling
+# to call them by the bare names
+var cdnext~ = $sibling:cdnext~
+var cdprev~ = $sibling:cdprev~
+```
+
+
+## :muscle: Compiling yourself
 
 Get source codes by `git clone` or download from [GitHub](https://github.com/tamada/sibling),
 then run `cargo` to build `sibling`
@@ -29,9 +50,9 @@ $ cd sibling
 $ cargo build
 ```
 
-### :briefcase: Requirements
+## :briefcase: Requirements
 
-#### Development
+### Development
 
 - Rust 1.78 or later
 - Dependencies (See `Cargo.toml`)

@@ -22,6 +22,10 @@ build target = "": formats clippy
 test: (build "")
     cargo llvm-cov --lcov --output-path target/coverage.lcov
 
+# Test the initialize scripts on every supported shell (requires docker)
+test_init:
+    tests/init/run.sh
+
 # Generate completion files
 completions:
     cargo run -- --generate-completion-files --completion-out-dir assets/completions
