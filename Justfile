@@ -30,11 +30,8 @@ test_init:
 completions:
     cargo run -- --generate-completion-files --completion-out-dir assets/completions
 
-prepare_site_build:
-    test -d docs/public || git worktree add -f docs/public gh-pages
-
 # Generate the document site with Hugo
-site: prepare_site_build
+site:
     hugo -s docs
 
 # Build the docker image for gixor

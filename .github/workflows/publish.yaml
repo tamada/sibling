@@ -1,9 +1,9 @@
 # Releases sibling; tag, build, publish, and tell the world.
 #
-# The tagging, the site, and the publishing of the release are the reusable
-# workflows of tamada/.github; what is left here is what only this repository
-# knows, that is, building the command for each platform and publishing the
-# crate.
+# The tagging and the publishing of the release are the reusable workflows of
+# tamada/.github; what is left here is what only this repository knows, that is,
+# building the command for each platform and publishing the crate. The site is
+# deployed by deploy-page.yaml, on every change of docs on main.
 #
 # The release is a draft until the last job, hence, the assets are attached
 # before anyone hears about it. The last job takes the draft off with the token
@@ -36,21 +36,6 @@ jobs:
       version: ${{ inputs.version }}
     permissions:
       contents: write
-
-  documents:
-    needs: start
-    uses: tamada/.github/.github/workflows/build-hugo-and-publish.yaml@v1
-    with:
-      workdir: docs
-      # The ref of this run is the pull request, not the branch which was tagged.
-      branch: main
-      # The theme of docs/go.mod, blowfish, asks for 0.141.0 or later, and tells
-      # it works up to 0.154.5.
-      hugo-version: "0.154.5"
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
 
   publish:
     needs: start
@@ -140,7 +125,7 @@ jobs:
         run: cargo publish
 
   finish:
-    needs: [start, documents, publish, publish_to_crates_io]
+    needs: [start, publish, publish_to_crates_io]
     uses: tamada/.github/.github/workflows/release-finish.yaml@v1
     with:
       tag: ${{ needs.start.outputs.tag }}
