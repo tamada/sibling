@@ -171,6 +171,9 @@ mod tests {
         assert_eq!(json_escape("/tmp/tab\tx"), r"/tmp/tab\tx");
         assert_eq!(json_escape("/tmp/lf\nx"), r"/tmp/lf\nx");
         assert_eq!(json_escape("/tmp/bell\u{07}x"), r"/tmp/bell\u0007x");
+        assert_eq!(json_escape("/tmp/back\u{08}x"), r"/tmp/back\bx");
+        assert_eq!(json_escape("/tmp/form\u{0c}x"), r"/tmp/form\fx");
+        assert_eq!(json_escape("/tmp/cr\rx"), r"/tmp/cr\rx");
         assert_eq!(json_escape("/tmp/絵文字_👍"), "/tmp/絵文字_👍");
     }
 
@@ -198,6 +201,52 @@ mod tests {
             absolute: false,
             progress: false,
         }
+    }
+
+    /// The list format marks the current directory by "*", and the next one by ">".
+    #[test]
+    fn test_list_string() {
+        use sibling::factory::{Config, DirsFactory};
+
+        let config = Config::new_with_wd("testdata/worried", false, "testdata/worried/dir with spaces");
+        let dirs = DirsFactory::create_with(&config).expect("Failed to create Dirs");
+        let next = dirs.next(NexterType::Next);
+
+        assert_eq!(
+            result_string(&dirs, next, &opts_of(Format::List)),
+            "   1 * testdata/worried/dir with spaces\n   2 > testdata/worried/multibyte_chars_\u{1f44d}"
+        );
+    }
+
+    /// The list format prints the entries even if no current directory is known.
+    #[test]
+    fn test_list_string_without_the_current() {
+        let dirs = dirs_of(&["/tmp/a", "/tmp/b"]);
+        let next = dirs.next(NexterType::Next);
+
+        assert_eq!(
+            result_string(&dirs, next, &opts_of(Format::List)),
+            "   1 > /tmp/a\n   2   /tmp/b"
+        );
+    }
+
+    /// The progress tells the position of the found directory in the list.
+    #[test]
+    fn test_progress() {
+        let dirs = dirs_of(&["/tmp/a", "/tmp/b", "/tmp/c"]);
+        let next = dirs.next(NexterType::Next);
+        let mut opts = opts_of(Format::Default);
+        opts.progress = true;
+
+        assert_eq!(result_string(&dirs, next, &opts), "/tmp/a (1/3)");
+    }
+
+    /// The path is printed as it is when it has no absolute path; canonicalize
+    /// fails for the directory which does not exist.
+    #[test]
+    fn test_path_to_string_absolute_of_the_missing_path() {
+        let p = Path::new("testdata/no_such_dir");
+        assert_eq!(path_to_string(Some(p), true), "testdata/no_such_dir");
     }
 
     #[test]

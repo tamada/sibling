@@ -326,6 +326,107 @@ mod tests {
     use super::factory::*;
 
     #[test]
+    fn test_nexter_type_from_str() {
+        for (name, expected) in [
+            ("first", NexterType::First),
+            ("last", NexterType::Last),
+            ("previous", NexterType::Previous),
+            ("next", NexterType::Next),
+            ("random", NexterType::Random),
+            ("keep", NexterType::Keep),
+            ("NEXT", NexterType::Next), // the case is ignored
+        ] {
+            assert_eq!(name.parse::<NexterType>().unwrap(), expected, "{name}");
+        }
+        let e = "unknown"
+            .parse::<NexterType>()
+            .expect_err("unknown is not a name of the nexter type");
+        assert!(matches!(e, Error::UnknownNexterType(_)), "{e}");
+    }
+
+    #[test]
+    fn test_error_display_io() {
+        let err = Error::Io(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "denied",
+        ));
+        assert_eq!(format!("{err}"), "I/O error: denied");
+    }
+
+    /// The array of the errors joins the messages of them.
+    #[test]
+    fn test_error_display_array() {
+        let err = Error::Array(vec![
+            Error::NotDir(PathBuf::from("/path/to/file")),
+            Error::NotFound(PathBuf::from("/path/to/dir")),
+        ]);
+        assert_eq!(
+            format!("{err}"),
+            "/path/to/file: Not a directory, /path/to/dir: Not found"
+        );
+    }
+
+    /// The found directory is traversable, too; the traversing continues from
+    /// it without building the Dirs again.
+    #[test]
+    fn test_dir_is_nextable() {
+        let config = &Config::new_with_wd("testdata/basic", false, "testdata/basic/c");
+        let dirs = DirsFactory::create_with(config).expect("Failed to create Dirs");
+        let d = dirs.next(NexterType::Next).expect("the next directory of c");
+
+        assert_eq!(d.current_index(), Some(3));
+        assert_eq!(Nextable::dirs(&d).len(), 26);
+
+        for (nexter, name) in [
+            (NexterType::Next, "testdata/basic/e"),
+            (NexterType::Previous, "testdata/basic/c"),
+            (NexterType::First, "testdata/basic/a"),
+            (NexterType::Last, "testdata/basic/z"),
+            (NexterType::Keep, "testdata/basic/d"),
+        ] {
+            let found = d.next(nexter.clone()).unwrap_or_else(|| panic!("{nexter:?}"));
+            assert!(found.path().ends_with(name), "{nexter:?}: {:?}", found.path());
+        }
+        // The random one chooses a directory of the list, wherever it is.
+        let found = d.next(NexterType::Random).expect("the random directory");
+        assert!(dirs.directories().any(|dir| dir == found.path()));
+
+        // Dir::dirs builds the Dirs whose current directory is the found one.
+        let from_d = d.dirs();
+        assert_eq!(from_d.current().map(|c| c.index()), Some(3));
+        assert_eq!(from_d.len(), 26);
+    }
+
+    /// Dirs::new_with_wd fails unless the given current directory is in the entries.
+    #[test]
+    fn test_dirs_new_with_wd() {
+        let base = PathBuf::from("testdata/basic");
+        let entries = vec![
+            PathBuf::from("testdata/basic/a"),
+            PathBuf::from("testdata/basic/b"),
+        ];
+
+        let dirs =
+            Dirs::new_with_wd(base.clone(), entries.clone(), PathBuf::from("testdata/basic/b"))
+                .expect("b is in the entries");
+        assert_eq!(dirs.current().map(|c| c.index()), Some(1));
+
+        let e = Dirs::new_with_wd(base, entries, PathBuf::from("testdata/basic/z"))
+            .expect_err("z is not in the entries");
+        assert!(matches!(e, Error::NotFound(_)), "{e}");
+    }
+
+    #[test]
+    fn test_directories() {
+        let dirs = DirsFactory::create("testdata/worried").expect("Failed to create Dirs");
+        let names = dirs
+            .directories()
+            .map(|d| d.file_name().unwrap().to_string_lossy().to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(names, vec!["dir with spaces", "multibyte_chars_\u{1f44d}"]);
+    }
+
+    #[test]
     fn test_error_display_not_dir() {
         let err = Error::NotDir(PathBuf::from("/path/to/file"));
         assert_eq!(

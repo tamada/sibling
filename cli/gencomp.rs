@@ -48,3 +48,36 @@ pub(crate) fn generate(outdir: &Path) {
     #[cfg(debug_assertions)]
     generator::generate(outdir);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::generate;
+
+    /// The completion file of every shell is generated into the given directory.
+    /// Note that the release workflow runs it before packaging, hence, the
+    /// release ships what this test checks.
+    #[test]
+    fn test_generate() {
+        let outdir = std::env::temp_dir().join(format!("sibling-completions-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&outdir);
+
+        generate(&outdir);
+
+        for path in [
+            "bash/sibling",
+            "elvish/sibling",
+            "fish/sibling",
+            "powershell/sibling",
+            "zsh/_sibling",
+        ] {
+            let file = outdir.join(path);
+            assert!(file.is_file(), "{path}: not generated");
+            let script = std::fs::read_to_string(&file).unwrap();
+            // The completion of an option tells that it is built from the
+            // current definition, not from a stale one. Note that the name has
+            // no leading dashes on some shells, such as fish.
+            assert!(script.contains("not-on-dirs"), "{path}: the options are stale");
+        }
+        std::fs::remove_dir_all(&outdir).unwrap();
+    }
+}

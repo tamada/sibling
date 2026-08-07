@@ -138,3 +138,6 @@ which no longer existed, hence, `cdnext` and every other one had not worked.
 
 - [`tests/init`](tests/init) tests the initialize scripts on every supported
   shell in a container, and requires them to behave identically.
+- The coverage of the tests went from 81% to 92%. The public API which no test
+  touched, such as `NexterType::from_str`, the `Display` of the errors, and the
+  traversing from the found `Dir`, is tested now.
