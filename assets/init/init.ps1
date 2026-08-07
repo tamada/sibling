@@ -90,6 +90,59 @@ function Set-SiblingLocationWithFilter {
     Show-SiblingPosition $File
 }
 
+# Return the found sibling directory, without changing the working directory.
+# It tells the result by $LASTEXITCODE only, since the caller usually reads it
+# by the sub expression, such as `Copy-Item file (nextdir)`.
+function Get-SiblingDirectory {
+    param([string]$Type, [int]$Count = 1, [string]$File)
+
+    $next = Find-SiblingDirectory $Type $Count $File
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($next)) {
+        return
+    }
+    $next
+}
+
+# Set NEXTDIR and PREVDIR to the siblings of the working directory; they become
+# empty when no such directory is found.
+function Update-SiblingEnvironment {
+    $next = Find-SiblingDirectory next 1 2> $null
+    if ($LASTEXITCODE -ne 0) { $next = '' }
+    $prev = Find-SiblingDirectory previous 1 2> $null
+    if ($LASTEXITCODE -ne 0) { $prev = '' }
+    $env:NEXTDIR = $next
+    $env:PREVDIR = $prev
+}
+
+# Run the hook on every change of the working directory. It is not registered
+# by default, since it runs the sibling command twice on every change; reading
+# a directory of ten thousand entries costs about 30 milliseconds.
+function sibling_hook_enable {
+    $action = $ExecutionContext.SessionState.InvokeCommand.LocationChangedAction
+    if (-not ($action -and $action.ToString() -match 'Update-SiblingEnvironment')) {
+        # Keep the action of the other tools, such as zoxide, and call it.
+        $global:SiblingPreviousLocationChangedAction = $action
+        $ExecutionContext.SessionState.InvokeCommand.LocationChangedAction = {
+            param($old, $new)
+            if ($global:SiblingPreviousLocationChangedAction) {
+                & $global:SiblingPreviousLocationChangedAction $old $new
+            }
+            Update-SiblingEnvironment
+        }
+    }
+    Update-SiblingEnvironment
+}
+
+function sibling_hook_disable {
+    $ExecutionContext.SessionState.InvokeCommand.LocationChangedAction = `
+        $global:SiblingPreviousLocationChangedAction
+    Remove-Item env:NEXTDIR, env:PREVDIR -ErrorAction SilentlyContinue
+}
+
+function nextdir { param([int]$Count = 1, [string]$File) Get-SiblingDirectory next $Count $File }
+
+function prevdir { param([int]$Count = 1, [string]$File) Get-SiblingDirectory previous $Count $File }
+
 function cdnext { param([int]$Count = 1, [string]$File) Set-SiblingLocation next $Count $File }
 
 function cdprev { param([int]$Count = 1, [string]$File) Set-SiblingLocation previous $Count $File }

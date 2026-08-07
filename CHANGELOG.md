@@ -105,6 +105,11 @@ which no longer existed, hence, `cdnext` and every other one had not worked.
   treated as the current one before, hence, `next` skipped it.
 - The `-f FILE` option of the utility commands, which traverses the directories
   listed in the file, such as `cdnext -f ~/projects.txt` ([#43](https://github.com/tamada/sibling/issues/43)).
+- The `nextdir` and `prevdir` commands, which print the sibling directory without
+  moving, and `sibling_hook_enable`, which sets `NEXTDIR` and `PREVDIR` on every
+  change of the working directory through the hook of the shell
+  ([#18](https://github.com/tamada/sibling/issues/18)). The hook is not
+  registered by default, since it runs the command twice on every change.
 - The `--not-on-dirs <ACTION>` option, which tells what happens when the given
   current directory is not in the target directories ([#45](https://github.com/tamada/sibling/issues/45)).
   It fails by default, and `before-first` makes it the position before the first

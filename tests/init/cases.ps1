@@ -54,3 +54,12 @@ lsnext -f /work/testdata/basic/dirlist.txt
 Write-Output "== cdnext -f list at the last =="
 cdnext 5 -f /work/testdata/basic/dirlist.txt
 Write-Output "pwd=$($PWD.Path)"
+Write-Output "== nextdir / prevdir =="
+Set-Location /work/testdata/basic/c
+nextdir
+prevdir
+Write-Output "== hook =="
+sibling_hook_enable
+Set-Location /work/testdata/basic/e
+Write-Output "NEXTDIR=$env:NEXTDIR PREVDIR=$env:PREVDIR"
+sibling_hook_disable

@@ -166,6 +166,8 @@ Once initialized with `sibling --init <SHELL>` (`bash`, `zsh`, `fish`,
 - **`lsfirst`** / **`lslast`**: List the entries of the first/last sibling
 - **`lsrand`**: List the entries of a random sibling
 - **`sibling_peco`** / **`sibling_fzf`**: Choose a sibling directory with [peco](https://github.com/peco/peco) or [fzf](https://github.com/junegunn/fzf), and change to it
+- **`nextdir`** / **`prevdir`**: Print the next/previous sibling directory, without changing the working directory
+- **`sibling_hook_enable`** / **`sibling_hook_disable`**: Set `NEXTDIR` and `PREVDIR` on every change of the working directory
 
 Every function receives the optional count of the traversing, such as `cdnext 3`;
 a negative count traverses in the opposite direction. The count is ignored by the
@@ -191,6 +193,34 @@ $ cdnext -f ~/projects.txt   # the entry where you are becomes the current one
 The `cd` functions print the directory with its position, such as
 `/path/to/c (3/26)`. They keep the working directory and return 1 when no more
 sibling directory is found; the message is printed to stderr.
+
+### Referring to the sibling without moving
+
+`nextdir` and `prevdir` print the sibling directory, and change nothing.
+They print nothing and return 1 when no such directory is found, hence, they fit
+in the command substitution.
+
+```bash
+cp report.txt "$(nextdir)"
+diff -r . "$(prevdir)"
+```
+
+`sibling_hook_enable` sets `NEXTDIR` and `PREVDIR` on every change of the working
+directory, through the hook of your shell, such as `chpwd_functions` of zsh.
+They become empty when no such directory is found, and `sibling_hook_disable`
+stops it.
+
+```bash
+sibling_hook_enable
+cd ~/photos/2024-05
+echo "$NEXTDIR"        # ~/photos/2024-06
+```
+
+The hook is **not** registered by default, since it runs the command twice on
+every change of the working directory. It costs about 4 milliseconds in a
+directory of fifty entries, while about 30 milliseconds in a directory of ten
+thousand entries; the latter is felt by the hand. Enable it when the directories
+you walk through are not so large, or when the variables are worth the cost.
 
 ## Input from File or stdin
 

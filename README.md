@@ -45,6 +45,12 @@ The `sibling` introduces the following utility commands.
 - choose the sibling directory with the filter command:
   - `sibling_peco`, and
   - `sibling_fzf`
+- print the sibling directory without moving:
+  - `nextdir`, and
+  - `prevdir`
+- set `NEXTDIR` and `PREVDIR` on every change of the working directory:
+  - `sibling_hook_enable`, and
+  - `sibling_hook_disable`
 
 Every command allows the integer argument to repeat the traversing, such as `cdnext 3`.
 A negative count traverses in the opposite direction.
@@ -55,6 +61,12 @@ instead of the siblings of the working directory, such as `cdnext -f ~/projects.
 Give the file in an absolute path, since the working directory changes.
 The entry of the list where you are becomes the current position, hence, calling
 it again finds the next entry of the list.
+
+`nextdir` and `prevdir` print the sibling directory without moving, such as
+`cp report.txt "$(nextdir)"`.
+`sibling_hook_enable` sets `NEXTDIR` and `PREVDIR` on every change of the working
+directory through the hook of your shell; it is not registered by default, since
+it runs the command twice on every change.
 
 ### :apple: Finder
 

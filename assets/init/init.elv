@@ -114,6 +114,58 @@ fn -cd-with-filter {|filter @rest|
     -position $file
 }
 
+# Print the found sibling directory, without changing the working directory.
+# It tells the result by the exception only, since the caller usually reads it
+# by the output capture, such as `cp file (nextdir)`.
+fn -print {|type @rest|
+    var count file = (-parse $@rest)
+    var found = []
+    var err = ?(set found = [(sibling --type $type --step $count -- (-target $file))])
+    if (not (is $err $ok)) {
+        return
+    }
+    echo $found[0]
+}
+
+# Whether the hook is registered; the callback of $after-chdir cannot be
+# removed once it is added, hence, it asks this variable every time.
+var hook-enabled = $false
+
+# Set NEXTDIR and PREVDIR to the siblings of the working directory; they become
+# empty when no such directory is found.
+fn -hook {
+    if (not $hook-enabled) {
+        return
+    }
+    var next = []
+    var err = ?(set next = [(sibling --type next -- $pwd 2>/dev/null)])
+    var prev = []
+    set err = ?(set prev = [(sibling --type previous -- $pwd 2>/dev/null)])
+    set-env NEXTDIR (if (> (count $next) 0) { put $next[0] } else { put '' })
+    set-env PREVDIR (if (> (count $prev) 0) { put $prev[0] } else { put '' })
+}
+
+# Run the hook on every change of the working directory. It is not registered
+# by default, since it runs the sibling command twice on every change; reading
+# a directory of ten thousand entries costs about 30 milliseconds.
+fn sibling_hook_enable {
+    if (not $hook-enabled) {
+        set after-chdir = [$@after-chdir {|_| -hook }]
+    }
+    set hook-enabled = $true
+    -hook
+}
+
+fn sibling_hook_disable {
+    set hook-enabled = $false
+    unset-env NEXTDIR
+    unset-env PREVDIR
+}
+
+fn nextdir {|@rest| -print next $@rest }
+
+fn prevdir {|@rest| -print previous $@rest }
+
 fn cdnext {|@rest| -cd next $@rest }
 
 fn cdprev {|@rest| -cd previous $@rest }

@@ -113,6 +113,72 @@ __sibling_cd_with_filter() {
     __sibling_position "$file"
 }
 
+# __sibling_print <TYPE> [COUNT] [-f FILE]
+# Print the found sibling directory, without changing the working directory.
+# It tells the result by the exit status only, since the caller usually reads
+# it by the command substitution, such as `cp file "$(nextdir)"`.
+__sibling_print() {
+    local type=$1 count file next code
+    shift
+    __sibling_parse "$@" || return $?
+    next=$(__sibling_find "$type" "$count" "$file")
+    code=$?
+    if [ $code -ne 0 ]; then
+        return $code
+    fi
+    echo "$next"
+}
+
+# __sibling_hook
+# Set NEXTDIR and PREVDIR to the siblings of the working directory; they become
+# empty when no such directory is found.
+__sibling_hook() {
+    NEXTDIR=$(__sibling_find next 1 "" 2> /dev/null) || NEXTDIR=
+    PREVDIR=$(__sibling_find previous 1 "" 2> /dev/null) || PREVDIR=
+    export NEXTDIR PREVDIR
+}
+
+# Run the hook on every change of the working directory. It is not registered
+# by default, since it runs the sibling command twice on every change; reading
+# a directory of ten thousand entries costs about 30 milliseconds.
+sibling_hook_enable() {
+    if [ -n "${ZSH_VERSION:-}" ]; then
+        typeset -ga chpwd_functions
+        case " ${chpwd_functions[*]} " in
+            *" __sibling_hook "*) ;;
+            *) chpwd_functions+=(__sibling_hook) ;;
+        esac
+    else
+        case "${PROMPT_COMMAND:-}" in
+            *__sibling_hook*) ;;
+            *) PROMPT_COMMAND="__sibling_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}" ;;
+        esac
+    fi
+    __sibling_hook
+}
+
+sibling_hook_disable() {
+    local kept f
+    if [ -n "${ZSH_VERSION:-}" ]; then
+        kept=()
+        for f in "${chpwd_functions[@]}"; do
+            [ "$f" = "__sibling_hook" ] || kept+=("$f")
+        done
+        chpwd_functions=("${kept[@]}")
+    else
+        PROMPT_COMMAND=$(printf '%s' "${PROMPT_COMMAND:-}" | sed -e 's/__sibling_hook;\{0,1\}//')
+    fi
+    unset NEXTDIR PREVDIR
+}
+
+nextdir() {
+    __sibling_print next "$@"
+}
+
+prevdir() {
+    __sibling_print previous "$@"
+}
+
 cdnext() {
     __sibling_cd next "$@"
 }

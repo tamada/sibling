@@ -55,3 +55,13 @@ lsnext -f /work/testdata/basic/dirlist.txt
 echo "== cdnext -f list at the last =="
 cdnext 5 -f /work/testdata/basic/dirlist.txt
 echo "pwd=$PWD"
+echo "== nextdir / prevdir =="
+cd /work/testdata/basic/c || exit 1
+nextdir
+prevdir
+echo "== hook =="
+sibling_hook_enable
+cd /work/testdata/basic/e || exit 1
+[ -n "${PROMPT_COMMAND:-}" ] && eval "$PROMPT_COMMAND"
+echo "NEXTDIR=$NEXTDIR PREVDIR=$PREVDIR"
+sibling_hook_disable

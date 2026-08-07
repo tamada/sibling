@@ -134,6 +134,60 @@ function __sibling_cd_with_filter --argument-names filter
     __sibling_position $file
 end
 
+# Print the found sibling directory, without changing the working directory.
+# It tells the result by the exit status only, since the caller usually reads
+# it by the command substitution, such as `cp file (nextdir)`.
+function __sibling_print --argument-names type
+    set -e argv[1]
+    set -l parsed (__sibling_parse $argv)
+    or return $status
+    set -l count $parsed[1]
+    set -l file ''
+    if test (count $parsed) -gt 1
+        set file $parsed[2]
+    end
+    set -l next (__sibling_find $type $count $file)
+    set -l code $status
+    if test -z "$next"
+        test $code -eq 0; and set code 1
+        return $code
+    end
+    echo $next
+end
+
+# Set NEXTDIR and PREVDIR to the siblings of the working directory; they become
+# empty when no such directory is found.
+function __sibling_hook
+    set -l next (__sibling_find next 1 '' 2> /dev/null)
+    set -l prev (__sibling_find previous 1 '' 2> /dev/null)
+    set -gx NEXTDIR "$next"
+    set -gx PREVDIR "$prev"
+end
+
+# Run the hook on every change of the working directory. It is not registered
+# by default, since it runs the sibling command twice on every change; reading
+# a directory of ten thousand entries costs about 30 milliseconds.
+function sibling_hook_enable --description "Set NEXTDIR and PREVDIR on every chdir"
+    function __sibling_hook_on_pwd --on-variable PWD
+        __sibling_hook
+    end
+    __sibling_hook
+end
+
+function sibling_hook_disable --description "Stop setting NEXTDIR and PREVDIR"
+    functions --erase __sibling_hook_on_pwd
+    set -e NEXTDIR
+    set -e PREVDIR
+end
+
+function nextdir --description "Print the next sibling directory"
+    __sibling_print next $argv
+end
+
+function prevdir --description "Print the previous sibling directory"
+    __sibling_print previous $argv
+end
+
 function cdnext --description "Change to the next sibling directory"
     __sibling_cd next $argv
 end

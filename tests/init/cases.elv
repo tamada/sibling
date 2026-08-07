@@ -16,6 +16,10 @@ var cdlast~ = $sibling:cdlast~
 var cdrand~ = $sibling:cdrand~
 var lsfirst~ = $sibling:lsfirst~
 var lsnext~ = $sibling:lsnext~
+var nextdir~ = $sibling:nextdir~
+var prevdir~ = $sibling:prevdir~
+var sibling_hook_enable~ = $sibling:sibling_hook_enable~
+var sibling_hook_disable~ = $sibling:sibling_hook_disable~
 var sibling_peco~ = $sibling:sibling_peco~
 var sibling_fzf~ = $sibling:sibling_fzf~
 
@@ -67,3 +71,12 @@ lsnext -f /work/testdata/basic/dirlist.txt
 echo "== cdnext -f list at the last =="
 cdnext 5 -f /work/testdata/basic/dirlist.txt
 echo "pwd="$pwd
+echo "== nextdir / prevdir =="
+cd /work/testdata/basic/c
+nextdir
+prevdir
+echo "== hook =="
+sibling_hook_enable
+cd /work/testdata/basic/e
+echo "NEXTDIR="$E:NEXTDIR" PREVDIR="$E:PREVDIR
+sibling_hook_disable

@@ -35,3 +35,8 @@ pwd=/
 /work/testdata/basic/c
 == cdnext -f list at the last ==
 pwd=/work/testdata/basic/b
+== nextdir / prevdir ==
+/work/testdata/basic/d
+/work/testdata/basic/b
+== hook ==
+NEXTDIR=/work/testdata/basic/f PREVDIR=/work/testdata/basic/d
