@@ -1,0 +1,30 @@
+# Deploys the document site to GitHub Pages whenever it changes on main.
+#
+# The release does not deploy the site any more. A release changes the version
+# badges of docs, hence, this workflow runs on the merge as well, and Pages
+# rejects a second deployment while one is in flight rather than queueing it.
+# Keeping the deployment in one place is what avoids that race.
+name: deploy documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-page.yaml"
+  workflow_dispatch:
+
+jobs:
+  document:
+    uses: tamada/.github/.github/workflows/build-hugo-and-publish.yaml@v1
+    with:
+      workdir: docs
+      # The blowfish theme of docs/go.mod tells it works from 0.141.0 up to
+      # 0.154.5, while 0.158.0 builds this site as well. It is pinned so that a
+      # new Hugo cannot break the deployment without anyone asking for it.
+      hugo-version: "0.158.0"
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
