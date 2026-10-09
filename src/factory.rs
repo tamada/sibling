@@ -228,13 +228,12 @@ fn append_dirs(dirs: &mut Vec<PathBuf>, path: PathBuf, config: &Config) {
 
 fn build_from_list_file<P: AsRef<Path>>(file: P, config: &Config) -> Result<Dirs> {
     let file = file.as_ref();
-    if let Ok(f) = std::fs::File::open(file) {
-        let reader = BufReader::new(f);
-        DirsFactory::create_from_reader(Box::new(reader), config)
-    } else {
-        log::error!("build_from_list_file: I/O error: {}", file.display());
-        Err(Error::Io(std::io::Error::last_os_error()))
-    }
+    let f = std::fs::File::open(file).map_err(|e| {
+        log::error!("build_from_list_file: I/O error: {}: {e}", file.display());
+        Error::Io(e)
+    })?;
+    let reader = BufReader::new(f);
+    DirsFactory::create_from_reader(Box::new(reader), config)
 }
 
 fn create_dirs_from_base_path(parent: &Path, config: &Config) -> Result<Dirs> {
