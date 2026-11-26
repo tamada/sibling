@@ -24,10 +24,10 @@ pub enum NotOnDirs {
 }
 
 /// Configuration for creating `Dirs` instances.
-/// the `base_dir` becoms the parent directory, and
+/// the `base_dir` becomes the parent directory, and
 /// the child directories of `base_dir` are listed as sibling directories.
 /// If `all_target` is true, non-existent directories in the list are also included as target directories.
-/// This flag is used when creating `Dirs` from a file or `Reader``.
+/// This flag is used when creating `Dirs` from a file or `Reader`.
 pub struct Config {
     pub base_dir: std::path::PathBuf,
     pub all_target: bool,
@@ -69,7 +69,7 @@ pub struct DirsFactory {
 
 impl DirsFactory {
     /// Creates a new [`Dirs`] instance based on the given base directory.
-    /// the `base_dir` becoms the parent directory, and
+    /// the `base_dir` becomes the parent directory, and
     /// the child directories of `base_dir` are listed as sibling directories.
     /// 
     /// The resultant `Dirs` instance has no current directory, since no directory
